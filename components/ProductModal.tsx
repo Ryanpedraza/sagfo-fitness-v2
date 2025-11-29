@@ -293,7 +293,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, o
                 style={{
                   transformOrigin: 'var(--zoom-origin-x, 50%) var(--zoom-origin-y, 50%)',
                 }}
-                className={`max-w-full max-h-full object-contain drop-shadow-2xl transition-transform duration-200 ease-out ${isEditing ? 'opacity-50' : 'opacity-100 hover:scale-100'} ${!isEditing ? 'hover:scale-[2]' : ''}`}
+                className={`w-full h-full object-scale-down drop-shadow-2xl transition-transform duration-200 ease-out ${isEditing ? 'opacity-50' : 'opacity-100 hover:scale-100'} ${!isEditing ? 'hover:scale-[2]' : ''}`}
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-neutral-400 border-2 border-dashed border-neutral-200 dark:border-neutral-800 rounded-3xl">Añade una imagen</div>

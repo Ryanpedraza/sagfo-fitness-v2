@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { HeroSlide } from '../types';
+import ScrollReveal from './ScrollReveal';
 
 interface HeroProps {
   onCartClick: () => void;
@@ -47,9 +48,8 @@ const Hero: React.FC<HeroProps> = ({ onCartClick, slides, isAdmin, onEdit, onPro
       {slides.map((slide, index) => (
         <div
           key={slide.id}
-          className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-            index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'
-          }`}
+          className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'
+            }`}
         >
           <div className="absolute inset-0">
             <img
@@ -60,27 +60,38 @@ const Hero: React.FC<HeroProps> = ({ onCartClick, slides, isAdmin, onEdit, onPro
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent"></div>
           </div>
           <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 h-full flex flex-col justify-center items-center text-center pt-20">
-            <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-white drop-shadow-lg transition-transform duration-700 transform translate-y-0">
-              {slide.titleLine1}
-              <br/>
-              <span className="text-primary-400">{slide.titleLine2}</span>
-            </h1>
-            <p className="mt-6 max-w-2xl mx-auto text-lg md:text-xl text-neutral-300 drop-shadow-sm">
-              {slide.subtitle}
-            </p>
+            <ScrollReveal direction="down" distance={40}>
+              <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-white drop-shadow-lg transition-transform duration-700 transform translate-y-0">
+                {slide.titleLine1}
+                <br />
+                <span className="text-primary-400">{slide.titleLine2}</span>
+              </h1>
+            </ScrollReveal>
+
+            <ScrollReveal delay={0.2} distance={30}>
+              <p className="mt-6 max-w-2xl mx-auto text-lg md:text-xl text-neutral-300 drop-shadow-sm">
+                {slide.subtitle}
+              </p>
+            </ScrollReveal>
+
             <div className="mt-10 flex flex-col sm:flex-row gap-4">
-              <button
-                onClick={onCartClick}
-                className="bg-primary-600 text-white font-semibold py-4 px-10 rounded-full text-lg hover:bg-primary-700 transition-transform duration-300 transform hover:scale-105 shadow-lg"
-              >
-                Comprar Ahora
-              </button>
-              <button
-                onClick={onPromosClick}
-                className="bg-white/10 backdrop-blur-md text-white border border-white/30 font-semibold py-4 px-10 rounded-full text-lg hover:bg-white/20 transition-transform duration-300 transform hover:scale-105 shadow-lg"
-              >
-                Ver Promociones
-              </button>
+              <ScrollReveal delay={0.4} direction="up" distance={50}>
+                <button
+                  onClick={onCartClick}
+                  className="bg-primary-600 text-white font-semibold py-4 px-10 rounded-full text-lg hover:bg-primary-700 transition-transform duration-300 transform hover:scale-105 shadow-lg"
+                >
+                  Comprar Ahora
+                </button>
+              </ScrollReveal>
+
+              <ScrollReveal delay={0.5} direction="up" distance={50}>
+                <button
+                  onClick={onPromosClick}
+                  className="bg-white/10 backdrop-blur-md text-white border border-white/30 font-semibold py-4 px-10 rounded-full text-lg hover:bg-white/20 transition-transform duration-300 transform hover:scale-105 shadow-lg"
+                >
+                  Ver Promociones
+                </button>
+              </ScrollReveal>
             </div>
           </div>
         </div>
@@ -114,9 +125,8 @@ const Hero: React.FC<HeroProps> = ({ onCartClick, slides, isAdmin, onEdit, onPro
               <button
                 key={index}
                 onClick={() => setCurrentSlide(index)}
-                className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
-                  index === currentSlide ? 'bg-primary-500 w-8' : 'bg-white/50 hover:bg-white'
-                }`}
+                className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${index === currentSlide ? 'bg-primary-500 w-8' : 'bg-white/50 hover:bg-white'
+                  }`}
                 aria-label={`Ir a slide ${index + 1}`}
               />
             ))}

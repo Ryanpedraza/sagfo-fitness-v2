@@ -10,6 +10,7 @@ import QuoteCartModal from './components/QuoteCartModal';
 import ComparisonBar from './components/ComparisonBar';
 import ComparisonModal from './components/ComparisonModal';
 import { useAuth } from './hooks/useAuth';
+import IntroAnimation from './components/IntroAnimation';
 import LoginModal from './components/LoginModal';
 import EditHeroModal from './components/EditHeroModal';
 import ProductListHeader from './components/ProductListHeader';
@@ -30,6 +31,9 @@ import { uploadToBlob, deleteFromBlob } from './lib/vercel-blob';
 
 
 const App: React.FC = () => {
+  // Estados
+  const [loading, setLoading] = useState(true);
+  const [appVisible, setAppVisible] = useState(false);
   const [theme, setTheme] = useState<Theme>('auto');
   const [products, setProducts] = useState<EquipmentItem[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
@@ -522,7 +526,15 @@ const App: React.FC = () => {
 
     let paymentProofUrl = undefined;
     if (paymentProofFile) {
-      paymentProofUrl = URL.createObjectURL(paymentProofFile);
+      try {
+        console.log('📤 Subiendo comprobante de pago a Vercel Blob...');
+        paymentProofUrl = await uploadToBlob(paymentProofFile, 'orders');
+        console.log('✅ Comprobante subido:', paymentProofUrl);
+      } catch (error) {
+        console.error('Error uploading payment proof:', error);
+        setNotification({ id: Date.now(), type: 'error', message: 'Error al subir comprobante. Intenta de nuevo.' });
+        return;
+      }
     }
 
     const orderId = `ord-${Date.now()}`;
@@ -1083,241 +1095,244 @@ const App: React.FC = () => {
 
   return (
     <>
-      <NotificationToast notification={notification} onClose={() => setNotification(null)} />
-      <Header
-        cartCount={cartTotalQuantity}
-        onCartClick={() => setIsCartOpen(true)}
-        onLoginClick={() => setIsLoginModalOpen(true)}
-        onGymBuilderClick={() => setIsGymBuilderOpen(true)}
-        onNavigate={navigateToView}
-        onAdminViewToggle={handleAdminViewToggle}
-        adminView={view === 'dashboard' ? 'dashboard' : 'site'}
-        searchTerm={searchTerm}
-        onSearchChange={(e) => setSearchTerm(e.target.value)}
-      />
-      <main>
-        {view === 'catalog' && (
-          <>
-            <Hero
-              onCartClick={() => setIsCartOpen(true)}
-              slides={heroSlides}
-              isAdmin={isAdmin}
-              onEdit={() => { if (isAdmin) setIsEditHeroModalOpen(true); }}
-              onPromosClick={() => navigateToView('promos')}
-            />
-            <div id="catalog" className="w-full px-1 md:px-4 py-8">
-              <div className="w-full bg-white dark:bg-[#111] rounded-[2.5rem] sm:rounded-[3.5rem] shadow-2xl shadow-neutral-200/50 dark:shadow-[0_30px_60px_rgba(0,0,0,0.35)] overflow-hidden p-4 sm:p-8 md:p-12 border border-neutral-200 dark:border-white/5 relative">
-                <ProductListHeader
-                  sortOrder={sortOrder}
-                  onSortChange={(e) => setSortOrder(e.target.value as SortOrder)}
-                  categoryFilter={categoryFilter}
-                  onCategoryFilterChange={handleCategoryChange}
-                  searchTerm={searchTerm}
-                  onSearchChange={(e) => setSearchTerm(e.target.value)}
-                  muscleFilter={muscleFilter}
-                  onMuscleFilterChange={(muscle) => setMuscleFilter(muscle)}
-                />
-
-                {categoryFilter === 'Maquinaria' && (
-                  <>
-                    {machinery.length > 0 ? (
-                      <ProductGrid
-                        products={machinery}
-                        onProductClick={handleProductClick}
-                        onToggleCompare={handleToggleCompare}
-                        comparisonList={comparisonList}
-                        isAdmin={isAdmin}
-                        onEditProduct={handleEditProduct}
-                      />
-                    ) : (
-                      <div className="text-center py-20 bg-neutral-100 dark:bg-zinc-800 rounded-3xl mt-6">
-                        <h2 className="text-2xl font-bold text-neutral-400">No hay maquinaria disponible.</h2>
-                        <p className="mt-2 text-neutral-500">Vuelve pronto para ver nuestros productos.</p>
-                      </div>
-                    )}
-                  </>
-                )}
-
-                {categoryFilter === 'Accesorios' && (
-                  <>
-                    {accessories.length > 0 ? (
-                      <ProductGrid
-                        products={accessories}
-                        onProductClick={handleProductClick}
-                        onToggleCompare={handleToggleCompare}
-                        comparisonList={comparisonList}
-                        isAdmin={isAdmin}
-                        onEditProduct={handleEditProduct}
-                      />
-                    ) : (
-                      <div className="text-center py-20 bg-neutral-100 dark:bg-zinc-800 rounded-3xl mt-6">
-                        <h2 className="text-2xl font-bold text-neutral-400">No hay accesorios disponibles.</h2>
-                        <p className="mt-2 text-neutral-500">Vuelve pronto para ver nuestros productos.</p>
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-            </div>
-
-            <EventsSection
-              events={events}
-              onEventClick={handleViewEvent}
-              isAdmin={isAdmin}
-              onEditEvent={handleOpenEventModal}
-              onDeleteEvent={handleDeleteEvent}
-            />
-            <GallerySection images={galleryImages} isAdmin={isAdmin} onAddImage={handleAddGalleryImage} onDeleteImage={handleDeleteGalleryImage} />
-          </>
-        )}
-
-        {view === 'promos' && (
-          <>
-            <div className="w-full px-1 md:px-4 py-8">
-              <div className="max-w-7xl mx-auto">
-                <div className="mb-8">
-                  <button
-                    onClick={() => navigateToView('catalog')}
-                    className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
-                    </svg>
-                    Volver al Catálogo
-                  </button>
-                </div>
-                <h1 className="text-4xl font-bold text-neutral-900 dark:text-white mb-2">Promociones Especiales</h1>
-                <p className="text-neutral-600 dark:text-neutral-400 mb-8">Aprovecha nuestras ofertas exclusivas</p>
-
-                {promoProducts.length > 0 ? (
-                  <ProductGrid
-                    products={promoProducts}
-                    onProductClick={handleProductClick}
-                    onToggleCompare={handleToggleCompare}
-                    comparisonList={comparisonList}
-                    isAdmin={isAdmin}
-                    onEditProduct={handleEditProduct}
+      {loading && <IntroAnimation onComplete={() => setLoading(false)} onStartExit={() => setAppVisible(true)} />}
+      <div style={{ opacity: (appVisible || !loading) ? 1 : 0 }}>
+        <NotificationToast notification={notification} onClose={() => setNotification(null)} />
+        <Header
+          cartCount={cartTotalQuantity}
+          onCartClick={() => setIsCartOpen(true)}
+          onLoginClick={() => setIsLoginModalOpen(true)}
+          onGymBuilderClick={() => setIsGymBuilderOpen(true)}
+          onNavigate={navigateToView}
+          onAdminViewToggle={handleAdminViewToggle}
+          adminView={view === 'dashboard' ? 'dashboard' : 'site'}
+          searchTerm={searchTerm}
+          onSearchChange={(e) => setSearchTerm(e.target.value)}
+        />
+        <main>
+          {view === 'catalog' && (
+            <>
+              <Hero
+                onCartClick={() => setIsCartOpen(true)}
+                slides={heroSlides}
+                isAdmin={isAdmin}
+                onEdit={() => { if (isAdmin) setIsEditHeroModalOpen(true); }}
+                onPromosClick={() => navigateToView('promos')}
+              />
+              <div id="catalog" className="w-full px-1 md:px-4 py-8">
+                <div className="w-full bg-white dark:bg-[#111] rounded-[2.5rem] sm:rounded-[3.5rem] shadow-2xl shadow-neutral-200/50 dark:shadow-[0_30px_60px_rgba(0,0,0,0.35)] overflow-hidden p-4 sm:p-8 md:p-12 border border-neutral-200 dark:border-white/5 relative">
+                  <ProductListHeader
+                    sortOrder={sortOrder}
+                    onSortChange={(e) => setSortOrder(e.target.value as SortOrder)}
+                    categoryFilter={categoryFilter}
+                    onCategoryFilterChange={handleCategoryChange}
+                    searchTerm={searchTerm}
+                    onSearchChange={(e) => setSearchTerm(e.target.value)}
+                    muscleFilter={muscleFilter}
+                    onMuscleFilterChange={(muscle) => setMuscleFilter(muscle)}
                   />
-                ) : (
-                  <div className="text-center py-20 bg-neutral-100 dark:bg-zinc-800 rounded-3xl">
-                    <h2 className="text-2xl font-bold text-neutral-400">No hay promociones activas por el momento.</h2>
-                    <p className="mt-2 text-neutral-500">¡Vuelve pronto para ver nuestras ofertas!</p>
-                  </div>
-                )}
+
+                  {categoryFilter === 'Maquinaria' && (
+                    <>
+                      {machinery.length > 0 ? (
+                        <ProductGrid
+                          products={machinery}
+                          onProductClick={handleProductClick}
+                          onToggleCompare={handleToggleCompare}
+                          comparisonList={comparisonList}
+                          isAdmin={isAdmin}
+                          onEditProduct={handleEditProduct}
+                        />
+                      ) : (
+                        <div className="text-center py-20 bg-neutral-100 dark:bg-zinc-800 rounded-3xl mt-6">
+                          <h2 className="text-2xl font-bold text-neutral-400">No hay maquinaria disponible.</h2>
+                          <p className="mt-2 text-neutral-500">Vuelve pronto para ver nuestros productos.</p>
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {categoryFilter === 'Accesorios' && (
+                    <>
+                      {accessories.length > 0 ? (
+                        <ProductGrid
+                          products={accessories}
+                          onProductClick={handleProductClick}
+                          onToggleCompare={handleToggleCompare}
+                          comparisonList={comparisonList}
+                          isAdmin={isAdmin}
+                          onEditProduct={handleEditProduct}
+                        />
+                      ) : (
+                        <div className="text-center py-20 bg-neutral-100 dark:bg-zinc-800 rounded-3xl mt-6">
+                          <h2 className="text-2xl font-bold text-neutral-400">No hay accesorios disponibles.</h2>
+                          <p className="mt-2 text-neutral-500">Vuelve pronto para ver nuestros productos.</p>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
               </div>
-            </div>
-          </>
-        )}
 
-        {view === 'dashboard' && isAdmin && (
-          <AdminDashboard
-            products={products}
-            orders={orders}
-            events={events}
-            galleryImages={galleryImages}
-            profiles={profiles}
-            onEditProduct={handleEditProduct}
-            onOpenCreateProductModal={handleOpenCreateProductModal}
-            onEditHero={() => setIsEditHeroModalOpen(true)}
-            onUpdateOrderStatus={handleUpdateOrderStatus}
-            whatsAppNumber={whatsAppNumber}
-            onUpdateWhatsAppNumber={handleUpdateWhatsAppNumber}
-            onSaveEvent={handleSaveEvent}
-            onDeleteEvent={handleDeleteEvent}
-            onOpenEventModal={handleOpenEventModal}
-            onAddGalleryImage={handleAddGalleryImage}
-            onDeleteGalleryImage={handleDeleteGalleryImage}
-            onOpenUserModal={handleOpenUserModal}
-            onDeleteProfile={handleDeleteProfile}
-            displayByCategory={displayByCategory}
-            onSetDisplayByCategory={handleSetDisplayByCategory}
-            bankAccounts={bankAccounts}
-            onAddBankAccount={handleAddBankAccount}
-            onDeleteBankAccount={handleDeleteBankAccount}
-            sealUrl={sealUrl}
-            onUpdateSeal={handleUpdateSeal}
-            onUploadSeal={handleUploadSeal}
-            onUpdateItemStatus={handleUpdateItemStatus}
-            onAssignTransporter={handleAssignTransporter}
-            onDeleteProduct={handleDeleteProduct}
-          />
-        )}
+              <EventsSection
+                events={events}
+                onEventClick={handleViewEvent}
+                isAdmin={isAdmin}
+                onEditEvent={handleOpenEventModal}
+                onDeleteEvent={handleDeleteEvent}
+              />
+              <GallerySection images={galleryImages} isAdmin={isAdmin} onAddImage={handleAddGalleryImage} onDeleteImage={handleDeleteGalleryImage} />
+            </>
+          )}
 
-        {view === 'transporter_dashboard' && isTransporter && (
-          <TransporterDashboard
-            orders={orders}
-            onUpdateOrderStatus={handleUpdateOrderStatus}
-            onUpdateItemStatus={handleUpdateItemStatus}
-            currentUserId={user?.id}
-          />
-        )}
+          {view === 'promos' && (
+            <>
+              <div className="w-full px-1 md:px-4 py-8">
+                <div className="max-w-7xl mx-auto">
+                  <div className="mb-8">
+                    <button
+                      onClick={() => navigateToView('catalog')}
+                      className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
+                      </svg>
+                      Volver al Catálogo
+                    </button>
+                  </div>
+                  <h1 className="text-4xl font-bold text-neutral-900 dark:text-white mb-2">Promociones Especiales</h1>
+                  <p className="text-neutral-600 dark:text-neutral-400 mb-8">Aprovecha nuestras ofertas exclusivas</p>
 
-        {view === 'orders' && user && <MyOrders orders={userOrders} onBackToCatalog={() => navigateToView('catalog')} />}
-      </main>
-      <Footer sealUrl={sealUrl} />
-      <ThemeSwitcher theme={theme} setTheme={setTheme} />
-      <WhatsAppButton phoneNumber={whatsAppNumber} />
+                  {promoProducts.length > 0 ? (
+                    <ProductGrid
+                      products={promoProducts}
+                      onProductClick={handleProductClick}
+                      onToggleCompare={handleToggleCompare}
+                      comparisonList={comparisonList}
+                      isAdmin={isAdmin}
+                      onEditProduct={handleEditProduct}
+                    />
+                  ) : (
+                    <div className="text-center py-20 bg-neutral-100 dark:bg-zinc-800 rounded-3xl">
+                      <h2 className="text-2xl font-bold text-neutral-400">No hay promociones activas por el momento.</h2>
+                      <p className="mt-2 text-neutral-500">¡Vuelve pronto para ver nuestras ofertas!</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
 
-      <ProductModal
-        product={selectedProduct}
-        isOpen={isProductModalOpen}
-        onClose={handleCloseProductModal}
-        onAddToCart={handleAddToCart}
-        cartItems={cartItems}
-        isEditing={isEditingProduct || (selectedProduct !== null && !selectedProduct.id)}
-        onSave={handleSaveProduct}
-      />
-      <QuoteCartModal
-        isOpen={isCartOpen}
-        onClose={() => setIsCartOpen(false)}
-        cartItems={cartItems}
-        onRemoveItem={handleRemoveFromCart}
-        onUpdateQuantity={handleUpdateQuantity}
-        onSubmit={handleSubmitOrder}
-        onLoginClick={handleLoginClickFromCart}
-        onUpdateItemCustomization={handleUpdateCartItemCustomization}
-        bankAccounts={bankAccounts}
-      />
-      <ComparisonBar
-        items={comparisonList}
-        onCompare={() => setIsComparisonModalOpen(true)}
-        onClear={() => setComparisonList([])}
-      />
-      <ComparisonModal
-        items={comparisonList}
-        isOpen={isComparisonModalOpen}
-        onClose={() => setIsComparisonModalOpen(false)}
-      />
-      <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
-      <EditHeroModal
-        isOpen={isEditHeroModalOpen}
-        onClose={() => setIsEditHeroModalOpen(false)}
-        slides={heroSlides}
-        onSave={handleSaveHero}
-      />
-      <GymBuilderModal
-        isOpen={isGymBuilderOpen}
-        onClose={() => setIsGymBuilderOpen(false)}
-        allProducts={products}
-        onAddPackageToCart={handleAddPackageToCart}
-      />
-      <EventModal
-        isOpen={isEventModalOpen}
-        onClose={handleCloseEventModal}
-        onSave={handleSaveEvent}
-        event={editingEvent}
-      />
-      <EditUserModal
-        isOpen={isEditUserModalOpen}
-        onClose={handleCloseUserModal}
-        onSave={handleSaveUser}
-        user={editingUser}
-      />
-      <EventDetailModal
-        isOpen={!!viewingEvent}
-        onClose={() => setViewingEvent(null)}
-        event={viewingEvent}
-      />
+          {view === 'dashboard' && isAdmin && (
+            <AdminDashboard
+              products={products}
+              orders={orders}
+              events={events}
+              galleryImages={galleryImages}
+              profiles={profiles}
+              onEditProduct={handleEditProduct}
+              onOpenCreateProductModal={handleOpenCreateProductModal}
+              onEditHero={() => setIsEditHeroModalOpen(true)}
+              onUpdateOrderStatus={handleUpdateOrderStatus}
+              whatsAppNumber={whatsAppNumber}
+              onUpdateWhatsAppNumber={handleUpdateWhatsAppNumber}
+              onSaveEvent={handleSaveEvent}
+              onDeleteEvent={handleDeleteEvent}
+              onOpenEventModal={handleOpenEventModal}
+              onAddGalleryImage={handleAddGalleryImage}
+              onDeleteGalleryImage={handleDeleteGalleryImage}
+              onOpenUserModal={handleOpenUserModal}
+              onDeleteProfile={handleDeleteProfile}
+              displayByCategory={displayByCategory}
+              onSetDisplayByCategory={handleSetDisplayByCategory}
+              bankAccounts={bankAccounts}
+              onAddBankAccount={handleAddBankAccount}
+              onDeleteBankAccount={handleDeleteBankAccount}
+              sealUrl={sealUrl}
+              onUpdateSeal={handleUpdateSeal}
+              onUploadSeal={handleUploadSeal}
+              onUpdateItemStatus={handleUpdateItemStatus}
+              onAssignTransporter={handleAssignTransporter}
+              onDeleteProduct={handleDeleteProduct}
+            />
+          )}
+
+          {view === 'transporter_dashboard' && isTransporter && (
+            <TransporterDashboard
+              orders={orders}
+              onUpdateOrderStatus={handleUpdateOrderStatus}
+              onUpdateItemStatus={handleUpdateItemStatus}
+              currentUserId={user?.id}
+            />
+          )}
+
+          {view === 'orders' && user && <MyOrders orders={userOrders} onBackToCatalog={() => navigateToView('catalog')} />}
+        </main>
+        <Footer sealUrl={sealUrl} />
+        <ThemeSwitcher theme={theme} setTheme={setTheme} />
+        <WhatsAppButton phoneNumber={whatsAppNumber} />
+
+        <ProductModal
+          product={selectedProduct}
+          isOpen={isProductModalOpen}
+          onClose={handleCloseProductModal}
+          onAddToCart={handleAddToCart}
+          cartItems={cartItems}
+          isEditing={isEditingProduct || (selectedProduct !== null && !selectedProduct.id)}
+          onSave={handleSaveProduct}
+        />
+        <QuoteCartModal
+          isOpen={isCartOpen}
+          onClose={() => setIsCartOpen(false)}
+          cartItems={cartItems}
+          onRemoveItem={handleRemoveFromCart}
+          onUpdateQuantity={handleUpdateQuantity}
+          onSubmit={handleSubmitOrder}
+          onLoginClick={handleLoginClickFromCart}
+          onUpdateItemCustomization={handleUpdateCartItemCustomization}
+          bankAccounts={bankAccounts}
+        />
+        <ComparisonBar
+          items={comparisonList}
+          onCompare={() => setIsComparisonModalOpen(true)}
+          onClear={() => setComparisonList([])}
+        />
+        <ComparisonModal
+          items={comparisonList}
+          isOpen={isComparisonModalOpen}
+          onClose={() => setIsComparisonModalOpen(false)}
+        />
+        <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
+        <EditHeroModal
+          isOpen={isEditHeroModalOpen}
+          onClose={() => setIsEditHeroModalOpen(false)}
+          slides={heroSlides}
+          onSave={handleSaveHero}
+        />
+        <GymBuilderModal
+          isOpen={isGymBuilderOpen}
+          onClose={() => setIsGymBuilderOpen(false)}
+          allProducts={products}
+          onAddPackageToCart={handleAddPackageToCart}
+        />
+        <EventModal
+          isOpen={isEventModalOpen}
+          onClose={handleCloseEventModal}
+          onSave={handleSaveEvent}
+          event={editingEvent}
+        />
+        <EditUserModal
+          isOpen={isEditUserModalOpen}
+          onClose={handleCloseUserModal}
+          onSave={handleSaveUser}
+          user={editingUser}
+        />
+        <EventDetailModal
+          isOpen={!!viewingEvent}
+          onClose={() => setViewingEvent(null)}
+          event={viewingEvent}
+        />
+      </div>
     </>
   );
 };

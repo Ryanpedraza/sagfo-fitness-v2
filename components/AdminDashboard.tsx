@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { EquipmentItem, Order, Event, GalleryImage, Profile, BankAccount, OrderStatus, DeliveryStatus } from '../types';
+import ScrollReveal from './ScrollReveal';
 import {
     LayoutDashboard,
     Package,
@@ -92,7 +93,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
     // Stats
     const totalRevenue = orders.reduce((acc, order) => acc + (order.financials?.amountPaid || 0), 0);
-    const pendingOrders = orders.filter(o => o.status === 'Pendiente de Aprobación').length;
+    const pendingOrders = orders.filter(o => o.status === 'Pendiente de AprobaciÃ³n').length;
     const totalProducts = products.length;
     const totalUsers = profiles.length;
 
@@ -146,17 +147,25 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
     const getDispatchButtonTitle = (isShipped: boolean, canDispatch: boolean, isMadeToOrder: boolean) => {
         if (isShipped) return 'Ya despachado';
-        if (!canDispatch && isMadeToOrder) return 'Disponible cuando el pedido esté en "Despachado"';
+        if (!canDispatch && isMadeToOrder) return 'Disponible cuando el pedido estÃ© en "Despachado"';
         return 'Despachar al transportador';
     };
 
     const renderOverview = () => (
         <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <StatCard title="Ingresos Totales" value={`$${totalRevenue.toLocaleString()}`} icon={<DollarSign className="w-6 h-6 text-green-500" />} />
-                <StatCard title="Pedidos Pendientes" value={pendingOrders.toString()} icon={<Clock className="w-6 h-6 text-orange-500" />} />
-                <StatCard title="Productos Activos" value={totalProducts.toString()} icon={<Package className="w-6 h-6 text-blue-500" />} />
-                <StatCard title="Usuarios Registrados" value={totalUsers.toString()} icon={<Users className="w-6 h-6 text-purple-500" />} />
+                <ScrollReveal delay={0.1}>
+                    <StatCard title="Ingresos Totales" value={`$${totalRevenue.toLocaleString()}`} icon={<DollarSign className="w-6 h-6 text-green-500" />} />
+                </ScrollReveal>
+                <ScrollReveal delay={0.2}>
+                    <StatCard title="Pedidos Pendientes" value={pendingOrders.toString()} icon={<Clock className="w-6 h-6 text-orange-500" />} />
+                </ScrollReveal>
+                <ScrollReveal delay={0.3}>
+                    <StatCard title="Productos Activos" value={totalProducts.toString()} icon={<Package className="w-6 h-6 text-blue-500" />} />
+                </ScrollReveal>
+                <ScrollReveal delay={0.4}>
+                    <StatCard title="Usuarios Registrados" value={totalUsers.toString()} icon={<Users className="w-6 h-6 text-purple-500" />} />
+                </ScrollReveal>
             </div>
 
             <div className="bg-white dark:bg-zinc-900 rounded-xl p-6 border border-neutral-200 dark:border-zinc-800">
@@ -182,7 +191,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
         </div>
     );
-
     const renderProducts = () => (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
@@ -218,50 +226,52 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {products
                     .filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()))
-                    .map(product => {
+                    .map((product, index) => {
                         const availabilityClass = product.availabilityStatus === 'in-stock'
                             ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
                             : 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400';
                         const availabilityText = product.availabilityStatus === 'in-stock' ? 'En Stock' : 'Sobre Pedido';
 
                         return (
-                            <div key={product.id} className="bg-white dark:bg-zinc-900 rounded-xl border border-neutral-200 dark:border-zinc-800 overflow-hidden group">
-                                <div className="aspect-video relative overflow-hidden">
-                                    <img
-                                        src={product.imageUrls[0]}
-                                        alt={product.name}
-                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                    />
-                                    <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button
-                                            onClick={() => onEditProduct(product)}
-                                            className="p-3 bg-white/95 dark:bg-zinc-800/95 text-neutral-700 dark:text-white rounded-full hover:bg-blue-500 hover:text-white transition-colors shadow-lg backdrop-blur-sm"
-                                            aria-label={`Editar ${product.name}`}
-                                        >
-                                            <Edit className="w-5 h-5" />
-                                        </button>
-                                        <button
-                                            onClick={() => onDeleteProduct(product.id)}
-                                            className="p-3 bg-white/95 dark:bg-zinc-800/95 text-neutral-700 dark:text-white rounded-full hover:bg-red-500 hover:text-white transition-colors shadow-lg backdrop-blur-sm"
-                                            aria-label={`Eliminar ${product.name}`}
-                                        >
-                                            <Trash2 className="w-5 h-5" />
-                                        </button>
+                            <ScrollReveal key={product.id} delay={index * 0.05} className="h-full">
+                                <div className="bg-white dark:bg-zinc-900 rounded-xl border border-neutral-200 dark:border-zinc-800 overflow-hidden group h-full">
+                                    <div className="aspect-video relative overflow-hidden">
+                                        <img
+                                            src={product.imageUrls[0]}
+                                            alt={product.name}
+                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                        />
+                                        <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button
+                                                onClick={() => onEditProduct(product)}
+                                                className="p-3 bg-white/95 dark:bg-zinc-800/95 text-neutral-700 dark:text-white rounded-full hover:bg-blue-500 hover:text-white transition-colors shadow-lg backdrop-blur-sm"
+                                                aria-label={`Editar ${product.name}`}
+                                            >
+                                                <Edit className="w-5 h-5" />
+                                            </button>
+                                            <button
+                                                onClick={() => onDeleteProduct(product.id)}
+                                                className="p-3 bg-white/95 dark:bg-zinc-800/95 text-neutral-700 dark:text-white rounded-full hover:bg-red-500 hover:text-white transition-colors shadow-lg backdrop-blur-sm"
+                                                aria-label={`Eliminar ${product.name}`}
+                                            >
+                                                <Trash2 className="w-5 h-5" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div className="p-4">
+                                        <h3 className="font-semibold text-neutral-900 dark:text-white mb-1">{product.name}</h3>
+                                        <p className="text-sm text-neutral-500 mb-3">{product.category}</p>
+                                        <div className="flex justify-between items-center">
+                                            <span className="font-bold text-neutral-900 dark:text-white">
+                                                ${product.price.toLocaleString()}
+                                            </span>
+                                            <span className={`px-2 py-1 rounded text-xs ${availabilityClass}`}>
+                                                {availabilityText}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="p-4">
-                                    <h3 className="font-semibold text-neutral-900 dark:text-white mb-1">{product.name}</h3>
-                                    <p className="text-sm text-neutral-500 mb-3">{product.category}</p>
-                                    <div className="flex justify-between items-center">
-                                        <span className="font-bold text-neutral-900 dark:text-white">
-                                            ${product.price.toLocaleString()}
-                                        </span>
-                                        <span className={`px-2 py-1 rounded text-xs ${availabilityClass}`}>
-                                            {availabilityText}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
+                            </ScrollReveal>
                         );
                     })}
             </div>
@@ -293,7 +303,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                         </span>
                                     </div>
                                     <p className="text-neutral-500 text-sm">
-                                        {new Date(order.createdAt).toLocaleDateString()} • {order.customerInfo.name}
+                                        {new Date(order.createdAt).toLocaleDateString()} â€¢ {order.customerInfo.name}
                                     </p>
                                 </div>
                                 <div className="flex items-center gap-2">
@@ -330,11 +340,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                                 className="w-full px-4 py-3 rounded-lg border border-neutral-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-neutral-900 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 outline-none"
                                                 onClick={(e) => e.stopPropagation()}
                                             >
-                                                <option value="Pendiente de Aprobación">Pendiente de Aprobación</option>
+                                                <option value="Pendiente de AprobaciÃ³n">Pendiente de AprobaciÃ³n</option>
                                                 <option value="Recibido">Recibido</option>
                                                 <option value="En Desarrollo">En Desarrollo</option>
                                                 <option value="Despachado">Despachado</option>
-                                                <option value="En Envío">En Envío</option>
+                                                <option value="En EnvÃ­o">En EnvÃ­o</option>
                                                 <option value="Entregado">Entregado</option>
                                             </select>
                                         </div>
@@ -376,7 +386,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                                 {order.items.map((item, idx) => {
                                                     const isInStock = item.equipment.availabilityStatus === 'in-stock';
                                                     const isMadeToOrder = item.equipment.availabilityStatus === 'made-to-order';
-                                                    const orderIsDispatched = order.status === 'Despachado' || order.status === 'En Envío' || order.status === 'Entregado';
+                                                    const orderIsDispatched = order.status === 'Despachado' || order.status === 'En EnvÃ­o' || order.status === 'Entregado';
                                                     const canDispatch = item.deliveryStatus === 'pending' && (isInStock || (isMadeToOrder && orderIsDispatched));
                                                     const isShipped = item.deliveryStatus === 'shipped';
                                                     const isDelivered = item.deliveryStatus === 'delivered';
@@ -386,8 +396,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                                         ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
                                                         : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400';
 
-                                                    const itemTypeLabel = isInStock ? 'Stock' : 'Producción';
-                                                    const dispatchButtonText = isShipped ? '✓ Despachado' : 'Despachar';
+                                                    const itemTypeLabel = isInStock ? 'Stock' : 'ProducciÃ³n';
+                                                    const dispatchButtonText = isShipped ? 'âœ“ Despachado' : 'Despachar';
 
                                                     return (
                                                         <div key={`${order.id}-item-${idx}`} className="flex items-center justify-between p-3 bg-neutral-50 dark:bg-zinc-800/50 rounded-lg">
@@ -409,7 +419,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                                                     )}
                                                                     {isMadeToOrder && !orderIsDispatched && item.deliveryStatus === 'pending' && (
                                                                         <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
-                                                                            ⚠️ Disponible para despacho cuando el pedido esté en "Despachado"
+                                                                            âš ï¸ Disponible para despacho cuando el pedido estÃ© en "Despachado"
                                                                         </p>
                                                                     )}
                                                                 </div>
@@ -476,14 +486,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                     {/* Right Column - Customer Info */}
                                     <div className="space-y-6">
                                         <div className="bg-white dark:bg-zinc-900 rounded-xl p-4 border border-neutral-200 dark:border-zinc-800">
-                                            <h4 className="font-bold mb-4 text-neutral-900 dark:text-white">Información del Cliente</h4>
+                                            <h4 className="font-bold mb-4 text-neutral-900 dark:text-white">InformaciÃ³n del Cliente</h4>
                                             <div className="space-y-3 text-sm">
                                                 <div>
                                                     <p className="text-neutral-500 dark:text-zinc-400 text-xs uppercase tracking-wider mb-1">Nombre</p>
                                                     <p className="text-neutral-900 dark:text-white font-medium">{order.customerInfo.name}</p>
                                                 </div>
                                                 <div>
-                                                    <p className="text-neutral-500 dark:text-zinc-400 text-xs uppercase tracking-wider mb-1">Teléfono</p>
+                                                    <p className="text-neutral-500 dark:text-zinc-400 text-xs uppercase tracking-wider mb-1">TelÃ©fono</p>
                                                     <a href={`tel:${order.customerInfo.phone}`} className="text-blue-600 dark:text-blue-400 hover:underline font-medium">
                                                         {order.customerInfo.phone}
                                                     </a>
@@ -495,12 +505,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                                     </a>
                                                 </div>
                                                 <div>
-                                                    <p className="text-neutral-500 dark:text-zinc-400 text-xs uppercase tracking-wider mb-1">Ubicación</p>
+                                                    <p className="text-neutral-500 dark:text-zinc-400 text-xs uppercase tracking-wider mb-1">UbicaciÃ³n</p>
                                                     <p className="text-neutral-900 dark:text-white">{order.customerInfo.city}, {order.customerInfo.department}</p>
                                                 </div>
                                                 {order.customerInfo.address && (
                                                     <div>
-                                                        <p className="text-neutral-500 dark:text-zinc-400 text-xs uppercase tracking-wider mb-1">Dirección</p>
+                                                        <p className="text-neutral-500 dark:text-zinc-400 text-xs uppercase tracking-wider mb-1">DirecciÃ³n</p>
                                                         <p className="text-neutral-900 dark:text-white">{order.customerInfo.address}</p>
                                                     </div>
                                                 )}
@@ -568,12 +578,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                 id="status-note"
                                 value={statusNote}
                                 onChange={(e) => setStatusNote(e.target.value)}
-                                placeholder="Ej: Tu pedido está en camino. Llegará mañana entre 9am y 12pm."
+                                placeholder="Ej: Tu pedido estÃ¡ en camino. LlegarÃ¡ maÃ±ana entre 9am y 12pm."
                                 rows={4}
                                 className="w-full px-4 py-3 rounded-lg border border-neutral-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-neutral-900 dark:text-white placeholder:text-neutral-400 dark:placeholder:text-zinc-600 focus:ring-2 focus:ring-blue-500 outline-none resize-none"
                             />
                             <p className="mt-2 text-xs text-neutral-500 dark:text-zinc-400">
-                                Este mensaje se guardará en el historial y el cliente podrá verlo en "Mis Pedidos"
+                                Este mensaje se guardarÃ¡ en el historial y el cliente podrÃ¡ verlo en "Mis Pedidos"
                             </p>
                         </div>
 
@@ -672,30 +682,32 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {events.map(event => (
-                    <div key={event.id} className="bg-white dark:bg-zinc-900 rounded-xl border border-neutral-200 dark:border-zinc-800 overflow-hidden">
-                        <img src={event.imageUrl} alt={event.title} className="w-full h-48 object-cover" />
-                        <div className="p-4">
-                            <h3 className="font-bold text-lg mb-2 text-neutral-900 dark:text-white">{event.title}</h3>
-                            <p className="text-sm text-neutral-500 mb-4">{new Date(event.date).toLocaleDateString()}</p>
-                            <div className="flex justify-end gap-2">
-                                <button
-                                    onClick={() => onOpenEventModal(event)}
-                                    className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg"
-                                    aria-label={`Editar evento ${event.title}`}
-                                >
-                                    <Edit className="w-4 h-4" />
-                                </button>
-                                <button
-                                    onClick={() => onDeleteEvent(event.id)}
-                                    className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
-                                    aria-label={`Eliminar evento ${event.title}`}
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                </button>
+                {events.map((event, index) => (
+                    <ScrollReveal key={event.id} delay={index * 0.1}>
+                        <div className="bg-white dark:bg-zinc-900 rounded-xl border border-neutral-200 dark:border-zinc-800 overflow-hidden">
+                            <img src={event.imageUrl} alt={event.title} className="w-full h-48 object-cover" />
+                            <div className="p-4">
+                                <h3 className="font-bold text-lg mb-2 text-neutral-900 dark:text-white">{event.title}</h3>
+                                <p className="text-sm text-neutral-500 mb-4">{new Date(event.date).toLocaleDateString()}</p>
+                                <div className="flex justify-end gap-2">
+                                    <button
+                                        onClick={() => onOpenEventModal(event)}
+                                        className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg"
+                                        aria-label={`Editar evento ${event.title}`}
+                                    >
+                                        <Edit className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                        onClick={() => onDeleteEvent(event.id)}
+                                        className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
+                                        aria-label={`Eliminar evento ${event.title}`}
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </ScrollReveal>
                 ))}
             </div>
         </div>
@@ -704,7 +716,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
     const renderGallery = () => (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">Galería</h2>
+                <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">GalerÃ­a</h2>
                 <label className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer">
                     <Upload className="w-4 h-4" />
                     Subir Imagen
@@ -720,19 +732,21 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </label>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {galleryImages.map(image => (
-                    <div key={image.id} className="relative group aspect-square rounded-xl overflow-hidden">
-                        <img src={image.imageUrl} alt={image.caption} className="w-full h-full object-cover" />
-                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                            <button
-                                onClick={() => onDeleteGalleryImage(image.id)}
-                                className="p-2 bg-white/10 text-white rounded-full hover:bg-red-600 transition-colors"
-                                aria-label={`Eliminar imagen ${image.caption}`}
-                            >
-                                <Trash2 className="w-5 h-5" />
-                            </button>
+                {galleryImages.map((image, i) => (
+                    <ScrollReveal key={image.id} delay={i * 0.05} className="h-full">
+                        <div className="relative group aspect-square rounded-xl overflow-hidden h-full">
+                            <img src={image.imageUrl} alt={image.caption} className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <button
+                                    onClick={() => onDeleteGalleryImage(image.id)}
+                                    className="p-2 bg-white/10 text-white rounded-full hover:bg-red-600 transition-colors"
+                                    aria-label={`Eliminar imagen ${image.caption}`}
+                                >
+                                    <Trash2 className="w-5 h-5" />
+                                </button>
+                            </div>
                         </div>
-                    </div>
+                    </ScrollReveal>
                 ))}
             </div>
         </div>
@@ -740,7 +754,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
     const renderSettings = () => (
         <div className="space-y-6 max-w-2xl">
-            <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">Configuración</h2>
+            <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">ConfiguraciÃ³n</h2>
 
             <div className="bg-white dark:bg-zinc-900 rounded-xl border border-neutral-200 dark:border-zinc-800 p-6 space-y-6">
                 <div>
@@ -748,7 +762,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     <div className="space-y-4">
                         <div>
                             <label htmlFor="whatsapp-number" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                                Número de WhatsApp
+                                NÃºmero de WhatsApp
                             </label>
                             <div className="flex gap-2">
                                 <input
@@ -771,7 +785,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="font-medium text-neutral-900 dark:text-white">Editar Banners Principales</p>
-                            <p className="text-sm text-neutral-500">Gestiona las imágenes del carrusel inicial</p>
+                            <p className="text-sm text-neutral-500">Gestiona las imÃ¡genes del carrusel inicial</p>
                         </div>
                         <button
                             onClick={onEditHero}
@@ -794,7 +808,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         </div>
                         <div className="flex-1">
                             <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
-                                Sube una imagen para mostrar como sello de calidad o certificación en el pie de página del sitio.
+                                Sube una imagen para mostrar como sello de calidad o certificaciÃ³n en el pie de pÃ¡gina del sitio.
                                 Se recomienda una imagen PNG con fondo transparente.
                             </p>
                             <label className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer">
@@ -841,8 +855,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     <NavItem icon={<ShoppingCart />} label="Pedidos" active={activeTab === 'orders'} onClick={() => setActiveTab('orders')} />
                     <NavItem icon={<Users />} label="Usuarios" active={activeTab === 'users'} onClick={() => setActiveTab('users')} />
                     <NavItem icon={<Calendar />} label="Eventos" active={activeTab === 'events'} onClick={() => setActiveTab('events')} />
-                    <NavItem icon={<ImageIcon />} label="Galería" active={activeTab === 'gallery'} onClick={() => setActiveTab('gallery')} />
-                    <NavItem icon={<Settings />} label="Configuración" active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} />
+                    <NavItem icon={<ImageIcon />} label="GalerÃ­a" active={activeTab === 'gallery'} onClick={() => setActiveTab('gallery')} />
+                    <NavItem icon={<Settings />} label="ConfiguraciÃ³n" active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} />
                 </nav>
             </aside>
 

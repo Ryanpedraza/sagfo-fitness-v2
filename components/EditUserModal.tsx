@@ -136,10 +136,10 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, onSave, 
                 </div>
                 <div>
                   <label htmlFor="role" className="block text-sm font-medium text-neutral-500 dark:text-neutral-400">Rol</label>
-                  <select id="role" name="role" value={formData.role} onChange={handleChange} className="mt-1 w-full p-3 rounded-md bg-neutral-100 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-white">
-                    <option value="customer">Cliente</option>
-                    <option value="admin">Administrador</option>
-                    <option value="transporter">Transportador</option>
+                  <select id="role" name="role" value={formData.role} onChange={handleChange} className="mt-1 w-full p-3 rounded-md bg-neutral-100 dark:bg-zinc-800 border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-white">
+                    <option value="customer" className="dark:bg-zinc-900">Cliente</option>
+                    <option value="admin" className="dark:bg-zinc-900">Administrador</option>
+                    <option value="transporter" className="dark:bg-zinc-900">Transportador</option>
                   </select>
                 </div>
               </div>
@@ -149,10 +149,10 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, onSave, 
                   name="country"
                   value={formData.country || 'Colombia'}
                   onChange={(e) => setFormData(prev => ({ ...prev!, country: e.target.value, department: '', city: '' }))}
-                  className="mt-1 w-full p-3 rounded-md bg-neutral-100 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-white"
+                  className="mt-1 w-full p-3 rounded-md bg-neutral-100 dark:bg-zinc-800 border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-white"
                 >
-                  <option value="Colombia">Colombia</option>
-                  <option value="Venezuela">Venezuela</option>
+                  <option value="Colombia" className="dark:bg-zinc-900">Colombia</option>
+                  <option value="Venezuela" className="dark:bg-zinc-900">Venezuela</option>
                 </select>
               </div>
 
@@ -163,10 +163,10 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, onSave, 
                     name="department"
                     value={formData.department || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev!, department: e.target.value, city: '' }))}
-                    className="mt-1 w-full p-3 rounded-md bg-neutral-100 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-white"
+                    className="mt-1 w-full p-3 rounded-md bg-neutral-100 dark:bg-zinc-800 border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-white"
                   >
-                    <option value="">...</option>
-                    {availableDepartments.map(d => <option key={d.name} value={d.name}>{d.name}</option>)}
+                    <option value="" className="dark:bg-zinc-900">...</option>
+                    {availableDepartments.map(d => <option key={d.name} value={d.name} className="dark:bg-zinc-900">{d.name}</option>)}
                   </select>
                 </div>
                 <div>
@@ -176,10 +176,10 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, onSave, 
                     value={formData.city || ''}
                     onChange={handleChange}
                     disabled={!formData.department}
-                    className="mt-1 w-full p-3 rounded-md bg-neutral-100 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-white disabled:opacity-30"
+                    className="mt-1 w-full p-3 rounded-md bg-neutral-100 dark:bg-zinc-800 border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-white disabled:opacity-30"
                   >
-                    <option value="">...</option>
-                    {availableCities.map(c => <option key={c} value={c}>{c}</option>)}
+                    <option value="" className="dark:bg-zinc-900">...</option>
+                    {availableCities.map(c => <option key={c} value={c} className="dark:bg-zinc-900">{c}</option>)}
                   </select>
                 </div>
               </div>

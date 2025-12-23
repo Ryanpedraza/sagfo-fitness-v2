@@ -431,8 +431,8 @@ const QuoteCartModal: React.FC<QuoteCartModalProps> = ({ isOpen, onClose, cartIt
                                                     required
                                                     className="w-full p-2.5 bg-white dark:bg-zinc-800 border border-neutral-100 dark:border-white/10 rounded-xl text-xs font-black uppercase italic text-neutral-900 dark:text-white outline-none"
                                                 >
-                                                    <option value="Colombia">Colombia</option>
-                                                    <option value="Venezuela">Venezuela</option>
+                                                    <option value="Colombia" className="dark:bg-zinc-900">Colombia</option>
+                                                    <option value="Venezuela" className="dark:bg-zinc-900">Venezuela</option>
                                                 </select>
                                             </div>
 
@@ -448,7 +448,7 @@ const QuoteCartModal: React.FC<QuoteCartModalProps> = ({ isOpen, onClose, cartIt
                                                         className="w-full p-2.5 bg-white dark:bg-zinc-800 border border-neutral-100 dark:border-white/10 rounded-xl text-xs font-black uppercase italic text-neutral-900 dark:text-white outline-none disabled:opacity-30"
                                                     >
                                                         <option value="" className="dark:bg-zinc-900">...</option>
-                                                        {availableDepartments.map(dept => <option key={dept.name} value={dept.name}>{dept.name}</option>)}
+                                                        {availableDepartments.map(dept => <option key={dept.name} value={dept.name} className="dark:bg-zinc-900">{dept.name}</option>)}
                                                     </select>
                                                 </div>
                                                 <div className="space-y-1">
@@ -462,7 +462,7 @@ const QuoteCartModal: React.FC<QuoteCartModalProps> = ({ isOpen, onClose, cartIt
                                                         className="w-full p-2.5 bg-white dark:bg-zinc-800 border border-neutral-100 dark:border-white/10 rounded-xl text-xs font-black uppercase italic text-neutral-900 dark:text-white outline-none disabled:opacity-30"
                                                     >
                                                         <option value="" className="dark:bg-zinc-900">...</option>
-                                                        {availableCities.map(city => <option key={city} value={city}>{city}</option>)}
+                                                        {availableCities.map(city => <option key={city} value={city} className="dark:bg-zinc-900">{city}</option>)}
                                                     </select>
                                                 </div>
                                             </div>

@@ -14,7 +14,7 @@ interface ProductGridProps {
 
 const ProductGrid: React.FC<ProductGridProps> = ({ products, onProductClick, onToggleCompare, comparisonList, isAdmin, onEditProduct }) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {products.map((product, index) => (
         <ScrollReveal key={product.id} delay={index % 4 * 0.1}>
           <ProductCard

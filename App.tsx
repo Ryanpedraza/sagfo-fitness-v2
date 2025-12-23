@@ -10,6 +10,7 @@ import QuoteCartModal from './components/QuoteCartModal';
 import ComparisonBar from './components/ComparisonBar';
 import ComparisonModal from './components/ComparisonModal';
 import { useAuth } from './hooks/useAuth';
+import { useCart } from './hooks/useCart';
 import IntroAnimation from './components/IntroAnimation';
 import LoginModal from './components/LoginModal';
 import EditHeroModal from './components/EditHeroModal';
@@ -19,7 +20,10 @@ import MyOrders from './components/MyOrders';
 import WhatsAppButton from './components/WhatsAppButton';
 import EventsSection from './components/EventsSection';
 import GallerySection from './components/GallerySection';
+
 import EventModal from './components/EventModal';
+import QuickCategoryNav from './components/QuickCategoryNav';
+import TestimonialsSection from './components/TestimonialsSection';
 import NotificationToast, { NotificationState } from './components/NotificationToast';
 import EditUserModal from './components/EditUserModal';
 import EventDetailModal from './components/EventDetailModal';
@@ -27,6 +31,7 @@ import TransporterDashboard from './components/TransporterDashboard';
 import AdminDashboard from './components/AdminDashboard';
 
 import { supabase } from './lib/supabase';
+
 import { uploadToBlob, deleteFromBlob } from './lib/vercel-blob';
 
 
@@ -35,6 +40,29 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [appVisible, setAppVisible] = useState(false);
   const [theme, setTheme] = useState<Theme>('auto');
+  const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');
+
+  // Lógica de Resolución de Tema
+  useEffect(() => {
+    const applyTheme = () => {
+      if (theme === 'auto') {
+        const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        setResolvedTheme(isDark ? 'dark' : 'light');
+      } else {
+        setResolvedTheme(theme as 'light' | 'dark');
+      }
+    };
+
+    applyTheme();
+
+    if (theme === 'auto') {
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      const listener = () => applyTheme();
+      mediaQuery.addEventListener('change', listener);
+      return () => mediaQuery.removeEventListener('change', listener);
+    }
+  }, [theme]);
+
   const [products, setProducts] = useState<EquipmentItem[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
   const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
@@ -43,8 +71,17 @@ const App: React.FC = () => {
 
   const [selectedProduct, setSelectedProduct] = useState<EquipmentItem | null>(null);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [isCartOpen, setIsCartOpen] = useState(false);
+  const {
+    cartItems,
+    isCartOpen,
+    setIsCartOpen,
+    handleAddToCart,
+    handleUpdateCartItemCustomization,
+    handleRemoveFromCart,
+    handleUpdateQuantity,
+    handleAddPackageToCart,
+    clearCart
+  } = useCart();
   const [comparisonList, setComparisonList] = useState<EquipmentItem[]>([]);
   const [isComparisonModalOpen, setIsComparisonModalOpen] = useState(false);
   const { user, updateUser } = useAuth();
@@ -93,6 +130,8 @@ const App: React.FC = () => {
     setCategoryFilter(category);
     setMuscleFilter('Todos');
   };
+
+
 
   const handleOpenEventModal = (event?: Event) => {
     if (!isAdmin) return;
@@ -198,8 +237,7 @@ const App: React.FC = () => {
     refetchAll();
     const savedTheme = localStorage.getItem('theme') as Theme | null;
     if (savedTheme) setTheme(savedTheme);
-    const savedCart = localStorage.getItem('cartItems');
-    if (savedCart) setCartItems(JSON.parse(savedCart));
+    // El carrito se carga ahora desde useCart
     const savedBankAccounts = localStorage.getItem('bankAccounts');
     if (savedBankAccounts) setBankAccounts(JSON.parse(savedBankAccounts));
     const savedSeal = localStorage.getItem('sealUrl');
@@ -258,9 +296,7 @@ const App: React.FC = () => {
     localStorage.setItem('theme', theme);
   }, [theme]);
 
-  useEffect(() => {
-    localStorage.setItem('cartItems', JSON.stringify(cartItems));
-  }, [cartItems]);
+  // La persistencia del carrito ahora se maneja en useCart
 
   useEffect(() => {
     localStorage.setItem('bankAccounts', JSON.stringify(bankAccounts));
@@ -460,60 +496,7 @@ const App: React.FC = () => {
     }
   };
 
-  const handleAddToCart = (product: EquipmentItem, color?: string, weight?: string) => {
-    setCartItems(prevItems => {
-      const existingItem = prevItems.find(item =>
-        item.equipment.id === product.id &&
-        item.selectedColor === color &&
-        item.selectedWeight === weight
-      );
-
-      if (existingItem) {
-        return prevItems.map(item =>
-          (item.equipment.id === product.id && item.selectedColor === color && item.selectedWeight === weight)
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
-      }
-      return [...prevItems, { equipment: product, quantity: 1, selectedColor: color, selectedWeight: weight }];
-    });
-    setNotification({ id: Date.now(), type: 'success', message: 'Producto añadido al carrito.' });
-  };
-
-  const handleUpdateCartItemCustomization = (productId: string, field: 'structureColor' | 'upholsteryColor', value: string) => {
-    setCartItems(prev => prev.map(item =>
-      (item.equipment.id === productId && !item.selectedColor)
-        ? { ...item, [field]: value }
-        : item
-    ));
-  };
-
-  const handleRemoveFromCart = (productId: string) => {
-    setCartItems(prev => prev.filter(item => item.equipment.id !== productId));
-  };
-
-  const handleUpdateQuantity = (productId: string, newQuantity: number) => {
-    if (newQuantity < 1) {
-      handleRemoveFromCart(productId);
-      return;
-    }
-    setCartItems(prev => prev.map(item => item.equipment.id === productId ? { ...item, quantity: newQuantity } : item));
-  };
-
-  const handleAddPackageToCart = (items: CartItem[]) => {
-    let newCartItems = [...cartItems];
-    items.forEach(itemToAdd => {
-      const existingItemIndex = newCartItems.findIndex(item => item.equipment.id === itemToAdd.equipment.id && item.selectedColor === itemToAdd.selectedColor && item.selectedWeight === itemToAdd.selectedWeight);
-      if (existingItemIndex > -1) {
-        newCartItems[existingItemIndex].quantity += itemToAdd.quantity;
-      } else {
-        newCartItems.push(itemToAdd);
-      }
-    });
-    setCartItems(newCartItems);
-    setIsGymBuilderOpen(false);
-    setIsCartOpen(true);
-  };
+  // Las funciones del carrito ahora vienen del hook useCart
 
   const handleSubmitOrder = async (
     customerInfo: { name: string; email: string; phone: string; message: string; city: string; department: string; mapsLink?: string; address?: string },
@@ -605,7 +588,7 @@ const App: React.FC = () => {
 
       setOrders([newOrder, ...orders]);
       setIsCartOpen(false);
-      setCartItems([]);
+      clearCart();
 
       if (!isAdmin && !isTransporter) {
         setView('orders');
@@ -804,6 +787,22 @@ const App: React.FC = () => {
     if (status === 'delivered') message = 'Item entregado exitosamente.';
 
     setNotification({ id: Date.now(), type: 'success', message });
+  };
+
+
+  const handleSelectQuickCategory = (category: MuscleFilter) => {
+    // Determine parent category based on selection
+    if (['Mancuernas', 'Discos', 'Barras', 'Agarres', 'Soportes', 'Peso Libre'].includes(category)) {
+      setCategoryFilter('Accesorios');
+    } else {
+      setCategoryFilter('Maquinaria'); // Cardio, Bancos, etc.
+    }
+    setMuscleFilter(category);
+
+    // Scroll to catalog
+    setTimeout(() => {
+      document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
   };
 
   const handleAssignTransporter = (orderId: string, transporterId: string) => {
@@ -1096,7 +1095,9 @@ const App: React.FC = () => {
   return (
     <>
       {loading && <IntroAnimation onComplete={() => setLoading(false)} onStartExit={() => setAppVisible(true)} />}
-      <div style={{ opacity: (appVisible || !loading) ? 1 : 0 }}>
+
+      <div style={{ opacity: (appVisible || !loading) ? 1 : 0 }} className={`min-h-screen ${resolvedTheme === 'dark' ? 'dark bg-[#0a0a0a]' : 'bg-white'} transition-colors duration-500`}>
+
         <NotificationToast notification={notification} onClose={() => setNotification(null)} />
         <Header
           cartCount={cartTotalQuantity}
@@ -1119,6 +1120,7 @@ const App: React.FC = () => {
                 onEdit={() => { if (isAdmin) setIsEditHeroModalOpen(true); }}
                 onPromosClick={() => navigateToView('promos')}
               />
+              <QuickCategoryNav onSelectCategory={handleSelectQuickCategory} />
               <div id="catalog" className="w-full px-1 md:px-4 py-8">
                 <div className="w-full bg-white dark:bg-[#111] rounded-[2.5rem] sm:rounded-[3.5rem] shadow-2xl shadow-neutral-200/50 dark:shadow-[0_30px_60px_rgba(0,0,0,0.35)] overflow-hidden p-4 sm:p-8 md:p-12 border border-neutral-200 dark:border-white/5 relative">
                   <ProductListHeader
@@ -1173,6 +1175,8 @@ const App: React.FC = () => {
                   )}
                 </div>
               </div>
+
+              <TestimonialsSection />
 
               <EventsSection
                 events={events}
@@ -1280,6 +1284,8 @@ const App: React.FC = () => {
           cartItems={cartItems}
           isEditing={isEditingProduct || (selectedProduct !== null && !selectedProduct.id)}
           onSave={handleSaveProduct}
+          allProducts={products}
+          onProductClick={handleProductClick}
         />
         <QuoteCartModal
           isOpen={isCartOpen}

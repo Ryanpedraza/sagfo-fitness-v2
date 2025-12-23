@@ -93,7 +93,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
     // Stats
     const totalRevenue = orders.reduce((acc, order) => acc + (order.financials?.amountPaid || 0), 0);
-    const pendingOrders = orders.filter(o => o.status === 'Pendiente de AprobaciÃ³n').length;
+    const pendingOrders = orders.filter(o => o.status === 'Pendiente de Aprobación').length;
     const totalProducts = products.length;
     const totalUsers = profiles.length;
 
@@ -147,46 +147,115 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
     const getDispatchButtonTitle = (isShipped: boolean, canDispatch: boolean, isMadeToOrder: boolean) => {
         if (isShipped) return 'Ya despachado';
-        if (!canDispatch && isMadeToOrder) return 'Disponible cuando el pedido estÃ© en "Despachado"';
+        if (!canDispatch && isMadeToOrder) return 'Disponible cuando el pedido esté en "Despachado"';
         return 'Despachar al transportador';
     };
 
     const renderOverview = () => (
         <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <ScrollReveal delay={0.1}>
-                    <StatCard title="Ingresos Totales" value={`$${totalRevenue.toLocaleString()}`} icon={<DollarSign className="w-6 h-6 text-green-500" />} />
+                    <StatCard
+                        title="Ingresos Totales"
+                        value={`$${totalRevenue.toLocaleString()}`}
+                        icon={<DollarSign className="w-6 h-6 text-emerald-500" />}
+                        color="emerald"
+                        trend="+12% vs last month"
+                    />
                 </ScrollReveal>
                 <ScrollReveal delay={0.2}>
-                    <StatCard title="Pedidos Pendientes" value={pendingOrders.toString()} icon={<Clock className="w-6 h-6 text-orange-500" />} />
+                    <StatCard
+                        title="Pedidos Pendientes"
+                        value={pendingOrders.toString()}
+                        icon={<Clock className={`w-6 h-6 text-amber-500 ${pendingOrders > 0 ? 'animate-pulse' : ''}`} />}
+                        color="amber"
+                        trend={pendingOrders > 0 ? "Atención requerida" : "Al día"}
+                    />
                 </ScrollReveal>
                 <ScrollReveal delay={0.3}>
-                    <StatCard title="Productos Activos" value={totalProducts.toString()} icon={<Package className="w-6 h-6 text-blue-500" />} />
+                    <StatCard
+                        title="Productos Activos"
+                        value={totalProducts.toString()}
+                        icon={<Package className="w-6 h-6 text-blue-500" />}
+                        color="blue"
+                        trend="En catálogo"
+                    />
                 </ScrollReveal>
                 <ScrollReveal delay={0.4}>
-                    <StatCard title="Usuarios Registrados" value={totalUsers.toString()} icon={<Users className="w-6 h-6 text-purple-500" />} />
+                    <StatCard
+                        title="Usuarios"
+                        value={totalUsers.toString()}
+                        icon={<Users className="w-6 h-6 text-violet-500" />}
+                        color="violet"
+                        trend="Verificados"
+                    />
                 </ScrollReveal>
             </div>
 
-            <div className="bg-white dark:bg-zinc-900 rounded-xl p-6 border border-neutral-200 dark:border-zinc-800">
-                <h3 className="text-lg font-semibold mb-4 text-neutral-900 dark:text-white">Actividad Reciente</h3>
-                <div className="space-y-4">
-                    {orders.slice(0, 5).map(order => (
-                        <div key={order.id} className="flex items-center justify-between py-3 border-b border-neutral-100 dark:border-zinc-800 last:border-0">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-neutral-100 dark:bg-zinc-800 flex items-center justify-center">
-                                    <ShoppingCart className="w-5 h-5 text-neutral-500" />
-                                </div>
-                                <div>
-                                    <p className="font-medium text-neutral-900 dark:text-white">Pedido #{order.id.slice(-6)}</p>
-                                    <p className="text-sm text-neutral-500">{new Date(order.createdAt).toLocaleDateString()}</p>
-                                </div>
-                            </div>
-                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
-                                {order.status}
-                            </span>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2 bg-white dark:bg-zinc-900 rounded-3xl p-8 border border-neutral-200 dark:border-white/5 shadow-sm">
+                    <div className="flex items-center justify-between mb-8">
+                        <div>
+                            <h3 className="text-xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter">Flujo de Ingresos</h3>
+                            <p className="text-xs text-neutral-500 font-bold uppercase tracking-widest italic">Últimos 7 pedidos procesados</p>
                         </div>
-                    ))}
+                        <div className="flex gap-2">
+                            <div className="flex items-center gap-1.5">
+                                <div className="w-2 h-2 rounded-full bg-primary-600" />
+                                <span className="text-[10px] font-bold text-neutral-400 uppercase italic">Ventas</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Simulated SVG Chart */}
+                    <div className="h-48 w-full relative flex items-end gap-2 group/chart">
+                        {orders.slice(0, 7).reverse().map((o, i) => {
+                            const val = o.financials?.totalOrderValue || 0;
+                            const max = Math.max(...orders.slice(0, 7).map(x => x.financials?.totalOrderValue || 1));
+                            const height = (val / max) * 100;
+                            return (
+                                <div key={o.id} className="flex-1 flex flex-col items-center gap-2 group">
+                                    <div
+                                        className="w-full bg-primary-600/20 group-hover:bg-primary-600 rounded-t-xl transition-all duration-700 relative overflow-hidden"
+                                        style={{ height: `${Math.max(height, 10)}%` }}
+                                    >
+                                        <div className="absolute inset-0 bg-gradient-to-t from-primary-600 to-transparent opacity-0 group-hover:opacity-40 transition-opacity" />
+                                    </div>
+                                    <span className="text-[8px] font-black text-neutral-400 opacity-0 group-hover:opacity-100 transition-opacity uppercase italic tracking-tighter truncate w-full text-center">
+                                        #{o.id.slice(-4)}
+                                    </span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                <div className="bg-white dark:bg-zinc-900 rounded-3xl p-8 border border-neutral-200 dark:border-white/5 shadow-sm">
+                    <h3 className="text-xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter mb-8">Actividad Reciente</h3>
+                    <div className="space-y-6">
+                        {orders.slice(0, 4).map(order => (
+                            <div key={order.id} className="group flex items-start justify-between gap-4 transition-all hover:translate-x-1 outline-none">
+                                <div className="flex items-start gap-4">
+                                    <div className="w-12 h-12 rounded-2xl bg-neutral-100 dark:bg-white/5 flex items-center justify-center group-hover:bg-primary-600/10 transition-colors">
+                                        <ShoppingCart className="w-6 h-6 text-neutral-400 group-hover:text-primary-600 transition-colors" />
+                                    </div>
+                                    <div>
+                                        <p className="font-black text-neutral-900 dark:text-white uppercase italic text-sm tracking-tighter leading-none mb-1">Pedido #{order.id.slice(-6)}</p>
+                                        <p className="text-[10px] text-neutral-500 font-bold uppercase tracking-widest italic">{new Date(order.createdAt).toLocaleDateString()}</p>
+                                    </div>
+                                </div>
+                                <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase italic tracking-widest ${getStatusColor(order.status)}`}>
+                                    {order.status}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                    <button
+                        onClick={() => setActiveTab('orders')}
+                        className="w-full mt-8 py-4 border border-dashed border-neutral-200 dark:border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] italic text-neutral-400 hover:text-primary-600 hover:border-primary-600/30 transition-all"
+                    >
+                        Ver todos los pedidos
+                    </button>
                 </div>
             </div>
         </div>
@@ -303,7 +372,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                         </span>
                                     </div>
                                     <p className="text-neutral-500 text-sm">
-                                        {new Date(order.createdAt).toLocaleDateString()} â€¢ {order.customerInfo.name}
+                                        {new Date(order.createdAt).toLocaleDateString()} • {order.customerInfo.name}
                                     </p>
                                 </div>
                                 <div className="flex items-center gap-2">
@@ -340,11 +409,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                                 className="w-full px-4 py-3 rounded-lg border border-neutral-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-neutral-900 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 outline-none"
                                                 onClick={(e) => e.stopPropagation()}
                                             >
-                                                <option value="Pendiente de AprobaciÃ³n">Pendiente de AprobaciÃ³n</option>
+                                                <option value="Pendiente de Aprobación">Pendiente de Aprobación</option>
                                                 <option value="Recibido">Recibido</option>
                                                 <option value="En Desarrollo">En Desarrollo</option>
                                                 <option value="Despachado">Despachado</option>
-                                                <option value="En EnvÃ­o">En EnvÃ­o</option>
+                                                <option value="En Envío">En Envío</option>
                                                 <option value="Entregado">Entregado</option>
                                             </select>
                                         </div>
@@ -386,7 +455,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                                 {order.items.map((item, idx) => {
                                                     const isInStock = item.equipment.availabilityStatus === 'in-stock';
                                                     const isMadeToOrder = item.equipment.availabilityStatus === 'made-to-order';
-                                                    const orderIsDispatched = order.status === 'Despachado' || order.status === 'En EnvÃ­o' || order.status === 'Entregado';
+                                                    const orderIsDispatched = order.status === 'Despachado' || order.status === 'En Envío' || order.status === 'Entregado';
                                                     const canDispatch = item.deliveryStatus === 'pending' && (isInStock || (isMadeToOrder && orderIsDispatched));
                                                     const isShipped = item.deliveryStatus === 'shipped';
                                                     const isDelivered = item.deliveryStatus === 'delivered';
@@ -396,8 +465,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                                         ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
                                                         : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400';
 
-                                                    const itemTypeLabel = isInStock ? 'Stock' : 'ProducciÃ³n';
-                                                    const dispatchButtonText = isShipped ? 'âœ“ Despachado' : 'Despachar';
+                                                    const itemTypeLabel = isInStock ? 'Stock' : 'Producción';
+                                                    const dispatchButtonText = isShipped ? '✓ Despachado' : 'Despachar';
 
                                                     return (
                                                         <div key={`${order.id}-item-${idx}`} className="flex items-center justify-between p-3 bg-neutral-50 dark:bg-zinc-800/50 rounded-lg">
@@ -419,7 +488,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                                                     )}
                                                                     {isMadeToOrder && !orderIsDispatched && item.deliveryStatus === 'pending' && (
                                                                         <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
-                                                                            âš ï¸ Disponible para despacho cuando el pedido estÃ© en "Despachado"
+                                                                            ⚠️ Disponible para despacho cuando el pedido esté en "Despachado"
                                                                         </p>
                                                                     )}
                                                                 </div>
@@ -486,14 +555,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                     {/* Right Column - Customer Info */}
                                     <div className="space-y-6">
                                         <div className="bg-white dark:bg-zinc-900 rounded-xl p-4 border border-neutral-200 dark:border-zinc-800">
-                                            <h4 className="font-bold mb-4 text-neutral-900 dark:text-white">InformaciÃ³n del Cliente</h4>
+                                            <h4 className="font-bold mb-4 text-neutral-900 dark:text-white">Información del Cliente</h4>
                                             <div className="space-y-3 text-sm">
                                                 <div>
                                                     <p className="text-neutral-500 dark:text-zinc-400 text-xs uppercase tracking-wider mb-1">Nombre</p>
                                                     <p className="text-neutral-900 dark:text-white font-medium">{order.customerInfo.name}</p>
                                                 </div>
                                                 <div>
-                                                    <p className="text-neutral-500 dark:text-zinc-400 text-xs uppercase tracking-wider mb-1">TelÃ©fono</p>
+                                                    <p className="text-neutral-500 dark:text-zinc-400 text-xs uppercase tracking-wider mb-1">Teléfono</p>
                                                     <a href={`tel:${order.customerInfo.phone}`} className="text-blue-600 dark:text-blue-400 hover:underline font-medium">
                                                         {order.customerInfo.phone}
                                                     </a>
@@ -505,12 +574,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                                     </a>
                                                 </div>
                                                 <div>
-                                                    <p className="text-neutral-500 dark:text-zinc-400 text-xs uppercase tracking-wider mb-1">UbicaciÃ³n</p>
+                                                    <p className="text-neutral-500 dark:text-zinc-400 text-xs uppercase tracking-wider mb-1">Ubicación</p>
                                                     <p className="text-neutral-900 dark:text-white">{order.customerInfo.city}, {order.customerInfo.department}</p>
                                                 </div>
                                                 {order.customerInfo.address && (
                                                     <div>
-                                                        <p className="text-neutral-500 dark:text-zinc-400 text-xs uppercase tracking-wider mb-1">DirecciÃ³n</p>
+                                                        <p className="text-neutral-500 dark:text-zinc-400 text-xs uppercase tracking-wider mb-1">Dirección</p>
                                                         <p className="text-neutral-900 dark:text-white">{order.customerInfo.address}</p>
                                                     </div>
                                                 )}
@@ -578,12 +647,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                 id="status-note"
                                 value={statusNote}
                                 onChange={(e) => setStatusNote(e.target.value)}
-                                placeholder="Ej: Tu pedido estÃ¡ en camino. LlegarÃ¡ maÃ±ana entre 9am y 12pm."
+                                placeholder="Ej: Tu pedido está en camino. Llegará mañana entre 9am y 12pm."
                                 rows={4}
                                 className="w-full px-4 py-3 rounded-lg border border-neutral-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-neutral-900 dark:text-white placeholder:text-neutral-400 dark:placeholder:text-zinc-600 focus:ring-2 focus:ring-blue-500 outline-none resize-none"
                             />
                             <p className="mt-2 text-xs text-neutral-500 dark:text-zinc-400">
-                                Este mensaje se guardarÃ¡ en el historial y el cliente podrÃ¡ verlo en "Mis Pedidos"
+                                Este mensaje se guardará en el historial y el cliente podrá verlo en "Mis Pedidos"
                             </p>
                         </div>
 
@@ -716,7 +785,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
     const renderGallery = () => (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">GalerÃ­a</h2>
+                <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">Galería</h2>
                 <label className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer">
                     <Upload className="w-4 h-4" />
                     Subir Imagen
@@ -754,7 +823,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
     const renderSettings = () => (
         <div className="space-y-6 max-w-2xl">
-            <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">ConfiguraciÃ³n</h2>
+            <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">Configuración</h2>
 
             <div className="bg-white dark:bg-zinc-900 rounded-xl border border-neutral-200 dark:border-zinc-800 p-6 space-y-6">
                 <div>
@@ -762,7 +831,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     <div className="space-y-4">
                         <div>
                             <label htmlFor="whatsapp-number" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                                NÃºmero de WhatsApp
+                                Número de WhatsApp
                             </label>
                             <div className="flex gap-2">
                                 <input
@@ -785,7 +854,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="font-medium text-neutral-900 dark:text-white">Editar Banners Principales</p>
-                            <p className="text-sm text-neutral-500">Gestiona las imÃ¡genes del carrusel inicial</p>
+                            <p className="text-sm text-neutral-500">Gestiona las imágenes del carrusel inicial</p>
                         </div>
                         <button
                             onClick={onEditHero}
@@ -808,7 +877,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         </div>
                         <div className="flex-1">
                             <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
-                                Sube una imagen para mostrar como sello de calidad o certificaciÃ³n en el pie de pÃ¡gina del sitio.
+                                Sube una imagen para mostrar como sello de calidad o certificación en el pie de página del sitio.
                                 Se recomienda una imagen PNG con fondo transparente.
                             </p>
                             <label className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer">
@@ -855,8 +924,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     <NavItem icon={<ShoppingCart />} label="Pedidos" active={activeTab === 'orders'} onClick={() => setActiveTab('orders')} />
                     <NavItem icon={<Users />} label="Usuarios" active={activeTab === 'users'} onClick={() => setActiveTab('users')} />
                     <NavItem icon={<Calendar />} label="Eventos" active={activeTab === 'events'} onClick={() => setActiveTab('events')} />
-                    <NavItem icon={<ImageIcon />} label="GalerÃ­a" active={activeTab === 'gallery'} onClick={() => setActiveTab('gallery')} />
-                    <NavItem icon={<Settings />} label="ConfiguraciÃ³n" active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} />
+                    <NavItem icon={<ImageIcon />} label="Galería" active={activeTab === 'gallery'} onClick={() => setActiveTab('gallery')} />
+                    <NavItem icon={<Settings />} label="Configuración" active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} />
                 </nav>
             </aside>
 
@@ -877,25 +946,48 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
 const NavItem = ({ icon, label, active, onClick }: { icon: React.ReactNode, label: string, active: boolean, onClick: () => void }) => (
     <button
         onClick={onClick}
-        className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${active
-            ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
-            : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-zinc-800'
+        className={`group w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ${active
+            ? 'bg-primary-600 text-white shadow-lg shadow-primary-600/20 scale-[1.02] -skew-x-6'
+            : 'text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-white/5 hover:translate-x-1'
             }`}
     >
-        {React.cloneElement(icon as React.ReactElement, { className: 'w-5 h-5' })}
-        <span className="font-medium">{label}</span>
+        <div className={`transition-transform duration-300 ${active ? 'scale-110 rotate-12' : 'group-hover:rotate-12'}`}>
+            {React.cloneElement(icon as React.ReactElement, { className: 'w-5 h-5' })}
+        </div>
+        <span className={`font-black uppercase italic tracking-widest text-[10px] transition-all ${active ? 'opacity-100' : 'opacity-60 group-hover:opacity-100'}`}>{label}</span>
+        {active && (
+            <div className="ml-auto w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+        )}
     </button>
 );
 
-const StatCard = ({ title, value, icon }: { title: string, value: string, icon: React.ReactNode }) => (
-    <div className="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-neutral-200 dark:border-zinc-800">
-        <div className="flex items-center justify-between mb-4">
-            <h3 className="text-neutral-500 text-sm font-medium">{title}</h3>
-            {icon}
+const StatCard = ({ title, value, icon, color, trend }: { title: string, value: string, icon: React.ReactNode, color: string, trend?: string }) => {
+    const colorClasses: Record<string, string> = {
+        emerald: 'from-emerald-500/10 to-transparent text-emerald-600',
+        amber: 'from-amber-500/10 to-transparent text-amber-600',
+        blue: 'from-blue-500/10 to-transparent text-blue-600',
+        violet: 'from-violet-500/10 to-transparent text-violet-600',
+    };
+
+    return (
+        <div className="group bg-white dark:bg-zinc-900/50 p-6 rounded-2xl border border-neutral-200 dark:border-white/5 hover:border-primary-500/30 transition-all duration-300 shadow-sm hover:shadow-xl">
+            <div className="flex items-center justify-between mb-4">
+                <div className={`p-3 rounded-xl bg-gradient-to-br ${colorClasses[color] || 'bg-neutral-100 dark:bg-white/5'}`}>
+                    {icon}
+                </div>
+                {trend && (
+                    <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400 opacity-50 italic group-hover:opacity-100 transition-opacity">
+                        {trend}
+                    </span>
+                )}
+            </div>
+            <div>
+                <h3 className="text-neutral-500 dark:text-neutral-400 text-xs font-black uppercase tracking-widest mb-1 italic opacity-70">{title}</h3>
+                <p className="text-3xl font-black text-neutral-900 dark:text-white tracking-tighter italic">{value}</p>
+            </div>
         </div>
-        <p className="text-2xl font-bold text-neutral-900 dark:text-white">{value}</p>
-    </div>
-);
+    );
+};
 
 const getStatusColor = (status: OrderStatus) => {
     switch (status) {

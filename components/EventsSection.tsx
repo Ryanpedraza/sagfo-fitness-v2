@@ -13,114 +13,84 @@ interface EventsSectionProps {
 
 const EventsSection: React.FC<EventsSectionProps> = ({ events, onEventClick, isAdmin, onEditEvent, onDeleteEvent }) => {
   return (
-    <div id="events" className="w-full px-1 md:px-4 py-8">
-      <div className="w-full bg-white dark:bg-[#111] rounded-[2.5rem] sm:rounded-[3.5rem] shadow-2xl shadow-neutral-200/50 dark:shadow-[0_30px_60px_rgba(0,0,0,0.35)] overflow-hidden p-4 sm:p-8 md:p-12 border border-neutral-200 dark:border-white/5 relative">
-        <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-4">
-          <div className="text-left">
-            <h2 className="text-3xl md:text-4xl font-black text-neutral-900 dark:text-white tracking-tighter uppercase italic">
-              Eventos <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-blue-500">SAGFO</span>
-            </h2>
-            <p className="mt-2 text-lg text-neutral-500 dark:text-neutral-400 max-w-xl">
-              Experiencias exclusivas, lanzamientos y talleres para nuestra comunidad.
-            </p>
+    <div id="events" className="w-full px-4 md:px-12 py-32 bg-white dark:bg-[#0a0a0a] relative overflow-hidden">
+      {/* Decorative background text for depth */}
+      <div className="absolute top-20 left-1/2 -translate-x-1/2 text-[15vw] font-black text-neutral-100 dark:text-white/5 pointer-events-none select-none uppercase italic tracking-tighter">
+        Comunidad
+      </div>
+
+      <div className="max-w-7xl mx-auto space-y-20 relative z-10">
+
+        {/* Section Header */}
+        <div className="flex flex-col items-center text-center space-y-8">
+          <div className="flex items-center space-x-6">
+            <div className="h-[2px] w-16 bg-primary-600/40" />
+            <span className="text-[11px] font-black uppercase tracking-[0.6em] text-primary-600 italic">Network de Élite</span>
+            <div className="h-[2px] w-16 bg-primary-600/40" />
           </div>
+          <h2 className="text-6xl md:text-8xl font-black text-neutral-900 dark:text-white tracking-tighter uppercase italic leading-[0.9] max-w-4xl">
+            Eventos <br className="md:hidden" /> <span className="text-primary-600">SAGFOFITNESS</span>
+          </h2>
+          <p className="max-w-2xl text-xl text-neutral-500 dark:text-neutral-400 font-medium italic opacity-70 leading-relaxed">
+            Experiencias diseñadas para la élite del fitness, lanzamientos exclusivos y formación de alto rendimiento.
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+        {/* Dynamic Event Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
           {events.map((event, index) => (
             <ScrollReveal key={event.id} delay={index * 0.1} className="h-full">
-              <div className="group relative bg-white dark:bg-[#1c1c1e] rounded-[2rem] overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 ease-out flex flex-col h-full border border-neutral-100 dark:border-white/5">
+              <div className="group relative flex flex-col h-full bg-white dark:bg-zinc-900 rounded-[3rem] overflow-hidden border border-neutral-100 dark:border-white/5 shadow-xl hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.15)] transition-all duration-700 hover:-translate-y-4">
 
-                {/* Image Container */}
-                <div className="relative h-72 overflow-hidden">
-                  <div className="absolute inset-0 bg-neutral-200 dark:bg-zinc-800 animate-pulse" />
+                {/* Visual Stage */}
+                <div className="relative h-80 overflow-hidden">
                   <img
                     src={event.imageUrl}
                     alt={event.title}
-                    onError={(e) => {
-                      e.currentTarget.src = 'https://placehold.co/600x400/1c1c1e/white?text=Imagen+No+Disponible';
-                      e.currentTarget.onerror = null;
-                    }}
-                    className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out"
+                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
                   />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
 
-                  {/* Date Badge - Apple Style */}
-                  <div className="absolute top-4 left-4 bg-white/90 dark:bg-black/80 backdrop-blur-xl px-4 py-2 rounded-xl shadow-lg border border-white/20 dark:border-white/10 flex flex-col items-center justify-center min-w-[3.5rem]">
-                    <span className="text-xs font-bold uppercase text-red-500 tracking-wider">
-                      {new Date(event.date).toLocaleDateString('es-CO', { month: 'short' }).replace('.', '')}
-                    </span>
-                    <span className="text-xl font-black text-neutral-900 dark:text-white leading-none mt-0.5">
-                      {new Date(event.date).getDate()}
-                    </span>
+                  {/* Date Badge - Boutique Style */}
+                  <div className="absolute top-6 left-6 bg-white/95 dark:bg-black/80 backdrop-blur-xl px-5 py-3 rounded-2xl shadow-2xl border border-white/20 flex flex-col items-center">
+                    <span className="text-[10px] font-black uppercase text-primary-600 tracking-widest">{new Date(event.date).toLocaleDateString('es-CO', { month: 'short' }).replace('.', '')}</span>
+                    <span className="text-2xl font-black text-neutral-900 dark:text-white leading-none mt-1">{new Date(event.date).getDate()}</span>
                   </div>
 
-                  {/* Time Badge */}
-                  <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 flex items-center gap-1.5">
-                    <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span className="text-xs font-semibold text-white tracking-wide">
-                      {new Date(event.date).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', hour12: true })}
-                    </span>
+                  {/* Intensity Tag */}
+                  <div className="absolute bottom-6 left-6 py-1.5 px-4 bg-primary-600 text-white text-[9px] font-black uppercase tracking-[0.2em] rounded-full shadow-lg italic">
+                    Live Experience
                   </div>
                 </div>
 
-                {/* Content */}
-                <div className="p-6 md:p-8 flex flex-col flex-grow relative z-10">
-                  <div className="flex-grow">
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className="px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[10px] font-bold uppercase tracking-wider border border-blue-100 dark:border-blue-800">
-                        Evento
-                      </span>
-                      <div className="flex items-center text-xs text-neutral-500 dark:text-neutral-400 font-medium truncate">
-                        <svg className="w-3.5 h-3.5 mr-1 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                        <span className="truncate">{event.location}</span>
-                      </div>
+                {/* Narrative Content */}
+                <div className="p-10 flex flex-col flex-grow space-y-6">
+                  <div className="space-y-4 flex-grow">
+                    <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-neutral-400">
+                      <svg className="w-3.5 h-3.5 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                      <span className="truncate">{event.location}</span>
                     </div>
-
-                    <h3 className="text-2xl font-bold text-neutral-900 dark:text-white mb-3 leading-tight tracking-tight">
+                    <h3 className="text-3xl font-black text-neutral-900 dark:text-white italic uppercase tracking-tighter leading-[0.95]">
                       {event.title}
                     </h3>
-
-                    <p className="text-neutral-600 dark:text-neutral-400 text-sm leading-relaxed line-clamp-3 mb-6">
+                    <p className="text-sm text-neutral-500 dark:text-neutral-400 font-medium leading-relaxed italic opacity-80 line-clamp-3">
                       {event.description}
                     </p>
                   </div>
 
-                  <div className="mt-auto pt-6 border-t border-neutral-100 dark:border-white/5 flex items-center justify-between gap-4">
+                  <div className="pt-6 border-t border-neutral-100 dark:border-white/5 flex items-center justify-between gap-4">
                     <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        onEventClick(event);
-                      }}
-                      className="flex-1 bg-neutral-900 dark:bg-white text-white dark:text-black font-bold py-3 px-6 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 shadow-lg shadow-neutral-200/50 dark:shadow-none flex items-center justify-center gap-2 text-sm"
+                      onClick={() => onEventClick(event)}
+                      className="flex-1 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-black py-4 px-6 rounded-2xl hover:scale-[1.05] active:scale-[0.95] transition-all shadow-xl text-[10px] uppercase tracking-widest italic"
                     >
-                      Ver Detalles
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                      </svg>
+                      Ver Agenda
                     </button>
 
                     {isAdmin && (
                       <div className="flex gap-2">
-                        <button
-                          onClick={(e) => { e.stopPropagation(); onEditEvent(event); }}
-                          className="p-3 bg-neutral-100 dark:bg-zinc-800 text-neutral-600 dark:text-neutral-300 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                          title="Editar"
-                        >
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                        </button>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); onDeleteEvent(event.id); }}
-                          className="p-3 bg-neutral-100 dark:bg-zinc-800 text-neutral-600 dark:text-neutral-300 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-colors"
-                          title="Eliminar"
-                        >
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                        </button>
+                        <button onClick={(e) => { e.stopPropagation(); onEditEvent(event); }} className="p-4 bg-neutral-100 dark:bg-white/5 text-neutral-400 hover:text-primary-600 rounded-2xl transition-all"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg></button>
+                        <button onClick={(e) => { e.stopPropagation(); onDeleteEvent(event.id); }} className="p-4 bg-neutral-100 dark:bg-white/5 text-neutral-400 hover:text-red-500 rounded-2xl transition-all"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
                       </div>
                     )}
                   </div>

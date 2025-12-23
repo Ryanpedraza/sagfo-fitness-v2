@@ -1,10 +1,7 @@
 
-
-
-
-
 import React, { useState } from 'react';
 import { EquipmentItem } from '../types';
+import { Plus, Check, Edit3, ArrowUpRight } from 'lucide-react';
 
 interface ProductCardProps {
   product: EquipmentItem;
@@ -16,7 +13,7 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product, onClick, onToggleCompare, isComparing, isAdmin, onEdit }) => {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('es-CO', {
@@ -26,124 +23,82 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onClick, onToggleCom
     }).format(value);
   };
 
-  const nextImage = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setCurrentImageIndex((prevIndex) => (prevIndex + 1) % product.imageUrls.length);
-  };
-
-  const prevImage = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setCurrentImageIndex((prevIndex) => (prevIndex - 1 + product.imageUrls.length) % product.imageUrls.length);
-  };
-
-  // Determine price to show
   const hasDiscount = product.isPromotion && product.promotionalPrice && product.promotionalPrice < product.price;
   const currentPrice = hasDiscount ? product.promotionalPrice! : product.price;
 
   return (
     <div
       onClick={onClick}
-      className="group cursor-pointer bg-white dark:bg-zinc-800/50 rounded-3xl overflow-hidden transition-all duration-300 shadow-lg hover:shadow-2xl hover:-translate-y-2 border border-neutral-200 dark:border-zinc-800 flex flex-col"
+      className="group cursor-pointer bg-white dark:bg-[#111] rounded-[3rem] overflow-hidden transition-all duration-700 hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.1)] border border-neutral-100 dark:border-white/5 flex flex-col h-full relative"
     >
-      <div className="relative w-full h-60 bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
-        {product.imageUrls.map((url, index) => (
-            <img
-              key={url}
-              src={url}
-              alt={`${product.name} ${index + 1}`}
-              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${index === currentImageIndex ? 'opacity-100' : 'opacity-0'}`}
-            />
-        ))}
+      {/* Visual Container - Fixed aspect ratio to ensure ALL cards have the same image area */}
+      <div className="relative w-full aspect-square bg-neutral-50 dark:bg-black/20 overflow-hidden flex items-center justify-center p-8 group-hover:bg-white dark:group-hover:bg-black transition-colors duration-700">
 
-        <div className="absolute bottom-3 left-3 z-10 flex flex-col items-start gap-1">
-             {product.availabilityStatus === 'in-stock' ? (
-                <span className="px-2 py-1 rounded-md text-xs font-bold bg-emerald-500/90 text-white shadow-sm backdrop-blur-sm">
-                    Entrega Inmediata
-                </span>
-            ) : (
-                <span className="px-2 py-1 rounded-md text-xs font-bold bg-amber-500/90 text-white shadow-sm backdrop-blur-sm">
-                    Bajo Pedido
-                </span>
-            )}
-            
-            {hasDiscount && (
-                <span className="px-2 py-1 rounded-md text-xs font-bold bg-red-600/90 text-white shadow-sm backdrop-blur-sm animate-pulse">
-                    OFERTA
-                </span>
-            )}
+        <img
+          src={product.imageUrls[0]}
+          alt={product.name}
+          className={`w-full h-full object-contain transition-all duration-1000 group-hover:scale-110 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+          onLoad={() => setImageLoaded(true)}
+        />
+
+        {!imageLoaded && <div className="absolute inset-0 bg-neutral-100 dark:bg-zinc-800 animate-pulse" />}
+
+        {/* Badges */}
+        <div className="absolute top-6 left-6 z-20 flex flex-col gap-2">
+          {hasDiscount && (
+            <div className="px-3 py-1 rounded-lg bg-primary-600 text-white text-[8px] font-black uppercase tracking-widest italic shadow-lg">
+              OFERTA
+            </div>
+          )}
+          <div className="px-3 py-1 rounded-lg bg-black dark:bg-white text-white dark:text-black text-[8px] font-black uppercase tracking-widest italic shadow-lg">
+            {product.availabilityStatus === 'in-stock' ? 'Disponible' : 'Pedido'}
+          </div>
         </div>
 
-        {product.imageUrls.length > 1 && (
-          <>
-            <button 
-              onClick={prevImage} 
-              className="absolute left-2 top-1/2 -translate-y-1/2 z-10 p-2 bg-black/30 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/50 focus:outline-none"
-              aria-label="Previous image"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <button 
-              onClick={nextImage} 
-              className="absolute right-2 top-1/2 -translate-y-1/2 z-10 p-2 bg-black/30 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/50 focus:outline-none"
-              aria-label="Next image"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          </>
-        )}
-        
-        {isAdmin && (
-            <button
-                onClick={(e) => {
-                    e.stopPropagation();
-                    onEdit();
-                }}
-                className="absolute top-3 left-3 z-10 p-2 rounded-full bg-black/30 text-white hover:bg-black/50 transition-all duration-300"
-                aria-label="Editar producto"
-            >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                </svg>
-            </button>
-        )}
-
-        <button
-            onClick={(e) => {
-                e.stopPropagation();
-                onToggleCompare();
-            }}
-            className={`absolute top-3 right-3 z-10 p-2 rounded-full transition-all duration-300 ${isComparing ? 'bg-primary-600 text-white scale-110' : 'bg-black/30 text-white hover:bg-black/50'}`}
-            aria-label={isComparing ? "Quitar de la comparación" : "Añadir a la comparación"}
-        >
-            {isComparing ? (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                </svg>
-            ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
-                </svg>
-            )}
-        </button>
+        <div className="absolute top-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="w-10 h-10 rounded-full bg-white dark:bg-zinc-800 shadow-xl flex items-center justify-center text-primary-600">
+            <ArrowUpRight size={20} />
+          </div>
+        </div>
       </div>
-      <div className="p-6 flex-grow flex flex-col justify-between">
-        <div>
-            <h3 className="text-md font-bold text-neutral-900 dark:text-white">{product.name}</h3>
-            <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">{product.category}</p>
+
+      {/* Content Area - Fixed heights to ensure identical card sizes */}
+      <div className="p-8 flex flex-col flex-grow">
+        {/* Category & Title with fixed min-height to prevent misalignment */}
+        <div className="min-h-[100px] flex flex-col justify-start space-y-2">
+          <div className="flex items-center gap-2">
+            <span className="text-[9px] font-black text-primary-600 uppercase tracking-widest italic">{product.category}</span>
+            <div className="w-1 h-1 rounded-full bg-neutral-200 dark:bg-white/10" />
+            <span className="text-[9px] font-bold text-neutral-400 dark:text-neutral-500 uppercase">{product.muscleGroup}</span>
+          </div>
+          <h3 className="text-xl md:text-2xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter leading-none line-clamp-2 group-hover:text-primary-600 transition-colors">
+            {product.name}
+          </h3>
         </div>
-        <div className="mt-4">
-            {hasDiscount ? (
-                <div className="flex flex-col">
-                    <span className="text-sm text-neutral-500 dark:text-neutral-400 line-through decoration-red-500">{formatCurrency(product.price)}</span>
-                    <span className="text-xl font-bold text-red-600 dark:text-red-400">{formatCurrency(currentPrice)}</span>
-                </div>
-            ) : (
-                <p className="text-xl text-primary-600 dark:text-primary-400 font-bold">{formatCurrency(product.price)}</p>
+
+        {/* Price & Actions aligned at the bottom */}
+        <div className="mt-auto pt-6 border-t border-neutral-100 dark:border-white/10 flex items-center justify-between">
+          <div className="flex flex-col">
+            <span className="text-2xl font-black text-neutral-900 dark:text-white italic tracking-tighter leading-none">{formatCurrency(currentPrice)}</span>
+            {hasDiscount && <span className="text-[10px] font-bold text-neutral-400 line-through italic mt-1 opacity-50">{formatCurrency(product.price)}</span>}
+          </div>
+
+          <div className="flex gap-2">
+            {isAdmin && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onEdit(); }}
+                className="w-10 h-10 rounded-xl bg-neutral-100 dark:bg-white/5 text-neutral-500 hover:text-primary-600 transition-colors flex items-center justify-center"
+              >
+                <Edit3 size={18} />
+              </button>
             )}
+            <button
+              onClick={(e) => { e.stopPropagation(); onToggleCompare(); }}
+              className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-500 shadow-lg ${isComparing ? 'bg-primary-600 text-white' : 'bg-neutral-950 dark:bg-white text-white dark:text-neutral-900 group-hover:bg-primary-600 group-hover:text-white group-hover:rotate-12'}`}
+            >
+              {isComparing ? <Check size={20} strokeWidth={3} /> : <Plus size={20} strokeWidth={3} />}
+            </button>
+          </div>
         </div>
       </div>
     </div>

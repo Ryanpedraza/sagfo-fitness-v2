@@ -70,12 +70,12 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({ onComplete, onStartExit
             {/* Header Info */}
             <div className={`relative z-10 flex justify-between items-start text-[10px] md:text-xs font-mono font-medium tracking-[0.2em] uppercase transition-all duration-500 delay-100 ${isExiting ? 'opacity-0 -translate-y-4' : 'opacity-100'}`}>
                 <div className="flex flex-col gap-1">
-                    <span className="text-neutral-600">Origen</span>
-                    <span>BOGOTÁ, D.C.</span>
+                    <span className="text-neutral-500 font-bold">Origen</span>
+                    <span className="text-white">BOGOTÁ, D.C.</span>
                 </div>
                 <div className="flex flex-col gap-1 text-right">
-                    <span className="text-neutral-600">Sistema Local</span>
-                    <span className="tabular-nums text-blue-500">{time}</span>
+                    <span className="text-neutral-500 font-bold">Sistema Local</span>
+                    <span className="tabular-nums text-primary-400">{time}</span>
                 </div>
             </div>
 
@@ -83,15 +83,15 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({ onComplete, onStartExit
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
                 <div className="overflow-hidden relative flex flex-col items-center">
                     {/* Texto masivo, sin efectos de scan confusos, solo poder puro */}
-                    <h1 className={`text-[14vw] leading-[0.8] font-black tracking-tighter text-white transition-transform duration-[1s] ease-out ${progress > 5 ? 'translate-y-0 opacity-100' : 'translate-y-[110%] opacity-0'
+                    <h1 className={`text-[9vw] leading-[0.8] font-black tracking-tighter text-white transition-transform duration-[1s] ease-out ${progress > 5 ? 'translate-y-0 opacity-100' : 'translate-y-[110%] opacity-0'
                         }`}>
-                        SAGFO
+                        SAGFOFITNESS
                     </h1>
 
                     {/* Etiqueta de categoría limpia */}
                     <div className={`mt-4 overflow-hidden transition-all duration-700 delay-300 ${progress > 20 ? 'opacity-100' : 'opacity-0'}`}>
                         <span className="inline-block px-3 py-1 border border-white/20 rounded-full text-[10px] md:text-xs uppercase tracking-[0.3em] font-medium text-neutral-400 backdrop-blur-md">
-                            Fitness Catalog
+                            Catálogo de Fitness
                         </span>
                     </div>
                 </div>
@@ -103,8 +103,8 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({ onComplete, onStartExit
             {/* Footer Loader */}
             <div className={`relative z-10 flex justify-between items-end text-[10px] md:text-xs font-mono tracking-widest uppercase transition-all duration-500 delay-100 ${isExiting ? 'opacity-0 translate-y-4' : 'opacity-100'}`}>
                 <div className="flex flex-col gap-2">
-                    <span className="text-neutral-600">Cargando Activos...</span>
-                    <div className="w-32 md:w-48 h-[2px] bg-neutral-900 overflow-hidden relative">
+                    <span className="text-neutral-600 animate-pulse uppercase tracking-[0.2em]">Inicializando Catálogo...</span>
+                    <div className="w-32 md:w-48 h-[1px] bg-neutral-900 overflow-hidden relative">
                         <div
                             className="absolute inset-0 bg-white transition-transform duration-100 ease-linear"
                             style={{ transform: `translateX(${progress - 100}%)` }}
@@ -125,7 +125,7 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({ onComplete, onStartExit
                     to { transform: scaleX(1); }
                 }
             `}</style>
-        </div>
+        </div >
     );
 };
 

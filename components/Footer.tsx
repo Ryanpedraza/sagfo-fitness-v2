@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Instagram, Facebook, Twitter, Mail, Phone, MapPin, ShieldCheck, Award, Globe, ExternalLink } from 'lucide-react';
 
 interface FooterProps {
   sealUrl?: string;
@@ -7,94 +8,123 @@ interface FooterProps {
 
 const Footer: React.FC<FooterProps> = ({ sealUrl }) => {
   return (
-    <footer className="bg-neutral-900 text-neutral-400 border-t border-neutral-800 relative z-10">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10">
-          {/* Brand */}
-          <div className="lg:col-span-2">
-            <h2 className="text-2xl font-black text-white mb-6 tracking-tighter italic">
-              SAGFO<span className="text-primary-500">FITNESS</span>
-            </h2>
-            <p className="text-sm leading-relaxed mb-6 max-w-sm">
-              Dedicados a equipar a campeones. Maquinaria de gimnasio de alta gama, diseñada para biomecánica perfecta y durabilidad extrema.
+    <footer className="bg-neutral-50 dark:bg-[#050505] text-neutral-500 dark:text-neutral-400 border-t border-neutral-200 dark:border-neutral-900 relative z-10 overflow-hidden">
+      {/* Decorative Gradient Overlay */}
+      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary-500/50 to-transparent"></div>
+
+      <div className="container mx-auto px-6 lg:px-12 py-24">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16 md:gap-24">
+
+          {/* Brand Identity */}
+          <div className="space-y-10">
+            <div className="flex items-center group cursor-pointer">
+              <span className="bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 w-12 h-12 flex items-center justify-center rounded-[1.25rem] font-black text-xl mr-4 transform transition-all group-hover:rotate-[15deg] group-hover:bg-primary-600 group-hover:text-white shadow-xl">S</span>
+              <h2 className="text-3xl font-black text-neutral-900 dark:text-white tracking-tighter italic uppercase">
+                SAGFOFITNESS
+              </h2>
+            </div>
+            <p className="text-base leading-relaxed text-neutral-500 dark:text-neutral-400 font-medium italic">
+              Engineering for the elite. Equipamiento de alto rendimiento diseñado para transformar la biomecánica en potencia pura.
             </p>
-            <div className="flex space-x-4">
-              {/* Social Icons Placeholders */}
-              <div className="w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center hover:bg-primary-600 hover:text-white transition-colors cursor-pointer"><span className="font-bold">IG</span></div>
-              <div className="w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center hover:bg-primary-600 hover:text-white transition-colors cursor-pointer"><span className="font-bold">FB</span></div>
-              <div className="w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center hover:bg-primary-600 hover:text-white transition-colors cursor-pointer"><span className="font-bold">TT</span></div>
+            <div className="flex space-x-6">
+              {[
+                { icon: Instagram, href: "#", color: "hover:bg-pink-600" },
+                { icon: Facebook, href: "#", color: "hover:bg-blue-600" },
+                { icon: Twitter, href: "#", color: "hover:bg-sky-500" }
+              ].map((social, idx) => (
+                <a
+                  key={idx}
+                  href={social.href}
+                  className={`w-12 h-12 rounded-2xl bg-neutral-200 dark:bg-white/5 flex items-center justify-center text-neutral-700 dark:text-white transition-all duration-500 hover:-translate-y-2 hover:text-white shadow-lg ${social.color}`}
+                >
+                  <social.icon size={20} strokeWidth={2.5} />
+                </a>
+              ))}
             </div>
           </div>
 
-          {/* Contact */}
-          <div>
-            <h3 className="font-bold text-white tracking-widest uppercase text-xs mb-6">Contacto Directo</h3>
-            <ul className="space-y-4 text-sm">
-              <li className="flex items-start">
-                <svg className="w-5 h-5 text-primary-500 mr-3 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                <span>Calle 4 #3-17<br />Barrio La Victoria</span>
-              </li>
-              <li className="flex items-center">
-                <svg className="w-5 h-5 text-primary-500 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
-                <span>310 393 6762</span>
-              </li>
-              <li className="flex items-center">
-                <svg className="w-5 h-5 text-primary-500 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-                <span>johngarcia_saga@hotmail.com</span>
-              </li>
+          {/* Contact Core */}
+          <div className="space-y-10">
+            <h3 className="font-black text-neutral-900 dark:text-white tracking-[0.4em] uppercase text-[10px] italic border-l-4 border-primary-600 pl-6">Support Hub</h3>
+            <ul className="space-y-8">
+              {[
+                { icon: MapPin, text: "Calle 4 #3-17, Barrio La Victoria", subtext: "Sede Principal, Colombia" },
+                { icon: Phone, text: "310 393 6762", subtext: "Línea Directa" },
+                { icon: Mail, text: "contact@sagfo.com", subtext: "Atención 24/7" }
+              ].map((item, idx) => (
+                <li key={idx} className="flex items-start group">
+                  <div className="w-10 h-10 rounded-xl bg-neutral-200 dark:bg-white/5 flex items-center justify-center text-primary-600 mr-5 group-hover:bg-primary-600 group-hover:text-white transition-all duration-500">
+                    <item.icon size={18} strokeWidth={2.5} />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-black text-neutral-900 dark:text-white transition-colors group-hover:text-primary-600">{item.text}</span>
+                    <span className="text-[10px] font-bold text-neutral-400 dark:text-neutral-600 uppercase tracking-widest mt-1">{item.subtext}</span>
+                  </div>
+                </li>
+              ))}
             </ul>
-            <div className="mt-6 pt-6 border-t border-neutral-800">
-              <h4 className="font-bold text-white tracking-widest uppercase text-xs mb-2">Asesor Ventas</h4>
-              <p className="text-sm text-neutral-300 flex items-center">
-                <svg className="w-4 h-4 text-primary-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                310 245 9620
-              </p>
+          </div>
+
+          {/* Quality Certification */}
+          <div className="space-y-10">
+            <h3 className="font-black text-neutral-900 dark:text-white tracking-[0.4em] uppercase text-[10px] italic border-l-4 border-primary-600 pl-6">Certification</h3>
+            <div className="relative group p-8 bg-white dark:bg-white/5 rounded-[3rem] border border-neutral-200 dark:border-white/10 shadow-3xl text-center overflow-hidden">
+              <div className="absolute inset-0 bg-primary-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+              {sealUrl ? (
+                <img src={sealUrl} alt="Sello de Calidad" className="w-32 h-32 object-contain mx-auto drop-shadow-4xl relative z-10 transform transition-transform duration-700 group-hover:scale-110 group-hover:rotate-12" />
+              ) : (
+                <div className="w-24 h-24 mx-auto border-4 border-dotted border-neutral-300 dark:border-white/10 rounded-full flex items-center justify-center">
+                  <Award className="w-10 h-10 text-neutral-300 dark:text-neutral-700" />
+                </div>
+              )}
+              <div className="mt-8 relative z-10">
+                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary-600 mb-2 italic">Standard Elite</p>
+                <p className="text-xs font-bold text-neutral-400 dark:text-neutral-500 px-4">Biomecánica Avanzada Certificada para Alto Tráfico</p>
+              </div>
             </div>
           </div>
 
-          {/* Quality Seal */}
-          <div className="flex flex-col items-center justify-start pt-4 lg:pt-0">
-            {sealUrl ? (
-              <div className="relative group cursor-default">
-                <img src={sealUrl} alt="Sello de Calidad" className="w-32 h-32 object-contain drop-shadow-lg transform transition-transform group-hover:scale-105" />
-              </div>
-            ) : (
-              <div className="w-32 h-32 flex items-center justify-center border-2 border-dashed border-neutral-700 rounded-full text-neutral-600 text-xs text-center p-2 opacity-30">
-              </div>
-            )}
-            <p className="text-center text-xs text-neutral-500 mt-4 max-w-[150px]">Comprometidos con la excelencia en cada soldadura.</p>
-          </div>
-
-          {/* Legal / Entities */}
-          <div>
-            <h3 className="font-bold text-white tracking-widest uppercase text-xs mb-6">Empresa Verificada</h3>
-            <p className="text-xs text-neutral-500 mb-4">Vigilado y controlado por:</p>
-            <div className="grid grid-cols-2 gap-3">
-              <a href="https://www.rues.org.co/" target="_blank" rel="noopener noreferrer" className="bg-white/5 hover:bg-white/10 p-2 rounded-lg flex items-center justify-center transition-all border border-neutral-800 hover:border-neutral-600 h-12">
-                <span className="text-xs font-bold text-white">RUES</span>
-              </a>
-              <a href="https://www.mintrabajo.gov.co/" target="_blank" rel="noopener noreferrer" className="bg-white/5 hover:bg-white/10 p-2 rounded-lg flex items-center justify-center transition-all border border-neutral-800 hover:border-neutral-600 h-12">
-                <span className="text-xs font-bold text-white">MinTrabajo</span>
-              </a>
-              <a href="https://www.sic.gov.co/" target="_blank" rel="noopener noreferrer" className="bg-white/5 hover:bg-white/10 p-2 rounded-lg flex items-center justify-center transition-all border border-neutral-800 hover:border-neutral-600 h-12">
-                <span className="text-xs font-bold text-white">SIC</span>
-              </a>
-              <a href="https://www.dian.gov.co/" target="_blank" rel="noopener noreferrer" className="bg-white/5 hover:bg-white/10 p-2 rounded-lg flex items-center justify-center transition-all border border-neutral-800 hover:border-neutral-600 h-12">
-                <span className="text-xs font-bold text-white">DIAN</span>
-              </a>
+          {/* Legal Hub & Entities */}
+          <div className="space-y-10">
+            <h3 className="font-black text-neutral-900 dark:text-white tracking-[0.4em] uppercase text-[10px] italic border-l-4 border-primary-600 pl-6">Compliance</h3>
+            <div className="grid grid-cols-2 gap-4">
+              {['RUES', 'MinTrabajo', 'SIC', 'DIAN'].map((label) => (
+                <div key={label} className="group bg-white dark:bg-white/5 hover:bg-neutral-900 dark:hover:bg-white p-5 rounded-2xl flex items-center justify-center transition-all duration-500 border border-neutral-200 dark:border-white/10 hover:border-transparent h-16 shadow-lg">
+                  <span className="text-[11px] font-black text-neutral-400 group-hover:text-white dark:group-hover:text-neutral-900 transition-colors tracking-widest">{label}</span>
+                </div>
+              ))}
+            </div>
+            <div className="pt-6 border-t border-neutral-200 dark:border-white/5 space-y-4">
+              <p className="text-[9px] font-black uppercase tracking-[0.4em] text-neutral-400 text-center italic flex items-center justify-center gap-2">
+                <ShieldCheck className="w-3 h-3 text-primary-600" />
+                Garantía de Origen Controlada
+              </p>
             </div>
           </div>
         </div>
 
-        <div className="mt-16 pt-8 border-t border-neutral-800 flex flex-col md:flex-row justify-between items-center text-xs text-neutral-600">
-          <p>&copy; {new Date().getFullYear()} SAGFO FITNESS. Todos los derechos reservados.</p>
-          <div className="flex flex-col md:items-end mt-4 md:mt-0 gap-2">
-            <div className="flex space-x-4">
-              <span className="hover:text-white cursor-pointer">Términos y Condiciones</span>
-              <span className="hover:text-white cursor-pointer">Política de Privacidad</span>
+        {/* Bottom Bar Content */}
+        <div className="mt-24 pt-12 border-t border-neutral-200 dark:border-white/5 flex flex-col md:flex-row justify-between items-center gap-10">
+          <div className="flex flex-col items-center md:items-start space-y-3">
+            <div className="flex items-center space-x-6 text-[10px] font-black uppercase tracking-[0.5em] text-neutral-900 dark:text-white italic">
+              <span>Legal</span>
+              <span className="w-1 h-1 bg-primary-600 rounded-full"></span>
+              <span>Privacy</span>
+              <span className="w-1 h-1 bg-primary-600 rounded-full"></span>
+              <span>Service</span>
             </div>
-            <p className="text-[10px] text-neutral-700">
-              Desarrollado por <span className="text-neutral-500 font-bold hover:text-primary-500 transition-colors">ING.BRAYAN PEDRAZA</span>
+            <p className="text-[10px] font-bold text-neutral-400 dark:text-neutral-600 uppercase tracking-widest">
+              &copy; {new Date().getFullYear()} SAGFOFITNESS & BULLS EQUIPMENT. R-PB-02 V2.0
+            </p>
+          </div>
+
+          <div className="flex flex-col items-center md:items-end space-y-3">
+            <div className="flex items-center gap-2 text-primary-600 font-black italic uppercase text-[10px] tracking-widest group cursor-pointer hover:translate-x-1 transition-transform">
+              <span>Visit Elite HQ</span>
+              <ExternalLink size={12} strokeWidth={3} />
+            </div>
+            <p className="text-[10px] font-medium text-neutral-400">
+              Premium Development by <span className="font-black text-neutral-900 dark:text-white italic uppercase group hover:text-primary-600 transition-all cursor-pointer">Ryan Pedraza</span>
             </p>
           </div>
         </div>

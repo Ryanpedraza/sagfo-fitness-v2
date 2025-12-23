@@ -1,6 +1,8 @@
 
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { EquipmentItem, CartItem } from '../types';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { EquipmentItem, CartItem, CategoryFilter, MuscleFilter } from '../types';
+import { Plus, Trash2, X, Camera, Save, ArrowLeft, Maximize2, ZoomIn, Check } from 'lucide-react';
+
 
 interface ProductModalProps {
   product: EquipmentItem | null;
@@ -10,643 +12,444 @@ interface ProductModalProps {
   cartItems: CartItem[];
   isEditing: boolean;
   onSave: (product: EquipmentItem, newImagesMap?: Record<string, File>) => void;
+  allProducts?: EquipmentItem[];
+  onProductClick?: (product: EquipmentItem) => void;
 }
 
-const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose, onAddToCart, cartItems, isEditing, onSave }) => {
+const ProductModal: React.FC<ProductModalProps> = ({
+  product,
+  isOpen,
+  onClose,
+  onAddToCart,
+  cartItems,
+  isEditing,
+  onSave,
+  allProducts = [],
+  onProductClick
+}) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [formData, setFormData] = useState<EquipmentItem | null>(null);
-  const [specs, setSpecs] = useState<{ key: string, value: string }[]>([]);
   const [selectedColor, setSelectedColor] = useState<string | undefined>(undefined);
   const [selectedWeight, setSelectedWeight] = useState<string | undefined>(undefined);
-  const [blobFileMap, setBlobFileMap] = useState<Record<string, File>>({});
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const machineryOptions = ['Pecho', 'Espalda', 'Pierna', 'Brazo', 'Hombro', 'Abdomen', 'Cardio'];
-  const accessoryOptions = ['Peso Libre', 'Funcional', 'Barras', 'Discos', 'Mancuernas', 'Bancos', 'Agarres', 'Soportes', 'General'];
+  // High-End Zoom Logic
+  const [zoomStyle, setZoomStyle] = useState<React.CSSProperties>({ display: 'none' });
+  const [isZooming, setIsZooming] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
 
-  // Check if current product configuration is in cart
-  const isProductInCart = useMemo(() => {
-    if (!product || !cartItems) return false;
+  // State for editing
+  const [formData, setFormData] = useState<EquipmentItem | null>(null);
+  const [newImagesMap, setNewImagesMap] = useState<Record<string, File>>({});
+  const [newFeature, setNewFeature] = useState('');
+  const [newSpecKey, setNewSpecKey] = useState('');
+  const [newSpecValue, setNewSpecValue] = useState('');
 
-    return cartItems.some(item => {
-      if (item.equipment.id !== product.id) return false;
-
-      // If made-to-order, any item with same ID counts as "in cart"
-      if (product.availabilityStatus === 'made-to-order') return true;
-
-      // For in-stock items, we must match the specific configuration (color/weight)
-      const sameColor = item.selectedColor === selectedColor;
-      const sameWeight = item.selectedWeight === selectedWeight;
-      return sameColor && sameWeight;
-    });
-  }, [product, cartItems, selectedColor, selectedWeight]);
+  // Bloquear scroll de fondo
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => { document.body.style.overflow = 'unset'; };
+  }, [isOpen]);
 
   useEffect(() => {
     if (product) {
-      setFormData(product);
-      setSpecs(Object.entries(product.specifications).map(([key, value]) => ({ key, value })));
-      // Only set default color if it's In Stock. For production, we want them to configure it in Cart unless forced.
-      if (product.availabilityStatus === 'in-stock' && product.availableColors && product.availableColors.length > 0) {
-        setSelectedColor(product.availableColors[0]);
-      } else {
-        setSelectedColor(undefined);
-      }
-
-      if (product.availableWeights && product.availableWeights.length > 0) {
-        setSelectedWeight(product.availableWeights[0]);
-      } else {
-        setSelectedWeight(undefined);
-      }
+      setCurrentImageIndex(0);
+      setFormData({ ...product });
+      setNewImagesMap({});
+      if (product.availableColors?.length) setSelectedColor(product.availableColors[0]);
+      if (product.availableWeights?.length) setSelectedWeight(product.availableWeights[0]);
     }
-  }, [product, isOpen]);
+  }, [product, isEditing]);
 
-  useEffect(() => {
-    if (isOpen) setCurrentImageIndex(0);
-  }, [product, isOpen]);
 
-  const nextImage = () => setCurrentImageIndex(prev => (prev + 1) % (formData?.imageUrls.length || 1));
-  const prevImage = () => setCurrentImageIndex(prev => (prev - 1 + (formData?.imageUrls.length || 1)) % (formData?.imageUrls.length || 1));
-  const goToImage = (index: number) => setCurrentImageIndex(index);
+  const isProductInCart = useMemo(() => {
+    if (!product || !cartItems) return false;
+    return cartItems.some(item => item.equipment.id === product.id);
+  }, [product, cartItems]);
 
-  const formatCurrency = (value: number) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(value);
+  const relatedProducts = useMemo(() => {
+    if (!product || !allProducts) return [];
+    return allProducts
+      .filter(p => p.category === product.category && p.id !== product.id)
+      .slice(0, 4);
+  }, [product, allProducts]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.currentTarget as HTMLInputElement;
-    if (!formData) return;
+  if (!product || (isEditing && !formData)) return null;
 
-    if (type === 'checkbox') {
-      const checked = (e.currentTarget as HTMLInputElement).checked;
-      setFormData({ ...formData, [name]: checked });
-      return;
-    }
+  const formatCurrency = (val: number) =>
+    new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(val);
 
-    if (name === 'price' || name === 'promotionalPrice') {
-      setFormData({ ...formData, [name]: Number(value) });
-    } else if (name === 'category') {
-      setFormData({ ...formData, category: value as 'Maquinaria' | 'Accesorios', muscleGroup: undefined });
-    } else if (name === 'availabilityStatus') {
-      setFormData({ ...formData, availabilityStatus: value as 'in-stock' | 'made-to-order' });
-    } else {
-      setFormData({ ...formData, [name]: value });
-    }
-  };
-
-  const handleFeatureChange = (index: number, value: string) => {
-    if (!formData) return;
-    const newFeatures = [...formData.features];
-    newFeatures[index] = value;
-    setFormData({ ...formData, features: newFeatures });
-  };
-
-  const handleAddFeature = () => {
-    if (!formData) return;
-    setFormData({ ...formData, features: [...formData.features, ''] });
-  };
-
-  const handleRemoveFeature = (index: number) => {
-    if (!formData) return;
-    setFormData({ ...formData, features: formData.features.filter((_, i) => i !== index) });
-  };
-
-  const handleSpecChange = (index: number, field: 'key' | 'value', value: string) => {
-    const newSpecs = [...specs];
-    newSpecs[index][field] = value;
-    setSpecs(newSpecs);
-  };
-
-  const handleAddSpec = () => {
-    setSpecs([...specs, { key: '', value: '' }]);
-  };
-
-  const handleRemoveSpec = (index: number) => {
-    setSpecs(specs.filter((_, i) => i !== index));
-  };
-
-  // Color Management for Admin
-  const handleColorChange = (index: number, value: string) => {
-    if (!formData) return;
-    const newColors = [...(formData.availableColors || [])];
-    newColors[index] = value;
-    setFormData({ ...formData, availableColors: newColors });
-  };
-
-  const handleAddColor = () => {
-    if (!formData) return;
-    setFormData({ ...formData, availableColors: [...(formData.availableColors || []), ''] });
-  };
-
-  const handleRemoveColor = (index: number) => {
-    if (!formData) return;
-    setFormData({
-      ...formData,
-      availableColors: (formData.availableColors || []).filter((_, i) => i !== index)
-    });
-  };
-
-  // Weight Management for Admin
-  const handleWeightChange = (index: number, value: string) => {
-    if (!formData) return;
-    const newWeights = [...(formData.availableWeights || [])];
-    newWeights[index] = value;
-    setFormData({ ...formData, availableWeights: newWeights });
-  };
-
-  const handleAddWeight = () => {
-    if (!formData) return;
-    setFormData({ ...formData, availableWeights: [...(formData.availableWeights || []), ''] });
-  };
-
-  const handleRemoveWeight = (index: number) => {
-    if (!formData) return;
-    setFormData({
-      ...formData,
-      availableWeights: (formData.availableWeights || []).filter((_, i) => i !== index)
-    });
-  };
-
-  const handleAddImages = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (!formData || !event.target.files) return;
-
-    const files = Array.from(event.target.files);
-    if (files.length === 0) return;
-
-    const newImageUrls = files.map(file => URL.createObjectURL(file as Blob));
-
-    const newMap = { ...blobFileMap };
-    newImageUrls.forEach((url, index) => {
-      newMap[url] = files[index];
-    });
-    setBlobFileMap(newMap);
-
-    setFormData({
-      ...formData,
-      imageUrls: [...formData.imageUrls, ...newImageUrls],
-    });
-
-    if (event.target) event.target.value = '';
-  };
-
-  const handleRemoveImage = (index: number) => {
-    if (!formData) return;
-    setFormData({ ...formData, imageUrls: formData.imageUrls.filter((_, i) => i !== index) });
-  };
-
-  const handleSave = async () => {
-    if (formData) {
-      const specsObject = specs.reduce((obj, item) => {
-        if (item.key) { // Only add if key is not empty
-          obj[item.key] = item.value;
-        }
-        return obj;
-      }, {} as { [key: string]: string });
-
-      // Clean empty values
-      const cleanedColors = (formData.availableColors || []).filter(c => c.trim() !== '');
-      const cleanedWeights = (formData.availableWeights || []).filter(w => w.trim() !== '');
-
-      // Validation for promo price
-      if (formData.isPromotion && formData.promotionalPrice) {
-        if (formData.promotionalPrice >= formData.price) {
-          alert("El precio promocional debería ser menor al precio regular.");
-          // We allow saving anyway, just a warning
-        }
-      }
-
-      onSave({ ...formData, specifications: specsObject, availableColors: cleanedColors, availableWeights: cleanedWeights }, blobFileMap);
-    }
-  };
-
-  if (!product || !formData) return null;
-  const activeImageUrl = formData.imageUrls[currentImageIndex];
-
-  // Determine price to show in VIEW mode
   const hasDiscount = product.isPromotion && product.promotionalPrice && product.promotionalPrice < product.price;
-  const currentPrice = hasDiscount ? product.promotionalPrice! : product.price;
 
-  // Logic to show/require color selection
-  const showColorSelection = product.availabilityStatus === 'in-stock' && product.availableColors && product.availableColors.length > 0;
-  const showWeightSelection = product.availableWeights && product.availableWeights.length > 0;
+  // Zoom Handler
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!imgRef.current) return;
+    const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
+    const x = ((e.pageX - left) / width) * 100;
+    const y = ((e.pageY - top - window.scrollY) / height) * 100;
 
-  // Logic to show Weight Configuration in Edit Mode
-  const showWeightConfig = formData.category === 'Accesorios' && ['Peso Libre', 'Discos', 'Mancuernas', 'Funcional', 'Barras'].includes(formData.muscleGroup || '');
+    setZoomStyle({
+      display: 'block',
+      backgroundPosition: `${x}% ${y}%`,
+      backgroundImage: `url(${product.imageUrls[currentImageIndex]})`,
+      backgroundRepeat: 'no-repeat',
+      backgroundSize: '250%' // Zoom level
+    });
+  };
+
+  // Handlers for editing
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    if (!formData) return;
+    const { name, value, type } = e.target;
+    const val = type === 'number' ? Number(value) : value;
+    setFormData({ ...formData, [name]: val });
+  };
+
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!formData) return;
+    setFormData({ ...formData, [e.target.name]: e.target.checked });
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+    const file = e.target.files?.[0];
+    if (file && formData) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const tempUrl = reader.result as string;
+        const newUrls = [...formData.imageUrls];
+        const oldUrl = newUrls[index];
+        newUrls[index] = tempUrl;
+        setFormData({ ...formData, imageUrls: newUrls });
+        setNewImagesMap(prev => ({ ...prev, [tempUrl]: file }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const addImageField = () => { if (formData) setFormData({ ...formData, imageUrls: [...formData.imageUrls, ''] }); };
+  const removeImageField = (index: number) => { if (formData && formData.imageUrls.length > 1) setFormData({ ...formData, imageUrls: formData.imageUrls.filter((_, i) => i !== index) }); };
+  const addFeature = () => { if (newFeature.trim() && formData) { setFormData({ ...formData, features: [...formData.features, newFeature.trim()] }); setNewFeature(''); } };
+  const removeFeature = (index: number) => { if (formData) setFormData({ ...formData, features: formData.features.filter((_, i) => i !== index) }); };
+  const addSpec = () => { if (newSpecKey.trim() && newSpecValue.trim() && formData) { setFormData({ ...formData, specifications: { ...formData.specifications, [newSpecKey.trim()]: newSpecValue.trim() } }); setNewSpecKey(''); setNewSpecValue(''); } };
+  const removeSpec = (key: string) => { if (formData) { const newSpecs = { ...formData.specifications }; delete newSpecs[key]; setFormData({ ...formData, specifications: newSpecs }); } };
+  const handleSave = () => { if (formData) onSave(formData, newImagesMap); };
 
   return (
-    <div className={`fixed inset-0 z-[100] flex items-center justify-center transition-opacity duration-500 ease-out ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={onClose}>
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-md" />
-      <div className={`relative bg-white dark:bg-[#111] w-full h-full md:w-[95vw] md:h-[90vh] md:rounded-[2.5rem] flex flex-col md:flex-row transform transition-all duration-500 cubic-bezier(0.16, 1, 0.3, 1) shadow-2xl overflow-y-auto md:overflow-hidden ${isOpen ? 'scale-100 opacity-100 translate-y-0' : 'scale-95 opacity-0 translate-y-8'}`} onClick={(e) => e.stopPropagation()}>
-
-        {/* Close Button: Fixed on mobile (relative to viewport), Absolute on desktop (relative to modal) */}
-        <button onClick={onClose} className="fixed md:absolute top-4 right-4 md:top-6 md:right-6 text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors z-[60] bg-white/50 hover:bg-white dark:bg-black/50 dark:hover:bg-black/80 backdrop-blur-md rounded-full p-2 shadow-sm border border-neutral-200 dark:border-white/10">
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+    <div
+      className={`fixed inset-0 z-[250] bg-white dark:bg-[#070707] transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-y-auto no-scrollbar ${isOpen ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0 invisible'
+        }`}
+    >
+      {/* NAVEGACIÓN ELITE */}
+      <nav className="sticky top-0 z-[260] bg-white/80 dark:bg-black/80 backdrop-blur-2xl px-6 md:px-20 flex items-center justify-between h-[90px] border-b border-neutral-100 dark:border-white/5">
+        <button onClick={onClose} className="flex items-center gap-6 group">
+          <div className="w-12 h-12 rounded-2xl bg-primary-600 flex items-center justify-center text-white shadow-2xl group-hover:scale-110 transition-transform">
+            <ArrowLeft className="w-6 h-6 stroke-[3]" />
+          </div>
+          <div className="hidden sm:block text-left">
+            <span className="block text-[10px] font-black text-primary-600 dark:text-primary-400 uppercase tracking-widest italic leading-none mb-1">Catálogo Sagfo</span>
+            <span className="block text-sm font-black text-neutral-400 dark:text-neutral-300 uppercase tracking-tighter group-hover:text-neutral-900 dark:group-hover:text-white transition-colors">Volver a Explorar</span>
+          </div>
         </button>
 
-        {/* IMAGE SECTION */}
-        <div className="w-full md:w-[65%] flex-shrink-0 flex flex-col md:flex-row bg-white dark:bg-[#0a0a0a] relative h-[45vh] md:h-full">
-
-          {/* Vertical Thumbnails (Desktop) */}
-          {!isEditing && formData.imageUrls.length > 1 && (
-            <div className="hidden md:flex flex-col gap-3 p-4 w-16 lg:w-20 overflow-y-auto py-12 items-center z-10 no-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-              <style>{`.no-scrollbar::-webkit-scrollbar { display: none; }`}</style>
-              {formData.imageUrls.map((url, index) => (
-                <button
-                  key={index}
-                  onClick={() => goToImage(index)}
-                  className={`relative group w-12 h-12 lg:w-14 lg:h-14 rounded-xl overflow-hidden transition-all duration-300 ease-out flex-shrink-0 ${index === currentImageIndex
-                    ? 'ring-2 ring-neutral-900 dark:ring-white shadow-lg scale-100 opacity-100'
-                    : 'opacity-50 hover:opacity-100 hover:scale-105 grayscale hover:grayscale-0'
-                    }`}
-                >
-                  <img
-                    src={url}
-                    alt=""
-                    onError={(e) => {
-                      e.currentTarget.src = 'https://placehold.co/100x100?text=X';
-                      e.currentTarget.onerror = null;
-                    }}
-                    className="w-full h-full object-cover bg-white"
-                  />
-                </button>
-              ))}
-            </div>
+        <div className="flex items-center gap-4">
+          {isEditing && (
+            <button onClick={handleSave} className="relative group px-10 py-4 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-[1.5rem] font-black uppercase italic tracking-[0.2em] text-[10px] overflow-hidden transition-all duration-500 hover:scale-105 active:scale-95 shadow-3xl">
+              <span className="relative z-10">Sincronizar Producto</span>
+              <div className="absolute inset-0 bg-primary-600 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
+            </button>
           )}
-
-          {/* Main Image Stage */}
-          <div
-            className={`relative flex-grow h-full bg-white dark:bg-[#0a0a0a] flex items-center justify-center p-6 md:p-12 overflow-auto ${!isEditing ? 'cursor-zoom-in' : ''}`}
-            onMouseMove={(e) => {
-              if (isEditing) return;
-              const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
-              const x = ((e.clientX - left) / width) * 100;
-              const y = ((e.clientY - top) / height) * 100;
-              e.currentTarget.style.setProperty('--zoom-origin-x', `${x}%`);
-              e.currentTarget.style.setProperty('--zoom-origin-y', `${y}%`);
-            }}
+          <button
+            onClick={onClose}
+            className="w-14 h-14 flex items-center justify-center rounded-[1.5rem] bg-neutral-100 dark:bg-white/5 text-neutral-500 hover:bg-red-500 hover:text-white hover:rotate-90 transition-all duration-500 border border-neutral-200 dark:border-white/5"
           >
-            {activeImageUrl ? (
-              <img
-                src={activeImageUrl}
-                alt={formData.name}
-                onError={(e) => {
-                  e.currentTarget.src = 'https://placehold.co/600x400?text=Imagen+No+Disponible';
-                  e.currentTarget.onerror = null;
-                }}
-                style={{
-                  transformOrigin: 'var(--zoom-origin-x, 50%) var(--zoom-origin-y, 50%)',
-                  maxHeight: '100%',
-                  maxWidth: '100%',
-                  objectFit: 'contain'
-                }}
-                className={`drop-shadow-2xl transition-transform duration-200 ease-out ${isEditing ? 'opacity-50' : 'opacity-100 hover:scale-100'} ${!isEditing ? 'hover:scale-[2]' : ''}`}
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-neutral-400 border-2 border-dashed border-neutral-200 dark:border-neutral-800 rounded-3xl">Añade una imagen</div>
-            )}
+            <X size={28} strokeWidth={3} />
+          </button>
+        </div>
 
-            {/* Mobile Navigation Arrows */}
-            {!isEditing && formData.imageUrls.length > 1 && (
-              <>
-                <button onClick={(e) => { e.stopPropagation(); prevImage(); }} className="md:hidden absolute left-4 top-1/2 -translate-y-1/2 z-20 p-3 bg-white/90 dark:bg-black/60 text-neutral-900 dark:text-white rounded-full shadow-lg backdrop-blur-md border border-neutral-100 dark:border-white/10 active:scale-90 transition-transform">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-                </button>
-                <button onClick={(e) => { e.stopPropagation(); nextImage(); }} className="md:hidden absolute right-4 top-1/2 -translate-y-1/2 z-20 p-3 bg-white/90 dark:bg-black/60 text-neutral-900 dark:text-white rounded-full shadow-lg backdrop-blur-md border border-neutral-100 dark:border-white/10 active:scale-90 transition-transform">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-                </button>
-              </>
-            )}
+      </nav>
 
-            {/* Mobile Dots Indicator */}
-            {!isEditing && formData.imageUrls.length > 1 && (
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 md:hidden">
-                {formData.imageUrls.map((_, idx) => (
-                  <div key={idx} className={`h-1.5 rounded-full transition-all duration-300 ${idx === currentImageIndex ? 'w-6 bg-neutral-900 dark:bg-white' : 'w-1.5 bg-neutral-300 dark:bg-neutral-700'}`} />
+      {/* CONTENIDO DE DISEÑO INTERNACIONAL */}
+      <div className="max-w-[1700px] mx-auto px-6 md:px-20 py-8 lg:py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-start">
+
+          {/* LADO IZQUIERDO: VISUALIZADOR CON ZOOM PROFESIONAL (Col 7) */}
+          <div className="lg:col-span-7 flex flex-col md:flex-row gap-10 lg:sticky lg:top-[140px]">
+
+            {!isEditing && product.imageUrls.length > 1 && (
+              <div className="hidden md:flex flex-col gap-6 w-28 flex-shrink-0">
+                {product.imageUrls.map((url, i) => (
+                  <button key={i} onClick={() => setCurrentImageIndex(i)} className={`aspect-square rounded-3xl overflow-hidden border-2 transition-all duration-700 bg-neutral-50 dark:bg-white/5 ${currentImageIndex === i ? 'border-primary-600 shadow-2xl scale-110 p-2' : 'border-transparent opacity-40 grayscale hover:grayscale-0 hover:opacity-100 grayscale hover:scale-105'}`}>
+                    <img src={url} className="w-full h-full object-contain" alt="mini" />
+                  </button>
                 ))}
               </div>
             )}
+
+            <div className="flex-grow space-y-8">
+              {!isEditing ? (
+                <div
+                  className="relative aspect-square lg:aspect-[6/7] flex items-center justify-center bg-[#fafafa] dark:bg-white/[0.02] rounded-[4rem] border border-neutral-100 dark:border-white/5 cursor-crosshair overflow-hidden group"
+                  onMouseMove={handleMouseMove}
+                  onMouseEnter={() => setIsZooming(true)}
+                  onMouseLeave={() => setIsZooming(false)}
+                >
+                  <img
+                    ref={imgRef}
+                    src={product.imageUrls[currentImageIndex]}
+                    className={`w-full h-full object-contain p-6 transition-all duration-[1.5s] ease-out ${isZooming ? 'opacity-0 scale-110' : 'opacity-100 scale-100'}`}
+                    alt={product.name}
+                  />
+
+                  {/* Luxury Zoom Layer */}
+                  <div
+                    className="absolute inset-0 pointer-events-none transition-opacity duration-500 rounded-[3rem] z-20"
+                    style={{ ...zoomStyle, opacity: isZooming ? 1 : 0 }}
+                  />
+
+                  {/* Zoom Hint */}
+                  <div className="absolute bottom-10 right-10 w-12 h-12 rounded-full bg-white/50 backdrop-blur-xl border border-white/20 flex items-center justify-center text-neutral-900 opacity-20 group-hover:opacity-100 transition-opacity">
+                    <ZoomIn className="w-6 h-6" />
+                  </div>
+                </div>
+              ) : (
+                /* EDIT MODE IMAGES */
+                <div className="grid grid-cols-2 gap-6 pb-20">
+                  {formData?.imageUrls.map((url, index) => (
+                    <div key={index} className="relative aspect-square rounded-[3rem] bg-neutral-50 dark:bg-white/5 p-6 border-2 border-dashed border-neutral-200 dark:border-white/10 flex items-center justify-center group">
+                      {url ? (
+                        <>
+                          <img src={url} className="w-full h-full object-contain" alt="" />
+                          <button onClick={() => removeImageField(index)} className="absolute top-4 right-4 w-10 h-10 rounded-full bg-red-500 text-white flex items-center justify-center shadow-2xl hover:scale-110 transition-all"><Trash2 className="w-5 h-5" /></button>
+                        </>
+                      ) : (
+                        <div className="flex flex-col items-center gap-2 text-neutral-400 font-black uppercase text-[10px] tracking-widest"><Camera className="w-10 h-10 mb-2" /> Subir Imagen</div>
+                      )}
+                      <input type="file" onChange={(e) => handleImageUpload(e, index)} className="absolute inset-0 opacity-0 cursor-pointer" accept="image/*" />
+                    </div>
+                  ))}
+                  <button onClick={addImageField} className="aspect-square rounded-[3rem] border-2 border-dashed border-primary-600/30 flex items-center justify-center text-primary-600 hover:bg-primary-600/5 transition-all"><Plus className="w-12 h-12" /></button>
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Edit Mode: Add Image Overlay Button */}
-          {isEditing && (
-            <div className="absolute top-4 left-4 z-20">
-              <input
-                type="file"
-                multiple
-                accept="image/*"
-                ref={fileInputRef}
-                onChange={handleAddImages}
-                className="hidden"
-              />
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="flex items-center space-x-2 bg-neutral-900 text-white px-4 py-2 rounded-lg shadow-lg hover:bg-black transition-colors"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-                <span>Añadir Fotos</span>
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* DETAILS SECTION */}
-        <div className="w-full md:w-[35%] flex flex-col md:h-full bg-white dark:bg-[#111] border-l border-neutral-100 dark:border-white/5 relative">
-          {isEditing ? (
-            <div className="p-6 md:p-12 md:flex-grow md:overflow-y-auto">
-              <div className="border-b border-neutral-200 dark:border-neutral-800 pb-6 mb-8">
-                <h2 className="text-3xl font-black text-neutral-900 dark:text-white tracking-tight">{product.id ? 'Editar Producto' : 'Nuevo Producto'}</h2>
-                <p className="text-sm text-neutral-500 mt-1">Configura los detalles del catálogo.</p>
-              </div>
-
-              <div className="space-y-6 pb-20">
-                <div>
-                  <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Información Básica</label>
-                  <div className="space-y-4">
-                    <input type="text" name="name" value={formData.name} onChange={handleChange} placeholder="Nombre del producto" className="w-full p-3 bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-800 rounded-xl text-lg font-semibold outline-none focus:ring-2 focus:ring-primary-500 text-neutral-900 dark:text-white transition-all" />
-                    <div className="grid grid-cols-2 gap-4">
-                      <select name="category" value={formData.category} onChange={handleChange} className="w-full p-3 bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-800 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 text-neutral-900 dark:text-white">
-                        <option value="Maquinaria">Maquinaria</option>
-                        <option value="Accesorios">Accesorios</option>
-                      </select>
-                      <select name="muscleGroup" value={formData.muscleGroup || ''} onChange={handleChange} className="w-full p-3 bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-800 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 text-neutral-900 dark:text-white">
-                        <option value="">{formData.category === 'Maquinaria' ? 'Grupo Muscular...' : 'Tipo de Accesorio...'}</option>
-                        {formData.category === 'Maquinaria' ? (
-                          machineryOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)
-                        ) : (
-                          accessoryOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)
-                        )}
-                      </select>
-                    </div>
+          {/* LADO DERECHO: ARQUITECTURA DE INFORMACIÓN (Col 5) */}
+          <div className="lg:col-span-5 space-y-12">
+            {!isEditing ? (
+              <div className="space-y-10">
+                <div className="space-y-6">
+                  <div className="flex items-center gap-4">
+                    <span className="px-4 py-1.5 bg-primary-600 text-white text-[9px] font-black uppercase tracking-[0.3em] italic rounded-lg">Alto Rendimiento</span>
+                    <span className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest">Modelo Serie-S 2024</span>
                   </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Precio y Estado</label>
-                  <div className="grid grid-cols-2 gap-4 mb-4">
-                    <input type="number" name="price" value={formData.price || ''} onChange={handleChange} placeholder="Precio" className="w-full p-3 bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-800 rounded-xl font-mono outline-none focus:ring-2 focus:ring-primary-500 text-neutral-900 dark:text-white" />
-                    <select name="availabilityStatus" value={formData.availabilityStatus || 'made-to-order'} onChange={handleChange} className="w-full p-3 bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-800 rounded-xl outline-none focus:ring-2 focus:ring-primary-500 text-neutral-900 dark:text-white">
-                      <option value="in-stock">En Stock</option>
-                      <option value="made-to-order">Bajo Pedido</option>
-                    </select>
-                  </div>
-                  <div className="flex items-center space-x-3 p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl border border-neutral-200 dark:border-neutral-800">
-                    <input id="isPromotion" type="checkbox" name="isPromotion" checked={formData.isPromotion || false} onChange={handleChange} className="w-5 h-5 text-primary-600 rounded focus:ring-primary-500" />
-                    <label htmlFor="isPromotion" className="flex-grow text-sm font-medium text-neutral-700 dark:text-neutral-300">Activar Oferta</label>
-                    {formData.isPromotion && (
-                      <input type="number" name="promotionalPrice" value={formData.promotionalPrice || ''} onChange={handleChange} placeholder="Precio Oferta" className="w-32 p-2 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg text-sm text-red-500 font-bold outline-none" />
-                    )}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Descripción</label>
-                  <textarea name="description" value={formData.description} onChange={handleChange} rows={4} className="w-full p-3 bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-800 rounded-xl text-sm leading-relaxed outline-none focus:ring-2 focus:ring-primary-500 text-neutral-900 dark:text-white" placeholder="Describe el producto..." />
-                </div>
-
-                {/* Weight Configuration - Conditionally Rendered */}
-                {showWeightConfig && (
-                  <div className="animate-fade-in">
-                    <div className="flex justify-between items-center mb-2">
-                      <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Pesos Disponibles</label>
-                      <button type="button" onClick={handleAddWeight} className="text-xs font-bold text-primary-600 hover:text-primary-700">+ Añadir Peso</button>
-                    </div>
-                    <div className="space-y-2">
-                      {(formData.availableWeights || []).map((weight, index) => (
-                        <div key={index} className="flex gap-2">
-                          <input type="text" value={weight} onChange={(e) => handleWeightChange(index, e.target.value)} placeholder="Ej: 10KG" className="flex-grow p-2 bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-800 rounded-lg text-sm text-neutral-900 dark:text-white outline-none focus:ring-1 focus:ring-primary-500" />
-                          <button type="button" onClick={() => handleRemoveWeight(index)} className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 p-2 rounded-lg"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Color Configuration */}
-                <div>
-                  <div className="flex justify-between items-center mb-2">
-                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Colores Disponibles</label>
-                    <button type="button" onClick={handleAddColor} className="text-xs font-bold text-primary-600 hover:text-primary-700">+ Añadir Color</button>
-                  </div>
-                  <div className="space-y-2">
-                    {(formData.availableColors || []).map((color, index) => (
-                      <div key={index} className="flex gap-2">
-                        <input type="text" value={color} onChange={(e) => handleColorChange(index, e.target.value)} placeholder="Ej: Rojo" className="flex-grow p-2 bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-800 rounded-lg text-sm text-neutral-900 dark:text-white outline-none focus:ring-1 focus:ring-primary-500" />
-                        <button type="button" onClick={() => handleRemoveColor(index)} className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 p-2 rounded-lg"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex justify-between items-center mb-2">
-                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Características</label>
-                    <button type="button" onClick={handleAddFeature} className="text-xs font-bold text-primary-600 hover:text-primary-700">+ Añadir</button>
-                  </div>
-                  <div className="space-y-2">
-                    {formData.features.map((feature, index) => (
-                      <div key={index} className="flex gap-2">
-                        <input type="text" value={feature} onChange={(e) => handleFeatureChange(index, e.target.value)} className="flex-grow p-2 bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-800 rounded-lg text-sm text-neutral-900 dark:text-white outline-none focus:ring-1 focus:ring-primary-500" />
-                        <button type="button" onClick={() => handleRemoveFeature(index)} className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 p-2 rounded-lg"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex justify-between items-center mb-2">
-                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Especificaciones</label>
-                    <button type="button" onClick={handleAddSpec} className="text-xs font-bold text-primary-600 hover:text-primary-700">+ Añadir</button>
-                  </div>
-                  <div className="space-y-2">
-                    {specs.map((spec, index) => (
-                      <div key={index} className="grid grid-cols-2 gap-2 relative">
-                        <input type="text" value={spec.key} onChange={(e) => handleSpecChange(index, 'key', e.target.value)} placeholder="Atributo" className="p-2 bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-800 rounded-lg text-sm text-neutral-900 dark:text-white outline-none focus:ring-1 focus:ring-primary-500" />
-                        <div className="flex gap-2">
-                          <input type="text" value={spec.value} onChange={(e) => handleSpecChange(index, 'value', e.target.value)} placeholder="Valor" className="flex-grow p-2 bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-800 rounded-lg text-sm text-neutral-900 dark:text-white outline-none focus:ring-1 focus:ring-primary-500" />
-                          <button type="button" onClick={() => handleRemoveSpec(index)} className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 p-2 rounded-lg"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Image Management in Edit Mode */}
-                <div>
-                  <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Gestionar Imágenes</label>
-                  <div className="grid grid-cols-4 gap-2">
-                    {formData.imageUrls.map((url, idx) => (
-                      <div key={idx} className="relative group aspect-square rounded-lg overflow-hidden">
-                        <img src={url} className="w-full h-full object-cover" />
-                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                          <button type="button" onClick={() => handleRemoveImage(idx)} className="text-white hover:text-red-400"><svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="p-4 md:pt-6 md:mt-8 bg-white dark:bg-[#111] z-20 border-t border-neutral-100 dark:border-white/5 pb-8 md:pb-6 md:sticky md:bottom-0">
-                  <button onClick={handleSave} className="w-full py-4 bg-neutral-900 dark:bg-white text-white dark:text-black font-bold rounded-xl hover:opacity-90 transition-opacity shadow-lg">
-                    Guardar Cambios
-                  </button>
-                </div>
-              </div>
-            </div>
-          ) : (
-            // VIEW MODE
-            <div className="flex flex-col md:h-full">
-              <div className="p-6 md:p-12 md:flex-grow md:overflow-y-auto pb-32 md:pb-12">
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="text-xs font-bold tracking-widest uppercase text-neutral-500 dark:text-neutral-400">{product.category}</span>
-                  {product.muscleGroup && (
-                    <>
-                      <span className="w-1 h-1 rounded-full bg-neutral-300 dark:bg-neutral-700"></span>
-                      <span className="text-xs font-bold tracking-widest uppercase text-primary-600 dark:text-primary-400">{product.muscleGroup}</span>
-                    </>
-                  )}
-                </div>
-
-                <h2 className="text-4xl md:text-5xl font-black text-neutral-900 dark:text-white tracking-tight leading-tight mb-6">
-                  {product.name}
-                </h2>
-
-                <div className="flex items-baseline gap-4 mb-8 border-b border-neutral-100 dark:border-white/10 pb-8">
-                  {hasDiscount ? (
-                    <>
-                      <span className="text-4xl font-bold text-neutral-900 dark:text-white">{formatCurrency(currentPrice)}</span>
-                      <span className="text-xl text-neutral-400 line-through decoration-red-500 decoration-2">{formatCurrency(product.price)}</span>
-                      <span className="px-3 py-1 bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 text-xs font-bold rounded-full uppercase tracking-wide">Oferta</span>
-                    </>
-                  ) : (
-                    <span className="text-4xl font-bold text-neutral-900 dark:text-white">{formatCurrency(product.price)}</span>
-                  )}
-                </div>
-
-                <div className="prose prose-neutral dark:prose-invert max-w-none mb-10">
-                  <p className="text-lg text-neutral-600 dark:text-neutral-300 leading-relaxed font-normal">
+                  <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter leading-[0.85] animate-in fade-in slide-in-from-right-10 duration-1000">
+                    {product.name}
+                  </h1>
+                  <p className="text-lg text-neutral-500 dark:text-neutral-400 font-medium italic leading-relaxed max-w-lg">
                     {product.description}
                   </p>
                 </div>
 
-                {/* Stock Status & Colors/Weights */}
-                {product.availabilityStatus === 'in-stock' ? (
-                  <div className="mb-8">
-                    <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold text-sm mb-4">
-                      <span className="relative flex h-3 w-3">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
-                      </span>
-                      Disponible para entrega inmediata
-                    </div>
-
-                    {showWeightSelection && (
-                      <div className="mb-6">
-                        <span className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 block">Peso</span>
-                        <div className="flex flex-wrap gap-2">
-                          {product.availableWeights?.map((weight) => (
-                            <button
-                              key={weight}
-                              onClick={() => setSelectedWeight(weight)}
-                              className={`px-4 py-2 border rounded-md text-sm font-semibold transition-all ${selectedWeight === weight
-                                ? 'border-neutral-900 bg-neutral-900 text-white dark:bg-white dark:text-black dark:border-white'
-                                : 'border-neutral-200 bg-white text-neutral-700 hover:border-neutral-400 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-300'
-                                }`}
-                            >
-                              {weight}
-                            </button>
-                          ))}
-                        </div>
+                <div className="border-y border-neutral-100 dark:border-white/10 py-10 space-y-10">
+                  <div className="flex flex-col md:flex-row md:items-end justify-between gap-10">
+                    <div className="space-y-2">
+                      <span className="text-[11px] font-black text-neutral-400 uppercase tracking-widest italic opacity-50">Inversión Final Sugerida</span>
+                      <div className="flex items-baseline gap-5">
+                        <span className="text-6xl font-black italic tracking-tighter text-neutral-900 dark:text-white leading-none tracking-[-0.05em]">
+                          {formatCurrency(hasDiscount ? product.promotionalPrice! : product.price)}
+                        </span>
+                        {hasDiscount && <span className="text-2xl font-bold text-neutral-400 line-through italic opacity-40">{formatCurrency(product.price)}</span>}
                       </div>
-                    )}
-
-                    {showColorSelection && (
-                      <div className="space-y-3">
-                        <span className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Seleccionar Color</span>
-                        <div className="flex flex-wrap gap-2">
-                          {product.availableColors?.map((color) => (
-                            <button
-                              key={color}
-                              onClick={() => setSelectedColor(color)}
-                              className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 border ${selectedColor === color
-                                ? 'bg-neutral-900 text-white border-neutral-900 dark:bg-white dark:text-black dark:border-white shadow-md'
-                                : 'bg-white text-neutral-700 border-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:border-neutral-700 hover:border-neutral-400'
-                                }`}
-                            >
-                              {color}
-                            </button>
-                          ))}
-                        </div>
+                    </div>
+                    {product.availabilityStatus === 'in-stock' ? (
+                      <div className="px-5 py-2.5 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-full flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                        <span className="text-[10px] font-black uppercase italic tracking-widest">Despacho Inmediato</span>
+                      </div>
+                    ) : (
+                      <div className="px-5 py-2.5 bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-full flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                        <span className="text-[10px] font-black uppercase italic tracking-widest">Producción Bajo Pedido</span>
                       </div>
                     )}
                   </div>
-                ) : (
-                  <div className="mb-8 p-4 bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30 rounded-2xl flex items-start gap-3">
-                    <svg className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                    <div>
-                      <p className="text-sm font-bold text-amber-800 dark:text-amber-500">Fabricación bajo pedido</p>
-                      <p className="text-sm text-amber-700/80 dark:text-amber-500/80 mt-1 leading-snug">
-                        Este equipo se fabrica exclusivamente para ti. Podrás personalizar los colores de estructura y tapicería en el carrito.
-                      </p>
-                    </div>
-                  </div>
-                )}
 
-                <div className="space-y-8 pb-8">
-                  {product.features.length > 0 && (
-                    <div>
-                      <h3 className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-4">Características Destacadas</h3>
-                      <ul className="space-y-3">
-                        {product.features.map((feature, i) => (
-                          <li key={i} className="flex items-start text-sm text-neutral-700 dark:text-neutral-300">
-                            <svg className="w-5 h-5 text-primary-500 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                            <span className="leading-snug">{feature}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-
-                  {Object.keys(product.specifications).length > 0 && (
-                    <div className="pt-8 border-t border-neutral-100 dark:border-white/10">
-                      <h3 className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-4">Especificaciones Técnicas</h3>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8">
-                        {Object.entries(product.specifications).map(([key, value]) => (
-                          <div key={key}>
-                            <p className="text-xs text-neutral-400 mb-1">{key}</p>
-                            <p className="text-sm font-medium text-neutral-800 dark:text-white">{value}</p>
-                          </div>
+                  {product.availableColors && product.availableColors.length > 0 && (
+                    <div className="space-y-6">
+                      <label className="text-[11px] font-black uppercase text-neutral-400 tracking-widest italic flex items-center gap-3"><div className="w-8 h-[1px] bg-neutral-300" /> Personalizar Estructura</label>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                        {product.availableColors.map(c => (
+                          <button key={c} onClick={() => setSelectedColor(c)} className={`py-5 rounded-3xl text-[10px] font-black uppercase transition-all border-2 ${selectedColor === c ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 border-neutral-900 dark:border-white scale-105 shadow-2xl italic skew-x-[-12deg]' : 'bg-white dark:bg-zinc-900 text-neutral-500 border-neutral-100 dark:border-white/5 hover:border-primary-500/30'}`}>{c}</button>
                         ))}
                       </div>
                     </div>
                   )}
+
+                  <div className="pt-6">
+                    <button
+                      onClick={() => onAddToCart(product, selectedColor, selectedWeight)}
+                      className={`w-full py-8 rounded-[2.5rem] font-black text-2xl uppercase italic tracking-[0.5em] transition-all duration-700 shadow-4xl active:scale-95 group/btn overflow-hidden relative border border-transparent ${isProductInCart ? 'bg-emerald-500 text-white border-emerald-400' : 'bg-neutral-950 dark:bg-white text-white dark:text-neutral-900'}`}
+                    >
+                      <div className="relative z-10 flex items-center justify-center gap-4">
+                        {isProductInCart ? <Check size={28} strokeWidth={4} /> : null}
+                        <span>{isProductInCart ? 'EN EL CARRITO' : 'AÑADIR AL CARRITO'}</span>
+                      </div>
+
+                      {!isProductInCart && (
+                        <>
+                          {/* Shine Effect */}
+                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000" />
+                          <div className="absolute inset-0 bg-primary-600 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-700" />
+                        </>
+                      )}
+                    </button>
+                    <p className="text-center mt-6 text-[10px] font-black text-neutral-400 uppercase tracking-[0.3em] opacity-40">Asesoría personalizada incluida mediante consultoría técnica</p>
+                  </div>
+
+                </div>
+
+                {/* Características Destacadas */}
+                <div className="grid grid-cols-2 gap-8">
+                  <div className="space-y-3">
+                    <div className="w-12 h-12 rounded-2xl bg-neutral-100 dark:bg-white/5 flex items-center justify-center text-primary-600"><Plus className="w-6 h-6" /></div>
+                    <h4 className="font-black uppercase italic text-xs tracking-widest text-neutral-900 dark:text-white">Garantía Extendida</h4>
+                    <p className="text-[10px] font-medium text-neutral-400 italic">5 años en estructura y componentes mecánicos.</p>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="w-12 h-12 rounded-2xl bg-neutral-100 dark:bg-white/5 flex items-center justify-center text-primary-600"><Save className="w-6 h-6" /></div>
+                    <h4 className="font-black uppercase italic text-xs tracking-widest text-neutral-900 dark:text-white">Instalación Certificada</h4>
+                    <p className="text-[10px] font-medium text-neutral-400 italic">Técnicos expertos aseguran el correcto ensamblado.</p>
+                  </div>
                 </div>
               </div>
+            ) : (
+              /* EDIT MODE FORM */
+              <div className="bg-neutral-50 dark:bg-white/5 p-12 rounded-[4rem] border border-neutral-100 dark:border-white/5 shadow-inner">
+                <div className="space-y-8">
+                  <div className="space-y-3">
+                    <label className="text-[11px] font-black uppercase text-primary-600 tracking-widest italic px-4">Referencia / Título</label>
+                    <input name="name" value={formData?.name} onChange={handleInputChange} className="w-full bg-white dark:bg-zinc-900 p-6 rounded-[2rem] font-black uppercase italic tracking-tighter text-3xl border border-neutral-100 dark:border-white/10 text-neutral-950 dark:text-white focus:ring-4 focus:ring-primary-500/20 transition-all outline-none" />
+                  </div>
 
-              {/* Button Container: Static on mobile (at end of flow), Sticky on desktop */}
-              <div className="p-4 md:pt-6 md:mt-8 bg-white dark:bg-[#111] z-20 border-t border-neutral-100 dark:border-white/5 pb-8 md:pb-6 sticky bottom-0">
-                <button
-                  onClick={() => onAddToCart(product, selectedColor, selectedWeight)}
-                  disabled={isProductInCart}
-                  className={`w-full py-3 md:py-4 px-6 rounded-xl md:rounded-2xl font-bold text-lg shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-3 ${isProductInCart
-                    ? 'bg-green-500 text-white cursor-default hover:translate-y-0 hover:shadow-xl'
-                    : 'bg-neutral-900 dark:bg-white text-white dark:text-black hover:opacity-90'
-                    }`}
-                >
-                  {isProductInCart ? (
-                    <>
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7"></path></svg>
-                      <span>En el carrito</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>Añadir al Carrito</span>
-                      <span className="opacity-70 font-normal ml-1">• {formatCurrency(currentPrice)}</span>
-                    </>
-                  )}
-                </button>
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-3">
+                      <label className="text-[11px] font-black uppercase text-neutral-400 tracking-widest italic px-4">Segmento</label>
+                      <select name="category" value={formData?.category} onChange={handleInputChange} className="w-full bg-white dark:bg-zinc-900 p-5 rounded-2xl font-bold border border-neutral-100 dark:border-white/10 text-neutral-900 dark:text-white outline-none">
+                        <option value="Maquinaria" className="bg-white dark:bg-zinc-900">Maquinaria</option>
+                        <option value="Accesorios" className="bg-white dark:bg-zinc-900">Accesorios</option>
+                      </select>
+                    </div>
+                    <div className="space-y-3">
+                      <label className="text-[11px] font-black uppercase text-neutral-400 tracking-widest italic px-4">Grupo Muscular</label>
+                      <input name="muscleGroup" value={formData?.muscleGroup} onChange={handleInputChange} className="w-full bg-white dark:bg-zinc-900 p-5 rounded-2xl font-bold border border-neutral-100 dark:border-white/10 text-neutral-900 dark:text-white focus:ring-primary-500/20 outline-none" />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-3">
+                      <label className="text-[11px] font-black uppercase text-neutral-400 tracking-widest italic px-4">Inversión COP</label>
+                      <input type="number" name="price" value={formData?.price} onChange={handleInputChange} className="w-full bg-white dark:bg-zinc-900 p-5 rounded-2xl font-black border border-neutral-100 dark:border-white/10 text-neutral-900 dark:text-white focus:ring-primary-500/20 outline-none" />
+                    </div>
+                    <div className="space-y-3">
+                      <label className="text-[11px] font-black uppercase text-neutral-400 tracking-widest italic px-4">Promo COP</label>
+                      <input type="number" name="promotionalPrice" value={formData?.promotionalPrice || 0} onChange={handleInputChange} className="w-full bg-white dark:bg-zinc-900 p-5 rounded-2xl font-black border border-neutral-100 dark:border-white/10 text-neutral-900 dark:text-white focus:ring-primary-500/20 outline-none" />
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <label className="text-[11px] font-black uppercase text-neutral-400 tracking-widest italic px-4">Descripción Elite</label>
+                    <textarea name="description" value={formData?.description} onChange={handleInputChange} rows={5} className="w-full bg-white dark:bg-zinc-900 p-6 rounded-[2rem] font-medium text-neutral-600 dark:text-neutral-300 border border-neutral-100 dark:border-white/10 focus:ring-primary-500/20 outline-none" />
+                  </div>
+
+                  <div className="flex items-center gap-6 bg-primary-600/5 p-6 rounded-[2rem] border border-primary-600/10">
+                    <input type="checkbox" name="isPromotion" checked={formData?.isPromotion} onChange={handleCheckboxChange} className="w-8 h-8 accent-primary-600" id="promocheck" />
+                    <label htmlFor="promocheck" className="text-sm font-black uppercase italic text-primary-600 tracking-widest">Activar Sello de Promoción Internacional</label>
+                  </div>
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
+
+        {/* INGENIERÍA Y ESPECIFICACIONES (PANTALLA COMPLETA) */}
+        <div className="mt-20 pt-20 border-t border-neutral-100 dark:border-white/10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
+            <div className="lg:col-span-4 space-y-8">
+              <div className="space-y-4">
+                <div className="w-16 h-2 bg-primary-600 rounded-full" />
+                <h2 className="text-5xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter leading-none">Ficha de<br />Ingeniería</h2>
+              </div>
+              <p className="text-xl text-neutral-400 font-medium italic leading-relaxed">Detalles técnicos que avalan la superioridad mecánica de SAGFO.</p>
+
+              {isEditing && (
+                <div className="bg-neutral-50 dark:bg-white/5 p-10 rounded-[3rem] space-y-8 mt-12">
+                  <span className="text-[11px] font-black uppercase tracking-[0.3em] text-primary-600 italic">Nueva Especificación</span>
+                  <div className="space-y-4">
+                    <input placeholder="Parámetro (Material, Peso...)" value={newSpecKey} onChange={e => setNewSpecKey(e.target.value)} className="w-full bg-white dark:bg-zinc-900 p-5 rounded-2xl text-sm border border-neutral-100 dark:border-white/5 text-neutral-900 dark:text-white outline-none" />
+                    <input placeholder="Valor Técnico" value={newSpecValue} onChange={e => setNewSpecValue(e.target.value)} className="w-full bg-white dark:bg-zinc-900 p-5 rounded-2xl text-sm border border-neutral-100 dark:border-white/5 text-neutral-900 dark:text-white outline-none" />
+                    <button onClick={addSpec} className="w-full py-5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-2xl font-black uppercase text-[11px] tracking-widest shadow-xl">Integrar Dato</button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="lg:col-span-8 grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-1">
+              {Object.entries((isEditing ? formData?.specifications : product.specifications) || {}).map(([key, value]) => (
+                <div key={key} className="group relative py-8 border-b border-neutral-100 dark:border-white/5 hover:px-6 transition-all duration-700 rounded-2xl hover:bg-neutral-50 dark:hover:bg-white/[0.02]">
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-black text-primary-600 uppercase tracking-[0.3em] italic mb-1 block">{key}</span>
+                    <p className="text-3xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter group-hover:text-primary-600 transition-colors leading-none">{value}</p>
+                  </div>
+                  {isEditing && (
+                    <button onClick={() => removeSpec(key)} className="absolute right-8 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-red-500 text-white flex items-center justify-center shadow-2xl opacity-0 group-hover:opacity-100 translate-x-10 group-hover:translate-x-0 transition-all font-black text-[10px]">ELIMINAR</button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* RELACIONADOS (MÁS COMPACTO Y ELEGANTE) */}
+        {!isEditing && relatedProducts.length > 0 && (
+          <div className="mt-20 pt-20 border-t border-neutral-100 dark:border-white/10 pb-20">
+            <div className="flex flex-col items-center text-center mb-16 space-y-6">
+              <span className="text-[10px] font-black text-primary-600 uppercase tracking-[0.5em] italic">Catálogo Elite</span>
+              <h2 className="text-4xl md:text-6xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter leading-none">Explora Más</h2>
+              <div className="w-[1px] h-20 bg-gradient-to-b from-primary-600 to-transparent" />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+              {relatedProducts.map(rp => (
+                <div key={rp.id} onClick={() => onProductClick?.(rp)} className="group cursor-pointer space-y-6">
+                  <div className="aspect-[3/4] rounded-[3rem] overflow-hidden bg-[#fafafa] dark:bg-white/[0.02] border border-neutral-100 dark:border-white/5 p-10 relative flex items-center justify-center transition-all duration-1000 group-hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.15)] group-hover:-translate-y-4 group-hover:bg-white dark:group-hover:bg-black">
+                    <img src={rp.imageUrls[0]} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-1000" alt={rp.name} />
+                  </div>
+                  <div className="px-4 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-black text-primary-600 uppercase tracking-[0.2em] italic">{rp.category}</span>
+                      <div className="h-[1px] flex-grow bg-neutral-200 dark:bg-white/10" />
+                    </div>
+                    <h4 className="text-2xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter leading-[1] group-hover:text-primary-600 transition-colors duration-500">{rp.name}</h4>
+                    <p className="text-xl font-black text-neutral-900 dark:text-white italic opacity-80">{formatCurrency(rp.price)}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
+
+      <footer className="bg-neutral-950 py-16 text-center flex flex-col items-center gap-6">
+        <div className="w-12 h-[1px] bg-primary-600" />
+        <span className="text-white/20 text-[9px] font-black uppercase tracking-[1em] italic">SAGFO ELITE SERIES ® 2024</span>
+        <div className="flex gap-6 opacity-30">
+          <div className="w-1 h-1 rounded-full bg-white" />
+          <div className="w-1 h-1 rounded-full bg-white" />
+          <div className="w-1 h-1 rounded-full bg-white" />
+        </div>
+      </footer>
     </div>
   );
 };

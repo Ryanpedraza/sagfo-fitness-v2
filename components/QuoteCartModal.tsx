@@ -4,6 +4,7 @@ import { CartItem, PaymentMethod, BankAccount } from '../types';
 import { useAuth } from '../hooks/useAuth';
 import { colombianDepartments } from '../data/colombia';
 
+
 declare global {
     interface Window {
         L: any;
@@ -290,319 +291,221 @@ const QuoteCartModal: React.FC<QuoteCartModalProps> = ({ isOpen, onClose, cartIt
 
     return (
         <div
-            className={`fixed inset-0 z-[100] flex justify-end transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+            className={`fixed inset-0 z-[100] flex justify-end transition-all duration-500 ease-in-out ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         >
-            <div className="fixed inset-0 bg-black/80 backdrop-blur-sm" />
+            <div className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-500" onClick={onClose} />
             <div
-                className={`relative bg-neutral-100 dark:bg-neutral-900 w-full max-w-lg h-full flex flex-col transform transition-transform duration-300 ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
+                className={`relative bg-neutral-50/95 dark:bg-zinc-900/95 backdrop-blur-md w-full max-w-md h-full flex flex-col transform transition-all duration-700 cubic-bezier(0.32, 0.72, 0, 1) shadow-[-20px_0_60px_rgba(0,0,0,0.3)] border-l border-white/20 dark:border-white/5 ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
                 onClick={(e) => e.stopPropagation()}
             >
-                <div className="flex items-center justify-between p-6 border-b border-neutral-200 dark:border-neutral-800">
-                    <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">Carrito de Compras</h2>
+                {/* Header - Compact */}
+                <div className="flex items-center justify-between p-6 border-b border-neutral-200 dark:border-white/5 bg-white/50 dark:bg-zinc-900/50">
+                    <div className="flex flex-col">
+                        <h2 className="text-xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter">
+                            TU<span className="text-primary-600">CARRITO</span>
+                        </h2>
+                        <p className="text-[8px] font-black text-neutral-400 uppercase tracking-[0.3em] opacity-60">SAGFOFITNESS ELITE</p>
+                    </div>
                     <button
                         onClick={onClose}
-                        className="text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors"
+                        className="p-2.5 rounded-xl bg-neutral-100 dark:bg-white/5 text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-all shadow-sm"
                     >
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
                 </div>
 
-                <div className="flex-grow overflow-y-auto p-6">
+                <div className="flex-grow overflow-y-auto p-6 no-scrollbar">
                     {cartItems.length === 0 ? (
-                        <div className="text-center py-20">
-                            <p className="text-neutral-500 dark:text-neutral-400">Tu carrito de compras está vacío.</p>
-                            <button
-                                onClick={onClose}
-                                className="mt-4 text-primary-600 dark:text-primary-400 font-semibold"
-                            >
-                                Seguir explorando
-                            </button>
+                        <div className="text-center py-24">
+                            <div className="w-20 h-20 bg-neutral-200/50 dark:bg-white/5 rounded-2xl flex items-center justify-center mx-auto mb-6 opacity-30">
+                                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                            </div>
+                            <h3 className="text-sm font-black text-neutral-900 dark:text-white mb-2 uppercase italic">El catálogo te espera</h3>
+                            <button onClick={onClose} className="text-[10px] font-black uppercase tracking-widest text-primary-600 hover:underline">Comenzar exploración</button>
                         </div>
                     ) : (
-                        <>
-                            <div className="space-y-4 mb-8">
+                        <div className="space-y-6">
+                            {/* Product List */}
+                            <div className="space-y-3">
                                 {cartItems.map(item => (
-                                    <div key={item.equipment.id + (item.selectedColor || '') + (item.selectedWeight || '')} className="flex flex-col space-y-3 bg-white dark:bg-neutral-800/50 p-4 rounded-lg border border-neutral-200 dark:border-neutral-700">
-                                        <div className="flex items-start space-x-4">
-                                            <img src={item.equipment.imageUrls[0]} alt={item.equipment.name} className="w-16 h-16 object-cover rounded-md flex-shrink-0" />
+                                    <div key={item.equipment.id + (item.selectedColor || '') + (item.selectedWeight || '')} className="bg-white dark:bg-zinc-800/50 p-4 rounded-2xl border border-neutral-100 dark:border-white/5 shadow-sm group">
+                                        <div className="flex gap-4">
+                                            <div className="w-16 h-16 bg-neutral-100 dark:bg-black/20 rounded-xl overflow-hidden p-2 flex-shrink-0">
+                                                <img src={item.equipment.imageUrls[0]} alt={item.equipment.name} className="w-full h-full object-contain" />
+                                            </div>
                                             <div className="flex-grow min-w-0">
-                                                <h3 className="font-semibold text-neutral-800 dark:text-neutral-100 text-sm truncate">{item.equipment.name}</h3>
-                                                <div className="flex flex-col gap-1 mt-1">
-                                                    {item.equipment.availabilityStatus === 'made-to-order' ? (
-                                                        <span className="w-fit text-[10px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800">Producción</span>
-                                                    ) : (
-                                                        <span className="w-fit text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">Entrega Inmediata</span>
-                                                    )}
-                                                    {item.selectedColor && (
-                                                        <span className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-                                                            Color: <span className="font-medium text-neutral-800 dark:text-neutral-200">{item.selectedColor}</span>
+                                                <div className="flex justify-between items-start">
+                                                    <div className="flex flex-col items-start gap-1">
+                                                        <h4 className="text-[11px] font-black text-neutral-900 dark:text-white uppercase italic truncate pr-4">{item.equipment.name}</h4>
+                                                        <span className={`text-[7px] font-black uppercase tracking-widest px-2 py-0.5 rounded ${item.equipment.availabilityStatus === 'made-to-order' ? 'bg-amber-500/10 text-amber-600 border border-amber-500/20' : 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20'}`}>
+                                                            {item.equipment.availabilityStatus === 'made-to-order' ? 'Producción Elite' : 'Disponible Ya'}
                                                         </span>
-                                                    )}
-                                                    {item.selectedWeight && (
-                                                        <span className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-                                                            Peso: <span className="font-medium text-neutral-800 dark:text-neutral-200">{item.selectedWeight}</span>
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                <div className="flex items-center justify-between mt-2">
-                                                    <div className="flex items-center space-x-3">
-                                                        <button onClick={() => onUpdateQuantity(item.equipment.id, item.quantity - 1)} className="w-6 h-6 rounded-full bg-neutral-200 dark:bg-neutral-700 font-bold text-neutral-600 dark:text-neutral-300 flex items-center justify-center">-</button>
-                                                        <span className="font-semibold text-neutral-900 dark:text-white">{item.quantity}</span>
-                                                        <button onClick={() => onUpdateQuantity(item.equipment.id, item.quantity + 1)} className="w-6 h-6 rounded-full bg-neutral-200 dark:bg-neutral-700 font-bold text-neutral-600 dark:text-neutral-300 flex items-center justify-center">+</button>
                                                     </div>
-                                                    <p className="font-bold text-primary-600 dark:text-primary-400">{formatCurrency(item.equipment.price * item.quantity)}</p>
+                                                    <button onClick={() => onRemoveItem(item.equipment.id)} className="text-neutral-300 hover:text-red-500 transition-colors">
+                                                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12" /></svg>
+                                                    </button>
+                                                </div>
+                                                <div className="flex items-center justify-between mt-3">
+                                                    <div className="flex items-center bg-neutral-100 dark:bg-zinc-800 rounded-lg p-0.5 border border-neutral-200 dark:border-white/5">
+                                                        <button onClick={() => onUpdateQuantity(item.equipment.id, item.quantity - 1)} className="w-6 h-6 text-xs font-black">-</button>
+                                                        <span className="w-6 text-center text-[9px] font-black">{item.quantity}</span>
+                                                        <button onClick={() => onUpdateQuantity(item.equipment.id, item.quantity + 1)} className="w-6 h-6 text-xs font-black">+</button>
+                                                    </div>
+                                                    <span className="text-[11px] font-black text-primary-600 italic">{formatCurrency(item.equipment.price * item.quantity)}</span>
                                                 </div>
                                             </div>
-                                            <button onClick={() => onRemoveItem(item.equipment.id)} className="text-neutral-400 hover:text-red-500 p-1">
-                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 10-2 0v10H6V6h1.382l.724 1.447A1 1 0 009 8h2a1 1 0 00.894-.553L12.618 6H14a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 009 2z" clipRule="evenodd" /></svg>
-                                            </button>
                                         </div>
-
-                                        {/* Customization Inputs for Made-to-Order items */}
                                         {item.equipment.availabilityStatus === 'made-to-order' && (
-                                            <div className="mt-2 pt-2 border-t border-neutral-100 dark:border-neutral-700">
-                                                <div className="flex items-center mb-2">
-                                                    <div className="p-1 bg-purple-100 dark:bg-purple-900/30 rounded mr-2">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-purple-600 dark:text-purple-400" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M4 2a2 2 0 00-2 2v11a3 3 0 106 0V4a2 2 0 00-2-2H4zm1 14a1 1 0 100-2 1 1 0 000 2zm5-1.757l4.9-4.9a2 2 0 000-2.828L13.485 5.1a2 2 0 00-2.828 0L10 10v4.243zM16 4l-4 4-2.5-2.5 4-4L16 4z" clipRule="evenodd" /></svg>
-                                                    </div>
-                                                    <span className="text-xs font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400">Personaliza tu equipo</span>
-                                                </div>
-                                                <div className="grid grid-cols-1 gap-2">
-                                                    <div>
-                                                        <label className="text-[10px] font-semibold text-neutral-500 dark:text-neutral-400 uppercase">Color Estructura</label>
-                                                        <input
-                                                            type="text"
-                                                            value={item.structureColor || ''}
-                                                            onChange={(e) => onUpdateItemCustomization(item.equipment.id, 'structureColor', e.target.value)}
-                                                            placeholder="Ej: Negro Mate"
-                                                            className="w-full mt-1 p-2 text-sm bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded focus:ring-1 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all text-neutral-900 dark:text-white"
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <label className="text-[10px] font-semibold text-neutral-500 dark:text-neutral-400 uppercase">Color Tapicería</label>
-                                                        <input
-                                                            type="text"
-                                                            value={item.upholsteryColor || ''}
-                                                            onChange={(e) => onUpdateItemCustomization(item.equipment.id, 'upholsteryColor', e.target.value)}
-                                                            placeholder="Ej: Rojo Sangre"
-                                                            className="w-full mt-1 p-2 text-sm bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded focus:ring-1 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all text-neutral-900 dark:text-white"
-                                                        />
-                                                    </div>
-                                                </div>
+                                            <div className="mt-3 pt-3 border-t border-neutral-100 dark:border-white/5 grid grid-cols-2 gap-3">
+                                                <input
+                                                    type="text"
+                                                    value={item.structureColor || ''}
+                                                    onChange={(e) => onUpdateItemCustomization(item.equipment.id, 'structureColor', e.target.value)}
+                                                    placeholder="Estructura"
+                                                    className="bg-neutral-50 dark:bg-black/20 p-2 rounded-lg text-[9px] font-bold outline-none border border-transparent focus:border-primary-500/30"
+                                                />
+                                                <input
+                                                    type="text"
+                                                    value={item.upholsteryColor || ''}
+                                                    onChange={(e) => onUpdateItemCustomization(item.equipment.id, 'upholsteryColor', e.target.value)}
+                                                    placeholder="Tapicería"
+                                                    className="bg-neutral-50 dark:bg-black/20 p-2 rounded-lg text-[9px] font-bold outline-none border border-transparent focus:border-primary-500/30"
+                                                />
                                             </div>
                                         )}
                                     </div>
                                 ))}
                             </div>
 
-                            <div className="border-t border-neutral-200 dark:border-neutral-800 pt-6 space-y-4">
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-neutral-500 dark:text-neutral-400">Items en Stock ({calculation.inStockTotal > 0 ? '100%' : '0'}):</span>
-                                    <span className="font-semibold text-neutral-900 dark:text-white">{formatCurrency(calculation.inStockTotal)}</span>
-                                </div>
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-neutral-500 dark:text-neutral-400">Items Producción (50% anticipo):</span>
-                                    <span className="font-semibold text-neutral-900 dark:text-white">{formatCurrency(calculation.productionTotal)}</span>
-                                </div>
-
-                                <div className="flex justify-between items-center pt-4 border-t border-dashed border-neutral-200 dark:border-neutral-700">
-                                    <span className="text-lg font-bold text-primary-600 dark:text-primary-400">A Pagar Ahora:</span>
-                                    <div className="text-right">
-                                        <span className="text-2xl font-bold text-neutral-900 dark:text-white block">{formatCurrency(calculation.amountPaid)}</span>
-                                        {calculation.amountPending > 0 && (
-                                            <span className="text-xs text-neutral-500 dark:text-neutral-400">Pendiente Contra entrega: {formatCurrency(calculation.amountPending)}</span>
-                                        )}
+                            {/* Financial Summary */}
+                            <div className="p-6 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-[2rem] shadow-xl space-y-4">
+                                <div className="space-y-2 opacity-80">
+                                    <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider">
+                                        <span>Subtotal</span>
+                                        <span>{formatCurrency(calculation.totalOrderValue)}</span>
+                                    </div>
+                                    <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider text-primary-500">
+                                        <span>Pendiente contra entrega</span>
+                                        <span>{formatCurrency(calculation.amountPending)}</span>
                                     </div>
                                 </div>
+                            </div>
 
-                                {!user ? (
-                                    <div className="mt-6 p-4 bg-primary-50 dark:bg-primary-900/20 rounded-xl text-center">
-                                        <p className="text-sm text-neutral-700 dark:text-neutral-300 mb-3">Para finalizar tu pedido, necesitas iniciar sesión.</p>
-                                        <button onClick={onLoginClick} className="w-full bg-primary-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-primary-700 transition-colors">Iniciar Sesión</button>
-                                    </div>
-                                ) : (
-                                    <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-                                        <h3 className="font-bold text-neutral-900 dark:text-white">Datos de Contacto</h3>
+                            <div className="pt-4 border-t border-white/10 dark:border-neutral-200 flex justify-between items-end">
+                                <div>
+                                    <p className="text-[9px] font-black uppercase tracking-widest opacity-60 mb-1">Pago Requerido</p>
+                                    <p className="text-3xl font-black italic tracking-tighter leading-none">{formatCurrency(calculation.amountPaid)}</p>
+                                </div>
+                                <span className="text-[9px] font-black px-3 py-1 bg-primary-600 text-white rounded-full uppercase italic">Pago Seguro</span>
+                            </div>
+
+
+                            {/* Authentication Guard */}
+                            {!user ? (
+                                <div className="p-8 text-center bg-neutral-100 dark:bg-white/5 rounded-[2rem] border-2 border-dashed border-neutral-200 dark:border-white/10">
+                                    <p className="text-xs font-bold text-neutral-500 mb-6 uppercase italic">Accede para procesar el carrito</p>
+                                    <button onClick={onLoginClick} className="w-full py-4 bg-primary-600 text-white font-black rounded-xl uppercase tracking-widest text-[10px] italic shadow-lg">Iniciar Sesión / Registro</button>
+                                </div>
+                            ) : (
+                                <form onSubmit={handleSubmit} className="space-y-8 pb-12">
+                                    {/* Logistics */}
+                                    <div className="space-y-4">
+                                        <h3 className="text-[10px] font-black text-neutral-400 uppercase tracking-widest italic border-l-2 border-primary-500 pl-3">Destino de Entrega</h3>
                                         <div className="grid grid-cols-2 gap-3">
-                                            <input
-                                                type="text"
-                                                name="name"
-                                                placeholder="Nombre"
-                                                value={formData.name}
-                                                onChange={handleInputChange}
-                                                required
-                                                className="p-3 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary-500 text-neutral-900 dark:text-white"
-                                            />
-                                            <input
-                                                type="text"
-                                                name="phone"
-                                                placeholder="Teléfono"
-                                                value={formData.phone}
-                                                onChange={handleInputChange}
-                                                required
-                                                className="p-3 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary-500 text-neutral-900 dark:text-white"
-                                            />
-                                        </div>
-                                        <input
-                                            type="email"
-                                            name="email"
-                                            placeholder="Correo Electrónico"
-                                            value={formData.email}
-                                            onChange={handleInputChange}
-                                            required
-                                            className="w-full p-3 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary-500 text-neutral-900 dark:text-white"
-                                        />
-                                        <div className="grid grid-cols-2 gap-3">
-                                            <div className="relative">
+                                            <div className="space-y-1">
+                                                <label className="text-[8px] font-black text-neutral-400 uppercase pl-1">Depto</label>
                                                 <select
                                                     name="department"
                                                     value={formData.department}
                                                     onChange={handleDepartmentChange}
                                                     required
-                                                    className="w-full p-3 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary-500 text-neutral-900 dark:text-white appearance-none"
+                                                    className="w-full p-2.5 bg-white dark:bg-white/5 border border-neutral-100 dark:border-white/10 rounded-xl text-xs font-black uppercase italic"
                                                 >
-                                                    <option value="">Departamento</option>
-                                                    {colombianDepartments.map(dept => (
-                                                        <option key={dept.name} value={dept.name}>{dept.name}</option>
-                                                    ))}
+                                                    <option value="">...</option>
+                                                    {colombianDepartments.map(dept => <option key={dept.name} value={dept.name}>{dept.name}</option>)}
                                                 </select>
-                                                <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-neutral-500 dark:text-neutral-400">
-                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                                                </div>
                                             </div>
-
-                                            <div className="relative">
+                                            <div className="space-y-1">
+                                                <label className="text-[8px] font-black text-neutral-400 uppercase pl-1">Ciudad</label>
                                                 <select
                                                     name="city"
                                                     value={formData.city}
                                                     onChange={handleInputChange}
                                                     required
                                                     disabled={!formData.department}
-                                                    className="w-full p-3 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary-500 text-neutral-900 dark:text-white appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    className="w-full p-2.5 bg-white dark:bg-white/5 border border-neutral-100 dark:border-white/10 rounded-xl text-xs font-black uppercase italic disabled:opacity-30"
                                                 >
-                                                    <option value="">Ciudad</option>
-                                                    {availableCities.map(city => (
-                                                        <option key={city} value={city}>{city}</option>
-                                                    ))}
+                                                    <option value="">...</option>
+                                                    {availableCities.map(city => <option key={city} value={city}>{city}</option>)}
                                                 </select>
-                                                <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-neutral-500 dark:text-neutral-400">
-                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                                                </div>
                                             </div>
                                         </div>
 
-                                        {/* Geolocation Section */}
-                                        <div className="space-y-3 bg-neutral-50 dark:bg-neutral-800/50 p-3 rounded-xl border border-neutral-200 dark:border-neutral-700">
-                                            <div className="flex justify-between items-center flex-wrap gap-2">
-                                                <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Ubicación Exacta</label>
-                                                <div className="flex gap-2">
-                                                    <button
-                                                        type="button"
-                                                        onClick={toggleMapManual}
-                                                        className={`text-xs font-bold px-2 py-1 rounded transition-colors flex items-center gap-1 ${isMapVisible ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300' : 'text-neutral-500 hover:bg-neutral-200 dark:hover:bg-neutral-700'}`}
-                                                    >
-                                                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0121 18.382V7.618a1 1 0 01-.553-.894L15 4m0 13V4m0 0L9 7" /></svg>
-                                                        {isMapVisible ? 'Ocultar Mapa' : 'Seleccionar en Mapa'}
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        onClick={handleGetLocation}
-                                                        disabled={isLocating}
-                                                        className="text-xs font-bold text-blue-600 hover:text-blue-700 dark:text-blue-400 flex items-center gap-1 px-2 py-1 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
-                                                    >
-                                                        {isLocating ? 'Obteniendo...' : (
-                                                            <>
-                                                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                                                                Usar GPS
-                                                            </>
-                                                        )}
-                                                    </button>
-                                                </div>
+                                        <div className="space-y-3">
+                                            <div className="flex gap-2">
+                                                <button type="button" onClick={handleGetLocation} className="flex-grow py-3 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-xl text-[9px] font-black uppercase italic tracking-widest">Obtener GPS Precise</button>
+                                                <button type="button" onClick={toggleMapManual} className="p-3 bg-neutral-100 dark:bg-white/5 rounded-xl text-neutral-500"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0121 18.382V7.618a1 1 0 01-.553-.894L15 4m0 13V4m0 0L9 7" /></svg></button>
                                             </div>
 
                                             {isMapVisible && (
-                                                <div className="relative w-full h-48 rounded-lg overflow-hidden border border-neutral-300 dark:border-neutral-600 z-0 bg-neutral-200 dark:bg-neutral-700">
-                                                    <div ref={mapContainerRef} className="w-full h-full z-0" />
-                                                    <div className="absolute top-2 left-2 bg-white/80 dark:bg-black/80 backdrop-blur-sm px-2 py-1 text-[10px] rounded pointer-events-none z-[1000]">
-                                                        Arrastra el marcador para ajustar
-                                                    </div>
+                                                <div className="w-full h-48 rounded-2xl overflow-hidden border border-primary-500/20 shadow-inner">
+                                                    <div ref={mapContainerRef} className="w-full h-full" />
                                                 </div>
                                             )}
 
-                                            <input
-                                                type="text"
-                                                name="mapsLink"
-                                                value={formData.mapsLink}
-                                                onChange={handleInputChange}
-                                                placeholder="Enlace de Google Maps (Opcional)"
-                                                className="w-full p-2 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg text-xs text-neutral-500 outline-none"
-                                                readOnly={isMapVisible}
-                                            />
-                                            <p className="text-[10px] text-neutral-400">Permite al repartidor llegar exactamente a tu dirección. {isMapVisible && "Arrastra el pin en el mapa para mayor precisión."}</p>
-
                                             <textarea
                                                 name="address"
-                                                placeholder="Dirección de Entrega / Confirmación (Barrio, Conjunto, Torre, Apto)..."
+                                                placeholder="Dirección exacta, barrio, apto..."
                                                 value={formData.address}
                                                 onChange={handleInputChange}
                                                 required
                                                 rows={2}
-                                                className="w-full mt-2 p-2 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg text-sm outline-none focus:ring-1 focus:ring-primary-500 text-neutral-900 dark:text-white placeholder:text-neutral-400"
+                                                className="w-full p-4 bg-white dark:bg-white/5 border border-neutral-100 dark:border-white/10 rounded-xl text-xs font-medium outline-none"
                                             />
                                         </div>
+                                    </div>
 
-                                        <textarea
-                                            name="message"
-                                            placeholder="Mensaje adicional (opcional)"
-                                            value={formData.message}
-                                            onChange={handleInputChange}
-                                            rows={2}
-                                            className="w-full p-3 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary-500 text-neutral-900 dark:text-white"
-                                        />
-
-                                        <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800">
-                                            <h3 className="font-bold text-neutral-900 dark:text-white mb-2">Pago</h3>
-                                            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-100 dark:border-blue-800 mb-4">
-                                                <p className="text-sm text-blue-800 dark:text-blue-300 font-medium mb-2">Cuentas Disponibles:</p>
-                                                <ul className="space-y-2 text-sm text-neutral-700 dark:text-neutral-300">
-                                                    {bankAccounts.map(acc => (
-                                                        <li key={acc.id} className="flex justify-between">
-                                                            <span><strong>{acc.bankName}</strong> ({acc.accountType})</span>
-                                                            <span className="font-mono">{acc.accountNumber}</span>
-                                                        </li>
-                                                    ))}
-                                                    {bankAccounts.length === 0 && <li>No hay cuentas configuradas. Contacte al administrador.</li>}
-                                                </ul>
-                                            </div>
-
-                                            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                                                Adjuntar Comprobante de Pago
-                                            </label>
-                                            <input
-                                                type="file"
-                                                ref={fileInputRef}
-                                                onChange={handleFileChange}
-                                                accept="image/*,.pdf"
-                                                className="block w-full text-sm text-neutral-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
-                                            />
+                                    {/* Verification */}
+                                    <div className="space-y-4">
+                                        <h3 className="text-[10px] font-black text-neutral-400 uppercase tracking-widest italic border-l-2 border-primary-500 pl-3">Comprobante de Pago</h3>
+                                        <div className="bg-neutral-100 dark:bg-white/5 p-4 rounded-2xl space-y-3">
+                                            {bankAccounts.slice(0, 1).map(acc => (
+                                                <div key={acc.id} className="flex justify-between items-center">
+                                                    <div>
+                                                        <p className="text-[8px] font-black text-neutral-400 uppercase">{acc.bankName} - {acc.accountType}</p>
+                                                        <p className="text-sm font-black text-neutral-900 dark:text-white italic tracking-wider">{acc.accountNumber}</p>
+                                                    </div>
+                                                    <div className="w-8 h-8 rounded-lg bg-white dark:bg-zinc-800 flex items-center justify-center text-primary-600 shadow-sm">
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                                                    </div>
+                                                </div>
+                                            ))}
                                         </div>
-
                                         <button
-                                            type="submit"
-                                            className="w-full bg-primary-600 text-white font-bold py-4 px-6 rounded-xl hover:bg-primary-700 transition-colors shadow-lg hover:shadow-primary-500/30"
+                                            type="button"
+                                            onClick={() => fileInputRef.current?.click()}
+                                            className={`w-full py-6 rounded-2xl border-2 border-dashed transition-all flex flex-col items-center justify-center gap-2 ${paymentProof ? 'border-primary-500 bg-primary-500/5' : 'border-neutral-200 dark:border-white/10 hover:bg-neutral-50 dark:hover:bg-white/5'}`}
                                         >
-                                            Enviar Pedido
+                                            <p className="text-[10px] font-black uppercase italic">{paymentProof ? '✓ Comprobante Cargado' : 'Subir Comprobante'}</p>
+                                            {paymentProof && <p className="text-[8px] font-medium opacity-50 uppercase">{paymentProof.name}</p>}
                                         </button>
-                                    </form>
-                                )}
-                            </div>
-                        </>
+                                        <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*,.pdf" className="hidden" />
+                                    </div>
+
+                                    {/* Action */}
+                                    <button
+                                        type="submit"
+                                        className="w-full py-5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-black rounded-2xl shadow-2xl hover:scale-[1.03] active:scale-[0.97] transition-all uppercase tracking-[0.2em] text-[11px] italic"
+                                    >
+                                        Confirmar Pedido Élite
+                                    </button>
+                                </form>
+                            )}
+                        </div>
                     )}
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 

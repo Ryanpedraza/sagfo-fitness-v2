@@ -379,7 +379,7 @@ const QuoteCartModal: React.FC<QuoteCartModalProps> = ({ isOpen, onClose, cartIt
                                                     value={item.upholsteryColor || ''}
                                                     onChange={(e) => onUpdateItemCustomization(item.equipment.id, 'upholsteryColor', e.target.value)}
                                                     placeholder="Tapicería"
-                                                    className="bg-neutral-50 dark:bg-black/20 p-2 rounded-lg text-[9px] font-bold outline-none border border-transparent focus:border-primary-500/30"
+                                                    className="bg-neutral-50 dark:bg-black/20 p-2 rounded-lg text-[9px] font-bold outline-none border border-transparent focus:border-primary-500/30 text-neutral-900 dark:text-white"
                                                 />
                                             </div>
                                         )}
@@ -401,10 +401,10 @@ const QuoteCartModal: React.FC<QuoteCartModalProps> = ({ isOpen, onClose, cartIt
                                 </div>
                             </div>
 
-                            <div className="pt-4 border-t border-white/10 dark:border-neutral-200 flex justify-between items-end">
+                            <div className="pt-4 border-t border-neutral-200 dark:border-white/10 flex justify-between items-end">
                                 <div>
-                                    <p className="text-[9px] font-black uppercase tracking-widest opacity-60 mb-1">Pago Requerido</p>
-                                    <p className="text-3xl font-black italic tracking-tighter leading-none">{formatCurrency(calculation.amountPaid)}</p>
+                                    <p className="text-[9px] font-black uppercase tracking-widest text-neutral-500 dark:text-white/60 mb-1">Pago Requerido</p>
+                                    <p className="text-3xl font-black italic tracking-tighter leading-none text-neutral-900 dark:text-white">{formatCurrency(calculation.amountPaid)}</p>
                                 </div>
                                 <span className="text-[9px] font-black px-3 py-1 bg-primary-600 text-white rounded-full uppercase italic">Pago Seguro</span>
                             </div>
@@ -487,7 +487,7 @@ const QuoteCartModal: React.FC<QuoteCartModalProps> = ({ isOpen, onClose, cartIt
                                                 onChange={handleInputChange}
                                                 required
                                                 rows={2}
-                                                className="w-full p-4 bg-white dark:bg-white/5 border border-neutral-100 dark:border-white/10 rounded-xl text-xs font-medium outline-none"
+                                                className="w-full p-4 bg-white dark:bg-white/5 border border-neutral-100 dark:border-white/10 rounded-xl text-xs font-medium text-neutral-900 dark:text-white outline-none"
                                             />
                                         </div>
                                     </div>
@@ -513,8 +513,8 @@ const QuoteCartModal: React.FC<QuoteCartModalProps> = ({ isOpen, onClose, cartIt
                                             onClick={() => fileInputRef.current?.click()}
                                             className={`w-full py-6 rounded-2xl border-2 border-dashed transition-all flex flex-col items-center justify-center gap-2 ${paymentProof ? 'border-primary-500 bg-primary-500/5' : 'border-neutral-200 dark:border-white/10 hover:bg-neutral-50 dark:hover:bg-white/5'}`}
                                         >
-                                            <p className="text-[10px] font-black uppercase italic">{paymentProof ? '✓ Comprobante Cargado' : 'Subir Comprobante'}</p>
-                                            {paymentProof && <p className="text-[8px] font-medium opacity-50 uppercase">{paymentProof.name}</p>}
+                                            <p className="text-[10px] font-black uppercase italic text-neutral-900 dark:text-white">{paymentProof ? '✓ Comprobante Cargado' : 'Subir Comprobante'}</p>
+                                            {paymentProof && <p className="text-[8px] font-medium opacity-50 uppercase text-neutral-900 dark:text-white">{paymentProof.name}</p>}
                                         </button>
                                         <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*,.pdf" className="hidden" />
                                     </div>

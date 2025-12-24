@@ -22,7 +22,16 @@ import {
     Check,
     Shield,
     Camera,
-    X
+    X,
+    Wallet,
+    Factory,
+    FileText,
+    Table,
+    Printer,
+    ArrowDown,
+    Save,
+    ArrowUpRight,
+    LogOut
 } from 'lucide-react';
 
 interface AdminDashboardProps {
@@ -53,6 +62,9 @@ interface AdminDashboardProps {
     onAssignTransporter: (orderId: string, transporterId: string) => void;
     onDeleteProduct: (productId: string) => void;
     onUploadSeal: (file: File) => void;
+    onSaveProduct: (product: EquipmentItem) => void;
+    onAdminViewToggle: () => void;
+    onLogout: () => void;
 }
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({
@@ -82,9 +94,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
     onUpdateItemStatus,
     onAssignTransporter,
     onDeleteProduct,
-    onUploadSeal
+    onUploadSeal,
+    onSaveProduct,
+    onAdminViewToggle,
+    onLogout
 }) => {
-    const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'orders' | 'users' | 'events' | 'gallery' | 'settings' | 'whatsapp'>('overview');
+    const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'orders' | 'users' | 'events' | 'gallery' | 'settings' | 'whatsapp' | 'debts' | 'logistics' | 'bulk-prices' | 'quotes'>('overview');
     const [searchTerm, setSearchTerm] = useState('');
     const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
     const [statusModalOpen, setStatusModalOpen] = useState(false);
@@ -100,6 +115,17 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
     const totalUsers = profiles.length;
 
     const transporters = profiles.filter(p => p.role === 'transporter');
+
+    const [bulkPrices, setBulkPrices] = useState<Record<string, number>>(
+        products.reduce((acc, p) => ({ ...acc, [p.id]: p.price }), {})
+    );
+    const [isSavingPrices, setIsSavingPrices] = useState(false);
+
+    // Quote Builder State
+    const [isManualQuote, setIsManualQuote] = useState(false);
+    const [manualQuoteItems, setManualQuoteItems] = useState<{ product: EquipmentItem, quantity: number, price: number }[]>([]);
+    const [manualCustomerName, setManualCustomerName] = useState('');
+    const [manualCustomerCity, setManualCustomerCity] = useState('');
 
     const handleStatusChange = (order: Order, status: OrderStatus) => {
         setSelectedOrder(order);
@@ -420,7 +446,7 @@ generado por SAGFO Elite v2
                         );
                     })}
             </div>
-        </div >
+        </div>
     );
 
     const renderOrders = () => (
@@ -551,40 +577,79 @@ generado por SAGFO Elite v2
                                                     const itemTypeLabel = isInStock ? 'Stock' : 'Producción';
 
                                                     return (
-                                                        <div key={`${order.id}-item-${idx}`} className="flex items-center justify-between p-3 bg-neutral-50 dark:bg-zinc-800/50 rounded-lg">
-                                                            <div className="flex items-center gap-3 flex-1">
-                                                                <span className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center text-sm font-bold flex-shrink-0">
-                                                                    {item.quantity}
-                                                                </span>
+                                                        <div key={`${order.id}-item-${idx}`} className="flex items-start justify-between p-4 bg-neutral-50 dark:bg-zinc-800/50 rounded-xl border border-neutral-100 dark:border-zinc-700/50">
+                                                            <div className="flex gap-4 flex-1">
+                                                                {/* Product Photo */}
+                                                                <div className="w-16 h-16 rounded-lg bg-neutral-200 dark:bg-zinc-700 overflow-hidden flex-shrink-0 border border-neutral-200 dark:border-white/5">
+                                                                    {product?.imageUrls?.[0] ? (
+                                                                        <img src={product.imageUrls[0]} alt="" className="w-full h-full object-cover" />
+                                                                    ) : (
+                                                                        <div className="w-full h-full flex items-center justify-center text-neutral-400">
+                                                                            <Package className="w-6 h-6" />
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+
                                                                 <div className="flex-1 min-w-0">
-                                                                    <div className="flex items-center gap-2 flex-wrap">
-                                                                        <span className="text-neutral-900 dark:text-white font-medium">{product?.name || 'Producto Desconocido'}</span>
+                                                                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                                                                        <span className="w-6 h-6 rounded-full bg-primary-600 text-white flex items-center justify-center text-[10px] font-black italic">
+                                                                            {item.quantity}x
+                                                                        </span>
+                                                                        <span className="text-neutral-900 dark:text-white font-black uppercase italic tracking-tight text-sm">{product?.name || 'Producto Desconocido'}</span>
                                                                         {product && (
-                                                                            <span className={`text-xs px-2 py-0.5 rounded-full ${itemTypeBadgeClass}`}>
+                                                                            <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter ${itemTypeBadgeClass}`}>
                                                                                 {itemTypeLabel}
                                                                             </span>
                                                                         )}
                                                                     </div>
-                                                                    {item.deliveryStatus && (
-                                                                        <span className={`text-xs px-2 py-0.5 rounded-full inline-block mt-1 ${getDeliveryStatusBadgeClass(item.deliveryStatus)}`}>
-                                                                            {getDeliveryStatusText(item.deliveryStatus)}
-                                                                        </span>
-                                                                    )}
-                                                                    {isMadeToOrder && !orderIsDispatched && item.deliveryStatus === 'pending' && (
-                                                                        <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
-                                                                            ⚠️ Disponible para despacho cuando el pedido esté en "Despachado"
-                                                                        </p>
-                                                                    )}
+
+                                                                    {/* Customization Details */}
+                                                                    <div className="flex flex-wrap gap-3 mt-2 mb-2">
+                                                                        {item.structureColor && (
+                                                                            <div className="flex items-center gap-1.5 px-2 py-1 bg-white dark:bg-zinc-900 rounded-md border border-neutral-200 dark:border-white/5">
+                                                                                <div className="w-2.5 h-2.5 rounded-full border border-neutral-300" style={{ backgroundColor: item.structureColor.toLowerCase() }} />
+                                                                                <span className="text-[9px] text-neutral-500 font-bold uppercase tracking-widest">Est: {item.structureColor}</span>
+                                                                            </div>
+                                                                        )}
+                                                                        {item.upholsteryColor && (
+                                                                            <div className="flex items-center gap-1.5 px-2 py-1 bg-white dark:bg-zinc-900 rounded-md border border-neutral-200 dark:border-white/5">
+                                                                                <div className="w-2.5 h-2.5 rounded-full border border-neutral-300" style={{ backgroundColor: item.upholsteryColor.toLowerCase() }} />
+                                                                                <span className="text-[9px] text-neutral-500 font-bold uppercase tracking-widest">Tap: {item.upholsteryColor}</span>
+                                                                            </div>
+                                                                        )}
+                                                                        {item.selectedWeight && (
+                                                                            <div className="flex items-center gap-1.5 px-2 py-1 bg-white dark:bg-zinc-900 rounded-md border border-neutral-200 dark:border-white/5">
+                                                                                <span className="text-[9px] text-neutral-500 font-bold uppercase tracking-widest">Peso: {item.selectedWeight}</span>
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+
+                                                                    <div className="flex items-center gap-2">
+                                                                        {item.deliveryStatus && (
+                                                                            <span className={`text-[9px] font-black px-2 py-0.5 rounded-full uppercase italic tracking-widest ${getDeliveryStatusBadgeClass(item.deliveryStatus)}`}>
+                                                                                {getDeliveryStatusText(item.deliveryStatus)}
+                                                                            </span>
+                                                                        )}
+                                                                        {isMadeToOrder && !orderIsDispatched && item.deliveryStatus === 'pending' && (
+                                                                            <p className="text-[9px] text-amber-600 dark:text-amber-500 font-bold uppercase italic tracking-tight">
+                                                                                ⚠️ Pendiente de despacho general
+                                                                            </p>
+                                                                        )}
+                                                                    </div>
                                                                 </div>
                                                             </div>
-                                                            {!isDelivered && (
+                                                            {!isDelivered ? (
                                                                 <button
                                                                     onClick={() => canDispatch && onUpdateItemStatus(order.id, idx, 'shipped')}
                                                                     disabled={!canDispatch}
-                                                                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${getDispatchButtonClass(canDispatch, isShipped)}`}
+                                                                    className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase italic tracking-widest transition-all ${getDispatchButtonClass(canDispatch, isShipped)}`}
                                                                 >
                                                                     {isShipped ? '✓ Despachado' : 'Despachar'}
                                                                 </button>
+                                                            ) : (
+                                                                <div className="px-4 py-2 rounded-xl text-[10px] font-black uppercase italic tracking-widest bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                                                                    Entregado
+                                                                </div>
                                                             )}
                                                         </div>
                                                     );
@@ -699,6 +764,42 @@ generado por SAGFO Elite v2
                                                 </div>
                                             </div>
                                         )}
+
+                                        {/* Comprobante de Pago */}
+                                        <div className="bg-white dark:bg-zinc-900 rounded-xl p-4 border border-neutral-200 dark:border-zinc-800">
+                                            <h4 className="font-bold mb-4 text-neutral-900 dark:text-white flex items-center gap-2">
+                                                <ImageIcon className="w-4 h-4" />
+                                                Comprobante de Pago
+                                            </h4>
+                                            {order.paymentProofUrl ? (
+                                                <div className="space-y-4">
+                                                    <div className="relative group cursor-zoom-in rounded-lg overflow-hidden border border-neutral-100 dark:border-white/5 bg-neutral-50 dark:bg-zinc-800">
+                                                        <img
+                                                            src={order.paymentProofUrl}
+                                                            alt="Comprobante de Pago"
+                                                            className="w-full h-auto max-h-64 object-contain transition-transform duration-500 group-hover:scale-110"
+                                                            onClick={() => window.open(order.paymentProofUrl, '_blank')}
+                                                        />
+                                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                            <p className="text-white text-[10px] font-black uppercase tracking-widest italic">Ampliar Imagen</p>
+                                                        </div>
+                                                    </div>
+                                                    <a
+                                                        href={order.paymentProofUrl}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="block w-full text-center py-2 bg-neutral-100 dark:bg-white/5 rounded-lg text-[10px] font-black uppercase italic tracking-widest text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 transition-colors"
+                                                    >
+                                                        Ver en pantalla completa
+                                                    </a>
+                                                </div>
+                                            ) : (
+                                                <div className="py-8 text-center border-2 border-dashed border-neutral-100 dark:border-zinc-800 rounded-lg">
+                                                    <Camera className="w-8 h-8 text-neutral-300 mx-auto mb-2" />
+                                                    <p className="text-[10px] text-neutral-400 font-bold uppercase italic">Sin comprobante adjunto</p>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1012,10 +1113,10 @@ generado por SAGFO Elite v2
                         placeholder="Ejem: 57310..."
                         className="w-full px-6 py-5 rounded-2xl border border-neutral-100 dark:border-white/5 bg-neutral-50 dark:bg-black/40 text-neutral-900 dark:text-white font-black text-2xl tracking-tighter outline-none focus:ring-4 focus:ring-primary-500/10 transition-all shadow-inner"
                     />
-                    <p className="text-[10px] text-neutral-400 mt-6 italic font-bold uppercase opacity-60 flex items-center gap-2">
+                    <div className="text-[10px] text-neutral-400 mt-6 italic font-bold uppercase opacity-60 flex items-center gap-2">
                         <div className="w-1.5 h-1.5 rounded-full bg-[#25D366]" />
                         Formato internacional sin el símbolo "+"
-                    </p>
+                    </div>
                 </div>
 
                 {/* HERO/BANNER CARD */}
@@ -1038,14 +1139,679 @@ generado por SAGFO Elite v2
                         <div className="absolute inset-0 bg-primary-600 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-500" />
                     </button>
                 </div>
+
+                {/* BANK ACCOUNTS CARD */}
+                <div className="bg-white dark:bg-zinc-900/50 p-10 rounded-[3rem] border border-neutral-200 dark:border-white/5 shadow-sm hover:shadow-2xl transition-all duration-500 group relative overflow-hidden md:col-span-2">
+                    <div className="flex flex-col md:flex-row justify-between gap-8 mb-10">
+                        <div className="flex gap-6 items-center">
+                            <div className="w-16 h-16 rounded-2xl bg-amber-600/10 flex items-center justify-center text-amber-600 group-hover:scale-110 group-hover:rotate-12 transition-transform duration-500">
+                                <Wallet className="w-8 h-8" />
+                            </div>
+                            <div>
+                                <h3 className="text-2xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter leading-none mb-1">Cuentas Bancarias</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-neutral-50 dark:bg-white/[0.02] p-8 rounded-[2.5rem] border border-neutral-100 dark:border-white/5 space-y-6">
+                        <p className="text-[10px] font-black text-primary-500 uppercase tracking-[0.2em] italic mb-2">Nueva Cuenta Élite</p>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="space-y-2">
+                                <label className="text-[9px] font-black text-neutral-400 uppercase tracking-widest italic ml-2">Entidad Bancaria</label>
+                                <input id="new-bank-name" type="text" placeholder="Ejem: BANC O LOMB IA" className="w-full px-6 py-4 bg-white dark:bg-black/40 rounded-2xl text-xs font-black uppercase italic outline-none border-2 border-transparent focus:border-amber-500/30 transition-all text-neutral-900 dark:text-white" />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[9px] font-black text-neutral-400 uppercase tracking-widest italic ml-2">Tipo de Cuenta</label>
+                                <select id="new-bank-type" className="w-full px-6 py-4 bg-white dark:bg-black/40 rounded-2xl text-xs font-black uppercase italic outline-none border-2 border-transparent focus:border-amber-500/30 transition-all appearance-none text-neutral-900 dark:text-white">
+                                    <option value="Ahorros">AHORROS</option>
+                                    <option value="Corriente">CORRIENTE</option>
+                                    <option value="Nequi/Daviplata">NEQUI/DAVIPLATA</option>
+                                </select>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[9px] font-black text-neutral-400 uppercase tracking-widest italic ml-2">Número de Cuenta</label>
+                                <input id="new-bank-number" type="text" placeholder="000-000000-00" className="w-full px-6 py-4 bg-white dark:bg-black/40 rounded-2xl text-xs font-black uppercase italic outline-none border-2 border-transparent focus:border-amber-500/30 transition-all text-neutral-900 dark:text-white" />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[9px] font-black text-neutral-400 uppercase tracking-widest italic ml-2">Nombre del Titular</label>
+                                <input id="new-bank-holder" type="text" placeholder="SAGFO FITNESS CO" className="w-full px-6 py-4 bg-white dark:bg-black/40 rounded-2xl text-xs font-black uppercase italic outline-none border-2 border-transparent focus:border-amber-500/30 transition-all text-neutral-900 dark:text-white" />
+                            </div>
+                            <div className="md:col-span-2 flex items-end">
+                                <button
+                                    onClick={() => {
+                                        const name = (document.getElementById('new-bank-name') as HTMLInputElement).value;
+                                        const type = (document.getElementById('new-bank-type') as HTMLSelectElement).value;
+                                        const number = (document.getElementById('new-bank-number') as HTMLInputElement).value;
+                                        const holder = (document.getElementById('new-bank-holder') as HTMLInputElement).value;
+
+                                        if (name && number && holder) {
+                                            onAddBankAccount({
+                                                id: `bank-${Date.now()}`,
+                                                bankName: name,
+                                                accountType: type,
+                                                accountNumber: number,
+                                                holderName: holder
+                                            });
+
+                                            // Reset inputs
+                                            (document.getElementById('new-bank-name') as HTMLInputElement).value = '';
+                                            (document.getElementById('new-bank-number') as HTMLInputElement).value = '';
+                                            (document.getElementById('new-bank-holder') as HTMLInputElement).value = '';
+                                        } else {
+                                            alert('Por favor completa todos los campos principales.');
+                                        }
+                                    }}
+                                    className="w-full py-4 bg-amber-600 text-white rounded-2xl font-black uppercase italic tracking-widest text-[10px] shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3"
+                                >
+                                    <Plus className="w-4 h-4" />
+                                    Registrar Nueva Cuenta
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Bank Account List */}
+                    <div className="space-y-3">
+                        <p className="text-[10px] font-black text-neutral-500 uppercase tracking-[0.2em] italic mb-4">Cuentas Registradas</p>
+                        {bankAccounts.length === 0 ? (
+                            <div className="py-12 text-center border-2 border-dashed border-neutral-200 dark:border-white/10 rounded-2xl">
+                                <p className="text-sm font-bold text-neutral-400 italic">No hay cuentas bancarias configuradas</p>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {bankAccounts.map(account => (
+                                    <div key={account.id} className="p-5 bg-white dark:bg-black/30 rounded-2xl border border-neutral-200 dark:border-white/10 flex justify-between items-center gap-4">
+                                        <div className="flex-1 min-w-0">
+                                            <p className="font-black text-neutral-900 dark:text-white uppercase italic text-sm leading-tight truncate">{account.bankName}</p>
+                                            <p className="text-[10px] text-neutral-500 font-bold uppercase tracking-wider mt-1">{account.accountNumber} • {account.accountType}</p>
+                                            <p className="text-[9px] text-neutral-400 mt-0.5 uppercase font-medium truncate">{account.holderName}</p>
+                                        </div>
+                                        <button
+                                            onClick={() => {
+                                                console.log('🗑️ Eliminando cuenta:', account.id);
+                                                onDeleteBankAccount(account.id);
+                                            }}
+                                            className="shrink-0 p-3 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-xl transition-all"
+                                            title="Eliminar cuenta"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* CORPORATE SEAL CARD */}
+                <div className="bg-white dark:bg-zinc-900/50 p-10 rounded-[3rem] border border-neutral-200 dark:border-white/5 shadow-sm hover:shadow-2xl transition-all duration-500 group relative overflow-hidden md:col-span-2">
+                    <div className="flex flex-col md:flex-row gap-10 items-center">
+                        <div className="w-40 h-40 rounded-[2rem] bg-neutral-50 dark:bg-black/40 border-2 border-dashed border-neutral-200 dark:border-white/10 flex items-center justify-center overflow-hidden shrink-0">
+                            {sealUrl ? (
+                                <img src={sealUrl} alt="Sello SAGFO" className="w-full h-full object-contain p-4" />
+                            ) : (
+                                <Upload className="w-10 h-10 text-neutral-200" />
+                            )}
+                        </div>
+                        <div className="flex-1 space-y-6">
+                            <div>
+                                <h3 className="text-2xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter leading-none mb-1">Sello Élite de Garantía</h3>
+                                <p className="text-xs text-neutral-500 font-bold uppercase italic leading-relaxed opacity-70">Este sello aparece en todas las cotizaciones PDF para certificar la autenticidad de SAGFO Fitness Co.</p>
+                            </div>
+                            <div className="flex gap-4">
+                                <label className="flex-1 px-8 py-4 bg-neutral-950 dark:bg-white text-white dark:text-neutral-900 rounded-2xl font-black uppercase italic tracking-widest text-[10px] text-center cursor-pointer hover:scale-105 active:scale-95 transition-all">
+                                    <input
+                                        type="file"
+                                        className="hidden"
+                                        accept="image/*"
+                                        onChange={(e) => {
+                                            const file = e.target.files?.[0];
+                                            if (file) onUploadSeal(file);
+                                        }}
+                                    />
+                                    Cargar Nuevo Sello
+                                </label>
+                                {sealUrl && (
+                                    <button
+                                        onClick={() => {
+                                            if (window.confirm('¿Remover el sello actual?')) {
+                                                onUpdateSeal('');
+                                            }
+                                        }}
+                                        className="px-8 py-4 border-2 border-red-500/20 text-red-500 rounded-2xl font-black uppercase italic tracking-widest text-[10px] hover:bg-red-500/5 transition-all"
+                                    >
+                                        Remover
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
+        </div>
+    );
+
+
+    const renderDebts = () => (
+        <div className="space-y-12">
+            <div className="space-y-2">
+                <div className="w-12 h-1 bg-red-600 rounded-full" />
+                <h2 className="text-4xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter leading-none">Cuentas por Cobrar</h2>
+                <p className="text-[10px] text-neutral-500 font-bold uppercase tracking-[0.4em] italic leading-none">Seguimiento de Saldos y Cobranza Activa</p>
+            </div>
+
+            <div className="grid gap-6">
+                {orders.filter(o => o.financials && o.financials.amountPending > 0).map(order => (
+                    <div key={order.id} className="bg-white dark:bg-zinc-900 rounded-3xl p-8 border border-neutral-200 dark:border-white/5 shadow-sm group hover:border-red-500/30 transition-all duration-500">
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                            <div className="flex items-center gap-6">
+                                <div className="w-16 h-16 rounded-[1.5rem] bg-red-100 dark:bg-red-900/20 flex items-center justify-center text-red-600">
+                                    <Wallet className="w-8 h-8" />
+                                </div>
+                                <div>
+                                    <h3 className="text-xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter">Pedido #{order.id.slice(-6)}</h3>
+                                    <p className="font-bold text-neutral-500 uppercase tracking-widest italic">{order.customerInfo?.name}</p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-8">
+                                <div className="text-right">
+                                    <p className="text-[10px] text-neutral-400 font-black uppercase tracking-widest italic">Saldo Pendiente</p>
+                                    <p className="text-2xl font-black text-red-600 tracking-tighter italic">${order.financials?.amountPending.toLocaleString()}</p>
+                                </div>
+                                <button
+                                    onClick={() => handleWhatsAppMessage(
+                                        order.customerInfo?.phone || '',
+                                        `¡Hola ${order.customerInfo?.name}! 👋 Te contacto de SAGFO Elite. Tu pedido #${order.id.slice(-6)} está progresando, pero registramos un saldo pendiente de $${order.financials?.amountPending.toLocaleString()}. ¿Nos podrías confirmar el pago para programar el despacho? 🏅`
+                                    )}
+                                    className="flex items-center gap-3 px-6 py-4 bg-[#25D366] text-white rounded-2xl font-black uppercase italic tracking-widest text-[10px] shadow-xl hover:scale-105 transition-all"
+                                >
+                                    <MessageSquare className="w-4 h-4" />
+                                    Cobrar por WhatsApp
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+
+    const renderLogistics = () => (
+        <div className="space-y-12">
+            <div className="space-y-2">
+                <div className="w-12 h-1 bg-blue-600 rounded-full" />
+                <h2 className="text-4xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter leading-none">Logística y Despachos</h2>
+                <p className="text-[10px] text-neutral-500 font-bold uppercase tracking-[0.4em] italic leading-none">Hoja de Ruta y Gestión de Transportadores</p>
+            </div>
+
+            <div className="grid gap-8">
+                {transporters.map(transporter => {
+                    const assignedOrders = orders.filter(o => o.assignedTransporterId === transporter.id);
+                    if (assignedOrders.length === 0) return null;
+
+                    return (
+                        <div key={transporter.id} className="bg-white dark:bg-zinc-900 rounded-[2.5rem] p-10 border border-neutral-200 dark:border-white/5 shadow-2xl relative overflow-hidden">
+                            <div className="absolute top-0 right-0 p-10 opacity-5">
+                                <Truck className="w-32 h-32" />
+                            </div>
+
+                            <div className="flex justify-between items-end mb-10 pb-8 border-b border-neutral-100 dark:border-white/5">
+                                <div>
+                                    <div className="flex items-center gap-4 mb-2">
+                                        <div className="w-3 h-3 rounded-full bg-blue-600 animate-pulse" />
+                                        <h3 className="text-2xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter">Transportador: {transporter.name}</h3>
+                                    </div>
+                                    <p className="text-xs text-neutral-500 font-bold uppercase tracking-[0.2em] italic">Hoja de Ruta Activa • {assignedOrders.length} Entregas</p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                {assignedOrders.map(order => (
+                                    <div key={order.id} className="flex items-center justify-between p-6 bg-neutral-50 dark:bg-white/[0.02] rounded-3xl border border-neutral-100 dark:border-white/5">
+                                        <div className="flex gap-8 items-center">
+                                            <div className="text-center">
+                                                <p className="text-[10px] text-neutral-400 font-black uppercase italic">Pedido</p>
+                                                <p className="font-black text-neutral-900 dark:text-white tracking-tighter">#{order.id.slice(-6)}</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] text-neutral-400 font-black uppercase italic">Destino</p>
+                                                <p className="font-black text-neutral-900 dark:text-white tracking-tighter uppercase sm:text-base text-sm">{order.customerInfo?.city}, {order.customerInfo?.department}</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] text-neutral-400 font-black uppercase italic">Cliente</p>
+                                                <p className="font-black text-neutral-900 dark:text-white tracking-tighter">{order.customerInfo?.name}</p>
+                                            </div>
+                                        </div>
+                                        <span className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase italic tracking-widest ${getStatusColor(order.status)}`}>
+                                            {order.status}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+
+    const renderBulkPrices = () => (
+        <div className="space-y-12 no-print">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+                <div className="space-y-2">
+                    <div className="w-12 h-1 bg-emerald-600 rounded-full" />
+                    <h2 className="text-4xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter leading-none">Editor de Precios</h2>
+                    <p className="text-[10px] text-neutral-500 font-bold uppercase tracking-[0.4em] italic leading-none">Actualización Masiva de Inventario</p>
+                </div>
+                <div className="flex gap-4">
+                    <button
+                        onClick={() => {
+                            setBulkPrices(products.reduce((acc, p) => ({ ...acc, [p.id]: p.price }), {}));
+                        }}
+                        className="px-8 py-4 border-2 border-neutral-200 dark:border-white/10 rounded-2xl font-black uppercase italic tracking-widest text-[10px] text-neutral-500 hover:border-red-500/30 hover:text-red-500 transition-all"
+                    >
+                        Descartar
+                    </button>
+                    <button
+                        onClick={async () => {
+                            setIsSavingPrices(true);
+                            try {
+                                for (const product of products) {
+                                    if (bulkPrices[product.id] !== product.price) {
+                                        await onSaveProduct({ ...product, price: bulkPrices[product.id] });
+                                    }
+                                }
+                                alert('Precios actualizados con éxito');
+                            } catch (error) {
+                                console.error('Error saving bulk prices:', error);
+                                alert('Error al actualizar precios');
+                            } finally {
+                                setIsSavingPrices(false);
+                            }
+                        }}
+                        disabled={isSavingPrices}
+                        className="flex items-center gap-4 px-10 py-5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-[2rem] font-black uppercase italic tracking-[0.2em] text-[10px] shadow-[0_20px_40px_-10px_rgba(0,0,0,0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-500 disabled:opacity-50 group"
+                    >
+                        {isSavingPrices ? <Clock className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4 group-hover:rotate-12 transition-transform" />}
+                        Guardar Cambios Masivos
+                    </button>
+                </div>
+            </div>
+
+            <div className="bg-white dark:bg-zinc-900 rounded-[3rem] border border-neutral-200 dark:border-white/5 overflow-hidden shadow-2xl">
+                <table className="w-full text-left border-collapse">
+                    <thead>
+                        <tr className="bg-neutral-50 dark:bg-white/[0.03]">
+                            <th className="px-10 py-8 text-[10px] font-black text-neutral-400 uppercase tracking-[0.3em] italic">Equipo</th>
+                            <th className="px-10 py-8 text-[10px] font-black text-neutral-400 uppercase tracking-[0.3em] italic">Actual</th>
+                            <th className="px-10 py-8 text-[10px] font-black text-neutral-400 uppercase tracking-[0.3em] italic">Nuevo Precio</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-neutral-100 dark:divide-white/5">
+                        {products.map(product => (
+                            <tr key={product.id} className="hover:bg-neutral-50 dark:hover:bg-white/[0.01] transition-colors group">
+                                <td className="px-10 py-6">
+                                    <div className="flex items-center gap-6">
+                                        <div className="w-12 h-12 rounded-xl bg-neutral-200 dark:bg-neutral-800 overflow-hidden flex-shrink-0">
+                                            <img src={product.imageUrls?.[0]} alt="" className="w-full h-full object-cover" />
+                                        </div>
+                                        <span className="font-black text-neutral-900 dark:text-white uppercase italic tracking-tight">{product.name}</span>
+                                    </div>
+                                </td>
+                                <td className="px-10 py-6 text-neutral-500 font-bold">
+                                    ${product.price.toLocaleString()}
+                                </td>
+                                <td className="px-10 py-6">
+                                    <div className="relative max-w-[200px]">
+                                        <span className="absolute left-6 top-1/2 -translate-y-1/2 text-neutral-400 font-black italic">$</span>
+                                        <input
+                                            type="number"
+                                            value={bulkPrices[product.id] || 0}
+                                            onChange={(e) => setBulkPrices({ ...bulkPrices, [product.id]: parseInt(e.target.value) || 0 })}
+                                            className="w-full pl-10 pr-6 py-4 bg-neutral-100 dark:bg-white/[0.03] border-2 border-transparent focus:border-emerald-500/30 rounded-2xl font-black italic text-neutral-900 dark:text-white outline-none transition-all"
+                                        />
+                                    </div>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+
+    const renderQuotes = () => (
+        <div className="space-y-12">
+            <div className="space-y-2 no-print">
+                <div className="w-12 h-1 bg-neutral-950 dark:bg-white rounded-full" />
+                <h2 className="text-4xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter leading-none">Simulador de Cotizaciones</h2>
+                <p className="text-[10px] text-neutral-500 font-bold uppercase tracking-[0.4em] italic leading-none">Generador de Propuestas Élite en PDF</p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 no-print">
+                <div className="lg:col-span-2 space-y-6">
+                    <div className="flex gap-4 mb-6">
+                        <button
+                            onClick={() => setIsManualQuote(false)}
+                            className={`flex-1 py-4 rounded-2xl font-black uppercase italic tracking-widest text-[10px] transition-all border-2 ${!isManualQuote ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-white/5 text-neutral-500 border-transparent hover:border-neutral-200 dark:hover:border-white/10'}`}
+                        >
+                            Desde Pedidos Existentes
+                        </button>
+                        <button
+                            onClick={() => {
+                                setIsManualQuote(true);
+                            }}
+                            className={`flex-1 py-4 rounded-2xl font-black uppercase italic tracking-widest text-[10px] transition-all border-2 ${isManualQuote ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-white/5 text-neutral-500 border-transparent hover:border-neutral-200 dark:hover:border-white/10'}`}
+                        >
+                            Cotización Manual (Nueva)
+                        </button>
+                    </div>
+
+                    {!isManualQuote ? (
+                        <div className="bg-white dark:bg-zinc-900 rounded-[2.5rem] p-10 border border-neutral-200 dark:border-white/5 shadow-2xl">
+                            <h3 className="text-xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter mb-8">Seleccionar Pedido para Cotizar</h3>
+                            <div className="space-y-4 max-h-[600px] overflow-y-auto no-scrollbar">
+                                {orders.slice(0, 15).map(order => (
+                                    <button
+                                        key={order.id}
+                                        onClick={() => setSelectedOrder(order)}
+                                        className={`w-full flex items-center justify-between p-6 rounded-3xl border-2 transition-all ${selectedOrder?.id === order.id ? 'border-primary-600 bg-primary-600/5' : 'border-transparent bg-neutral-50 dark:bg-white/5 hover:border-neutral-200 dark:hover:border-white/10'}`}
+                                    >
+                                        <div className="flex gap-6 items-center">
+                                            <div className="w-12 h-12 rounded-2xl bg-white dark:bg-zinc-800 flex items-center justify-center text-neutral-400">
+                                                <FileText className="w-6 h-6" />
+                                            </div>
+                                            <div className="text-left">
+                                                <p className="font-black text-neutral-900 dark:text-white uppercase italic tracking-tight">Pedido #{order.id.slice(-6)}</p>
+                                                <p className="text-[10px] text-neutral-500 font-bold uppercase italic tracking-widest">{order.customerInfo?.name}</p>
+                                            </div>
+                                        </div>
+                                        <ArrowDown className="-rotate-90 w-5 h-5 text-neutral-300" />
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="bg-white dark:bg-zinc-900 rounded-[2.5rem] p-10 border border-neutral-200 dark:border-white/5 shadow-2xl space-y-8">
+                            <div className="grid grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase italic tracking-widest text-neutral-500">Nombre del Prospecto</label>
+                                    <input
+                                        type="text"
+                                        value={manualCustomerName}
+                                        onChange={(e) => setManualCustomerName(e.target.value)}
+                                        placeholder="CLIENTE SAGFO ELITE"
+                                        className="w-full px-6 py-4 bg-neutral-50 dark:bg-white/5 rounded-2xl font-bold border-2 border-transparent focus:border-primary-500 outline-none transition-all"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase italic tracking-widest text-neutral-500">Ciudad / Destino</label>
+                                    <input
+                                        type="text"
+                                        value={manualCustomerCity}
+                                        onChange={(e) => setManualCustomerCity(e.target.value)}
+                                        placeholder="CIUDAD, PAIS"
+                                        className="w-full px-6 py-4 bg-neutral-50 dark:bg-white/5 rounded-2xl font-bold border-2 border-transparent focus:border-primary-500 outline-none transition-all"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                <label className="text-[10px] font-black uppercase italic tracking-widest text-neutral-500">Agregar Equipos</label>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[400px] overflow-y-auto pr-2 no-scrollbar">
+                                    {products.map(product => (
+                                        <div key={product.id} className="p-4 bg-neutral-50 dark:bg-white/5 rounded-2xl border border-neutral-100 dark:border-white/5 flex items-center justify-between group">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 rounded-lg bg-neutral-200 dark:bg-zinc-800 overflow-hidden">
+                                                    <img src={product.imageUrls[0]} alt="" className="w-full h-full object-cover" />
+                                                </div>
+                                                <span className="text-xs font-black uppercase italic tracking-tight">{product.name}</span>
+                                            </div>
+                                            <button
+                                                onClick={() => {
+                                                    const exists = manualQuoteItems.find(i => i.product.id === product.id);
+                                                    if (exists) {
+                                                        setManualQuoteItems(manualQuoteItems.filter(i => i.product.id !== product.id));
+                                                    } else {
+                                                        setManualQuoteItems([...manualQuoteItems, { product, quantity: 1, price: product.price }]);
+                                                    }
+                                                }}
+                                                className={`p-2 rounded-xl transition-all ${manualQuoteItems.find(i => i.product.id === product.id) ? 'bg-red-500 text-white' : 'bg-primary-600 text-white hover:scale-110'}`}
+                                            >
+                                                {manualQuoteItems.find(i => i.product.id === product.id) ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {manualQuoteItems.length > 0 && (
+                                <div className="space-y-4 pt-6 border-t border-neutral-100 dark:border-white/5">
+                                    <h4 className="text-[10px] font-black uppercase italic tracking-widest text-neutral-500">Items Seleccionados</h4>
+                                    <div className="space-y-3">
+                                        {manualQuoteItems.map((item, idx) => (
+                                            <div key={idx} className="flex items-center gap-4 bg-white dark:bg-black/20 p-4 rounded-2xl border border-neutral-100 dark:border-white/5">
+                                                <span className="text-xs font-black italic flex-1">{item.product.name}</span>
+                                                <div className="flex items-center gap-3 bg-neutral-100 dark:bg-zinc-800 rounded-xl p-1 border border-neutral-200 dark:border-white/5">
+                                                    <button
+                                                        onClick={() => {
+                                                            const newItems = [...manualQuoteItems];
+                                                            newItems[idx].quantity = Math.max(1, item.quantity - 1);
+                                                            setManualQuoteItems(newItems);
+                                                        }}
+                                                        className="w-7 h-7 flex items-center justify-center text-xs font-black text-neutral-500 hover:text-primary-500 transition-colors"
+                                                    >
+                                                        -
+                                                    </button>
+                                                    <span className="w-6 text-center text-[10px] font-black">{item.quantity}</span>
+                                                    <button
+                                                        onClick={() => {
+                                                            const newItems = [...manualQuoteItems];
+                                                            newItems[idx].quantity = item.quantity + 1;
+                                                            setManualQuoteItems(newItems);
+                                                        }}
+                                                        className="w-7 h-7 flex items-center justify-center text-xs font-black text-neutral-500 hover:text-primary-500 transition-colors"
+                                                    >
+                                                        +
+                                                    </button>
+                                                </div>
+                                                <span className="text-[10px] opacity-30 font-black">X</span>
+                                                <input
+                                                    type="number"
+                                                    value={item.price}
+                                                    onChange={(e) => {
+                                                        const newItems = [...manualQuoteItems];
+                                                        newItems[idx].price = parseInt(e.target.value) || 0;
+                                                        setManualQuoteItems(newItems);
+                                                    }}
+                                                    className="w-32 px-3 py-1 bg-neutral-100 dark:bg-zinc-800 rounded-lg text-xs font-black italic text-right"
+                                                />
+                                            </div>
+
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+
+                <div className="space-y-6">
+                    <div className="bg-neutral-950 text-white rounded-[2.5rem] p-10 shadow-3xl sticky top-32 border border-white/10 overflow-hidden">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-primary-600 rounded-full blur-[100px] opacity-20 -mr-32 -mt-32" />
+                        <h3 className="text-2xl font-black uppercase italic tracking-tighter mb-8 relative z-10">Vista Previa</h3>
+
+                        {(isManualQuote ? manualQuoteItems.length > 0 : selectedOrder) ? (
+                            <div className="space-y-8 relative z-10">
+                                <div className="space-y-2">
+                                    <p className="text-[10px] font-black text-white/40 uppercase tracking-widest italic leading-none">Prospecto Élite</p>
+                                    <p className="text-xl font-black uppercase italic tracking-tighter">
+                                        {isManualQuote ? (manualCustomerName || 'CLIENTE POTENCIAL') : selectedOrder?.customerInfo?.name}
+                                    </p>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <p className="text-[10px] font-black text-white/40 uppercase tracking-widest italic leading-none">Resumen de Inversión</p>
+                                    <div className="flex justify-between items-end border-b border-white/10 pb-4">
+                                        <span className="text-sm font-bold opacity-60">Total Items:</span>
+                                        <span className="text-xl font-black italic">
+                                            {isManualQuote ? manualQuoteItems.reduce((acc, i) => acc + i.quantity, 0) : selectedOrder?.items.length} equipos
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between items-end">
+                                        <span className="text-sm font-bold opacity-60">Valor Total:</span>
+                                        <span className="text-3xl font-black text-primary-500 italic tracking-tighter">
+                                            ${(isManualQuote ? manualQuoteItems.reduce((acc, i) => acc + (i.price * i.quantity), 0) : selectedOrder?.financials?.totalOrderValue || 0).toLocaleString()}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <button
+                                    onClick={() => window.print()}
+                                    className="w-full mt-8 flex items-center justify-center gap-4 py-6 bg-white text-black rounded-3xl font-black uppercase italic tracking-widest text-[12px] hover:scale-105 active:scale-95 transition-all shadow-2xl"
+                                >
+                                    <Printer className="w-6 h-6" />
+                                    Imprimir / PDF
+                                </button>
+
+                                {isManualQuote && (
+                                    <button
+                                        onClick={() => {
+                                            setManualQuoteItems([]);
+                                            setManualCustomerName('');
+                                            setManualCustomerCity('');
+                                        }}
+                                        className="w-full flex items-center justify-center gap-2 text-[10px] font-black uppercase italic tracking-widest text-white/40 hover:text-red-500 transition-colors"
+                                    >
+                                        <Trash2 className="w-3 h-3" />
+                                        Limpiar Todo
+                                    </button>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="text-center py-20 opacity-30">
+                                <FileText className="w-16 h-16 mx-auto mb-6" />
+                                <p className="font-black uppercase italic tracking-widest text-xs">
+                                    {isManualQuote ? 'Agrega equipos para empezar la cotización manual' : 'Selecciona un pedido para visualizar la cotización elite'}
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {
+                (isManualQuote ? manualQuoteItems.length > 0 : selectedOrder) && (
+                    <div className="hidden print:block fixed inset-0 bg-white z-[100] p-10 text-black">
+                        <div className="flex justify-between items-start mb-10">
+                            <img src="/logo-sf.png" className="h-16" alt="SAGFO" />
+                            <div className="text-right">
+                                <h1 className="text-3xl font-black uppercase italic tracking-tighter">Cotización Élite</h1>
+                                <p className="text-neutral-500 font-bold">Fecha: {new Date().toLocaleDateString()}</p>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-10 mb-10">
+                            <div>
+                                <h4 className="font-black uppercase italic tracking-widest text-xs text-neutral-400 mb-2">Cliente</h4>
+                                <p className="font-black uppercase italic text-xl">
+                                    {isManualQuote ? (manualCustomerName || 'CLIENTE POTENCIAL') : selectedOrder?.customerInfo?.name}
+                                </p>
+                                <p className="text-neutral-500">
+                                    {isManualQuote ? (manualCustomerCity || 'POR DEFINIR') : `${selectedOrder?.customerInfo?.city}, ${selectedOrder?.customerInfo?.department}`}
+                                </p>
+                            </div>
+                            <div className="text-right">
+                                <h4 className="font-black uppercase italic tracking-widest text-xs text-neutral-400 mb-2">Proveedor</h4>
+                                <p className="font-black uppercase italic text-xl">SAGFO FITNESS CO.</p>
+                                <p className="text-neutral-500">Equipamiento de Alto Rendimiento</p>
+                            </div>
+                        </div>
+
+                        <table className="w-full mb-10 border-t-2 border-black">
+                            <thead>
+                                <tr className="border-b border-neutral-200">
+                                    <th className="py-4 text-left font-black uppercase italic text-xs">Foto</th>
+                                    <th className="py-4 text-left font-black uppercase italic text-xs">Equipo</th>
+                                    <th className="py-4 text-center font-black uppercase italic text-xs">Cant.</th>
+                                    <th className="py-4 text-right font-black uppercase italic text-xs">Precio Unit.</th>
+                                    <th className="py-4 text-right font-black uppercase italic text-xs">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-neutral-100">
+                                {isManualQuote ? (
+                                    manualQuoteItems.map((item, idx) => (
+                                        <tr key={idx}>
+                                            <td className="py-4">
+                                                <div className="w-16 h-16 rounded-lg overflow-hidden border border-neutral-100">
+                                                    <img src={item.product.imageUrls[0]} alt="" className="w-full h-full object-cover" />
+                                                </div>
+                                            </td>
+                                            <td className="py-4">
+                                                <p className="font-black uppercase italic text-sm">{item.product.name}</p>
+                                                <p className="text-[10px] text-neutral-500 uppercase tracking-widest">Equipamiento Elite Sagfo</p>
+                                            </td>
+                                            <td className="py-4 text-center font-bold">{item.quantity}</td>
+                                            <td className="py-4 text-right">${item.price.toLocaleString()}</td>
+                                            <td className="py-4 text-right font-black italic">${(item.price * item.quantity).toLocaleString()}</td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    selectedOrder?.items.map((item, idx) => (
+                                        <tr key={idx}>
+                                            <td className="py-4">
+                                                <div className="w-16 h-16 rounded-lg overflow-hidden border border-neutral-100">
+                                                    <img src={item.equipment.imageUrls?.[0]} alt="" className="w-full h-full object-cover" />
+                                                </div>
+                                            </td>
+                                            <td className="py-4">
+                                                <p className="font-black uppercase italic text-sm">{item.equipment.name}</p>
+                                                <p className="text-[10px] text-neutral-500 uppercase tracking-widest">
+                                                    {item.structureColor && `Estructura: ${item.structureColor}`} {item.upholsteryColor && `| Tapicería: ${item.upholsteryColor}`}
+                                                </p>
+                                            </td>
+                                            <td className="py-4 text-center font-bold">{item.quantity}</td>
+                                            <td className="py-4 text-right">${(item.price_at_purchase || item.equipment.price).toLocaleString()}</td>
+                                            <td className="py-4 text-right font-black italic">${((item.price_at_purchase || item.equipment.price) * item.quantity).toLocaleString()}</td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                            <tfoot>
+                                <tr className="border-t-2 border-black">
+                                    <td colSpan={4} className="pt-6 text-right font-black uppercase italic text-xs">Total Inversión</td>
+                                    <td className="pt-6 text-right font-black uppercase italic text-2xl text-primary-600">
+                                        ${(isManualQuote ? manualQuoteItems.reduce((acc, i) => acc + (i.price * i.quantity), 0) : selectedOrder?.financials?.totalOrderValue || 0).toLocaleString()}
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                        <div className="mt-20 pt-10 border-t border-neutral-100 grid grid-cols-2 gap-10">
+                            <div>
+                                <h4 className="font-black uppercase italic tracking-widest text-[10px] mb-4">Términos y Condiciones</h4>
+                                <ul className="text-[10px] text-neutral-500 space-y-1">
+                                    <li>• Tiempo de entrega estimado: 25-35 días hábiles.</li>
+                                    <li>• Garantía: 5 años en estructura, 1 año en tapicería y partes móviles.</li>
+                                    <li>• Forma de pago: 50% anticipo, 50% contra entrega.</li>
+                                </ul>
+                            </div>
+                            <div className="text-right flex flex-col items-end">
+                                <div className="w-32 h-1 bg-black mb-2" />
+                                <p className="font-black uppercase italic text-[10px]">Autorizado por SAGFO Management</p>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
         </div>
     );
 
     return (
         <div className="min-h-screen bg-[#fcfcfc] dark:bg-black flex">
             {/* SIDEBAR ELITE */}
-            <aside className="w-72 border-r border-neutral-100 dark:border-white/5 bg-white dark:bg-[#0a0a0a] fixed top-20 bottom-0 left-0 z-40 transition-all duration-500 overflow-y-auto no-scrollbar">
+            <aside className="w-72 border-r border-neutral-100 dark:border-white/5 bg-white dark:bg-[#0a0a0a] fixed top-0 bottom-0 left-0 z-40 transition-all duration-500 flex flex-col">
                 <div className="p-10 mb-2">
                     <div className="cursor-pointer group flex items-center gap-4" onClick={() => setActiveTab('overview')}>
                         <img src="/logo-light.png" alt="Logo" className="h-10 w-auto object-contain dark:hidden transition-transform duration-500 group-hover:scale-110" />
@@ -1053,7 +1819,7 @@ generado por SAGFO Elite v2
                     </div>
                 </div>
 
-                <nav className="px-6 space-y-2">
+                <nav className="flex-1 px-6 space-y-2 overflow-y-auto no-scrollbar pb-20">
                     <div className="text-[10px] font-black text-neutral-400 dark:text-zinc-600 uppercase tracking-[0.3em] italic mb-4 px-4">Centro de Control</div>
                     <NavItem icon={<LayoutDashboard />} label="Dashboard" active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} />
                     <NavItem icon={<ShoppingCart />} label="Ventas y Pedidos" active={activeTab === 'orders'} onClick={() => setActiveTab('orders')} />
@@ -1064,23 +1830,40 @@ generado por SAGFO Elite v2
                     <NavItem icon={<Calendar />} label="Eventos" active={activeTab === 'events'} onClick={() => setActiveTab('events')} />
                     <NavItem icon={<ImageIcon />} label="Galería" active={activeTab === 'gallery'} onClick={() => setActiveTab('gallery')} />
 
+                    <div className="pt-8 text-[10px] font-black text-neutral-400 dark:text-zinc-600 uppercase tracking-[0.3em] italic mb-4 px-4">Operación Élite</div>
+                    <NavItem icon={<Wallet />} label="Cuentas por Cobrar" active={activeTab === 'debts'} onClick={() => setActiveTab('debts')} />
+                    <NavItem icon={<Truck />} label="Logística" active={activeTab === 'logistics'} onClick={() => setActiveTab('logistics')} />
+                    <NavItem icon={<FileText />} label="Cotizaciones" active={activeTab === 'quotes'} onClick={() => setActiveTab('quotes')} />
+                    <NavItem icon={<Table />} label="Editar Precios" active={activeTab === 'bulk-prices'} onClick={() => setActiveTab('bulk-prices')} />
+
                     <div className="pt-8 text-[10px] font-black text-neutral-400 dark:text-zinc-600 uppercase tracking-[0.3em] italic mb-4 px-4">Configuración</div>
                     <NavItem icon={<Users />} label="Gestionar Personal" active={activeTab === 'users'} onClick={() => setActiveTab('users')} />
                     <NavItem icon={<Settings />} label="Ajustes de Núcleo" active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} />
-                </nav>
 
-                {/* Footer Sidebar */}
-                <div className="absolute bottom-10 left-0 w-full px-10">
-                    <div className="p-4 rounded-3xl bg-neutral-50 dark:bg-zinc-900/50 border border-neutral-100 dark:border-white/5 flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-primary-600/10 flex items-center justify-center text-primary-600">
-                            <Shield className="w-5 h-5" />
-                        </div>
-                        <div className="flex-1">
-                            <p className="text-[10px] font-black text-neutral-900 dark:text-white uppercase italic">Admin Mode</p>
-                            <p className="text-[8px] text-neutral-500 font-bold uppercase tracking-widest">Saga v2.4 Elite</p>
-                        </div>
+                    <div className="my-8 mx-6 h-px bg-neutral-100 dark:bg-white/5" />
+
+                    <div className="px-4 space-y-2">
+                        <button
+                            onClick={onAdminViewToggle}
+                            className="group w-full flex items-center gap-4 px-6 py-4 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-500/10 rounded-2xl transition-all duration-500 border border-transparent hover:border-primary-500/20"
+                        >
+                            <div className="transition-transform duration-300 group-hover:-translate-x-1">
+                                <ArrowUpRight className="rotate-[225deg] w-4 h-4" />
+                            </div>
+                            <span className="font-black uppercase italic tracking-widest text-[10px]">Ir a la Tienda</span>
+                        </button>
+
+                        <button
+                            onClick={onLogout}
+                            className="group w-full flex items-center gap-4 px-6 py-4 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-2xl transition-all duration-500 border border-transparent hover:border-red-500/20"
+                        >
+                            <div className="transition-transform duration-500 group-hover:rotate-12">
+                                <LogOut className="w-4 h-4" />
+                            </div>
+                            <span className="font-black uppercase italic tracking-widest text-[10px]">Cerrar Sesión</span>
+                        </button>
                     </div>
-                </div>
+                </nav>
             </aside>
 
             {/* MAIN CONTENT AREA */}
@@ -1096,6 +1879,10 @@ generado por SAGFO Elite v2
                         {activeTab === 'gallery' && renderGallery()}
                         {activeTab === 'whatsapp' && renderWhatsApp()}
                         {activeTab === 'settings' && renderSettings()}
+                        {activeTab === 'debts' && renderDebts()}
+                        {activeTab === 'logistics' && renderLogistics()}
+                        {activeTab === 'bulk-prices' && renderBulkPrices()}
+                        {activeTab === 'quotes' && renderQuotes()}
                     </div>
                 </div>
             </main>
@@ -1114,7 +1901,7 @@ const NavItem = ({ icon, label, active, onClick }: { icon: React.ReactNode, labe
         <div className={`transition-transform duration-300 ${active ? 'scale-110 rotate-12' : 'group-hover:rotate-12'}`}>
             {React.cloneElement(icon as React.ReactElement, { className: 'w-5 h-5' })}
         </div>
-        <span className={`font-black uppercase italic tracking-widest text-[11px] transition-all duration-500 ${active ? 'opacity-100' : 'opacity-50 group-hover:opacity-100'}`}>{label}</span>
+        <span className={`font-black uppercase italic tracking-widest text-[11px] transition-all duration-500 ${active ? 'opacity-100' : 'opacity-70 group-hover:opacity-100'}`}>{label}</span>
         {active && (
             <div className="ml-auto w-2 h-2 rounded-full bg-white shadow-[0_0_15px_rgba(255,255,255,0.8)] animate-pulse" />
         )}

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Dumbbell, Activity, Disc, Combine, Package, Trophy, ChevronRight } from 'lucide-react';
+import { ChevronRight, ArrowUpRight } from 'lucide-react';
 import { MuscleFilter } from '../types';
 import { motion } from 'framer-motion';
 
@@ -8,82 +8,105 @@ interface QuickCategoryNavProps {
     onSelectCategory: (category: MuscleFilter) => void;
 }
 
-const quickCats: { label: string; value: MuscleFilter; icon: any; color: string; desc: string }[] = [
-    { label: 'Mancuernas', value: 'Mancuernas', icon: Dumbbell, color: '#0ea5e9', desc: 'Carga de Precisión' },
-    { label: 'Cardio', value: 'Cardio', icon: Activity, color: '#6366f1', desc: 'Resistencia Élite' },
-    { label: 'Discos', value: 'Discos', icon: Disc, color: '#71717a', desc: 'Peso Olímpico' },
-    { label: 'Barras', value: 'Barras', icon: Combine, color: '#10b981', desc: 'Acero de Grado' },
-    { label: 'Bancos', value: 'Bancos', icon: Trophy, color: '#f59e0b', desc: 'Estabilidad Pro' },
-    { label: 'Funcional', value: 'Funcional', icon: Package, color: '#ec4899', desc: 'Agilidad Total' },
+const quickCats: { label: string; value: MuscleFilter; image: string; desc: string }[] = [
+    { label: 'Mancuernas', value: 'Mancuernas', image: '/categories/mancuernas.png', desc: 'CARGA DE PRECISIÓN' },
+    { label: 'Cardio', value: 'Cardio', image: '/categories/cardio.png', desc: 'RESISTENCIA ÉLITE' },
+    { label: 'Discos', value: 'Discos', image: '/categories/discos.png', desc: 'PESO OLÍMPICO' },
+    { label: 'Barras', value: 'Barras', image: '/categories/barras.png', desc: 'ACERO DE GRADO' },
+    { label: 'Bancos', value: 'Bancos', image: '/categories/bancos.png', desc: 'ESTABILIDAD PRO' },
+    { label: 'Funcional', value: 'Funcional', image: '/categories/funcional.png', desc: 'AGILIDAD TOTAL' },
 ];
 
 const QuickCategoryNav: React.FC<QuickCategoryNavProps> = ({ onSelectCategory }) => {
     return (
-        <section className="relative py-32 md:py-48 bg-white dark:bg-[#050505] overflow-hidden">
-            {/* Ambient Background Elements */}
-            <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+        <section className="relative py-40 md:py-60 bg-[#fcfcfc] dark:bg-[#050505] overflow-hidden">
+            {/* Engineering Grid Overlay */}
+            <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] pointer-events-none"
+                style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
 
-            <div className="container mx-auto px-6 lg:px-12">
-                <div className="flex flex-col md:flex-row md:items-end justify-between mb-20 gap-8">
-                    <div className="max-w-2xl">
-                        <motion.span
-                            initial={{ opacity: 0, x: -20 }}
-                            whileInView={{ opacity: 1, x: 0 }}
-                            viewport={{ once: true }}
-                            className="inline-block text-primary-500 font-bold uppercase tracking-[0.4em] text-[10px] mb-4"
-                        >
-                            Catálogo de Especialistas
-                        </motion.span>
-                        <motion.h2
-                            initial={{ opacity: 0, y: 30 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                            className="text-5xl md:text-7xl font-black text-neutral-900 dark:text-white uppercase tracking-tighter leading-none"
-                        >
-                            DISEÑO QUE <br />
-                            <span className="text-neutral-400">PULSA PODER</span>
-                        </motion.h2>
-                    </div>
+            <div className="container mx-auto px-6 lg:px-12 relative z-10">
+                <div className="flex flex-col items-center text-center mb-24 space-y-6">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        className="flex items-center gap-4 bg-primary-500/5 px-6 py-2 rounded-full border border-primary-500/10"
+                    >
+                        <span className="w-2 h-2 rounded-full bg-primary-500 animate-pulse" />
+                        <span className="text-[10px] font-black text-primary-600 dark:text-primary-400 uppercase tracking-[0.4em] italic">Catálogo de Especialistas</span>
+                    </motion.div>
+
+                    <motion.h2
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                        className="text-6xl md:text-8xl font-black text-neutral-900 dark:text-white uppercase tracking-tighter leading-[0.85]"
+                    >
+                        EL PODER DEL <br />
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-neutral-400 to-neutral-200 dark:from-neutral-600 dark:to-neutral-400">DISEÑO ÉLITE</span>
+                    </motion.h2>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
                     {quickCats.map((cat, index) => (
                         <motion.button
                             key={cat.label}
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            whileInView={{ opacity: 1, scale: 1 }}
                             viewport={{ once: true }}
-                            transition={{ delay: index * 0.1, duration: 0.5 }}
+                            transition={{ delay: index * 0.1, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                             onClick={() => onSelectCategory(cat.value)}
-                            className="group relative h-[380px] rounded-[2.5rem] bg-neutral-100 dark:bg-white/[0.03] border border-neutral-200/50 dark:border-white/[0.05] overflow-hidden transition-all duration-700 hover:shadow-2xl"
+                            className="group relative h-[520px] rounded-[3.5rem] bg-white dark:bg-[#0a0a0a] border border-neutral-100 dark:border-white/5 overflow-hidden transition-all duration-700 hover:shadow-[0_80px_100px_-30px_rgba(0,0,0,0.2)] hover:-translate-y-2"
                         >
-                            {/* Icon Background Decoration */}
-                            <div className="absolute -top-12 -right-12 w-48 h-48 bg-black/5 dark:bg-white/5 rounded-full blur-3xl group-hover:bg-primary-500/10 transition-colors duration-700" />
+                            {/* Product Glow Layer */}
+                            <div className="absolute inset-0 bg-gradient-to-br from-primary-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
 
-                            <div className="relative h-full p-10 flex flex-col justify-between">
-                                <div className="w-16 h-16 rounded-[1.5rem] bg-white dark:bg-zinc-900 flex items-center justify-center shadow-xl border border-neutral-100 dark:border-white/5 transition-transform duration-700 group-hover:scale-110 group-hover:-rotate-12">
-                                    <cat.icon size={28} className="text-neutral-900 dark:text-white" />
+                            {/* Product Image Layer */}
+                            <div className="absolute inset-x-0 top-0 h-[70%] flex items-center justify-center p-12">
+                                <motion.div
+                                    className="relative w-full h-full"
+                                    whileHover={{ scale: 1.15, rotate: -3 }}
+                                    transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+                                >
+                                    <img
+                                        src={cat.image}
+                                        alt={cat.label}
+                                        className="w-full h-full object-contain filter drop-shadow-[0_30px_60px_rgba(0,0,0,0.15)] group-hover:drop-shadow-[0_40px_80px_rgba(0,0,0,0.3)] dark:mix-blend-normal transition-all duration-1000"
+                                    />
+                                    <div className="absolute -inset-16 bg-primary-500/10 blur-[120px] opacity-0 group-hover:opacity-40 transition-opacity duration-1000 rounded-full" />
+                                </motion.div>
+                            </div>
+
+                            {/* Info Section - "The Window" Design */}
+                            <div className="absolute inset-x-0 bottom-0 p-10 flex flex-col items-center text-center">
+                                {/* Glass Label */}
+                                <div className="mb-4 backdrop-blur-md bg-neutral-100/50 dark:bg-white/5 border border-white/20 dark:border-white/10 px-4 py-1.5 rounded-full opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-700">
+                                    <p className="text-[9px] font-black uppercase tracking-[0.3em] text-primary-500 italic">
+                                        {cat.desc}
+                                    </p>
                                 </div>
 
                                 <div className="space-y-4">
-                                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary-500 italic opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-500">
-                                        {cat.desc}
-                                    </p>
-                                    <h3 className="text-4xl font-black text-neutral-900 dark:text-white uppercase tracking-tighter leading-none">
+                                    <h3 className="text-5xl font-black text-neutral-900 dark:text-white uppercase tracking-tighter leading-none group-hover:scale-110 transition-transform duration-700">
                                         {cat.label}
                                     </h3>
 
-                                    <div className="flex items-center gap-3 pt-6 group-hover:gap-5 transition-all duration-500">
-                                        <div className="w-10 h-[2px] bg-primary-500 group-hover:w-16 transition-all duration-500" />
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400 group-hover:text-primary-500">Ver Colección</span>
-                                        <ChevronRight size={14} className="text-neutral-300 group-hover:text-primary-500 opacity-0 group-hover:opacity-100 transition-all" />
+                                    {/* Action Indicator */}
+                                    <div className="flex flex-col items-center gap-4 opacity-40 group-hover:opacity-100 transition-all duration-700">
+                                        <div className="w-px h-8 bg-gradient-to-b from-primary-500 to-transparent group-hover:h-12 transition-all duration-700" />
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-neutral-400 group-hover:text-primary-500 transition-colors">DESCUBRIR</span>
+                                            <ArrowUpRight size={14} className="text-primary-500 translate-y-0.5 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-transform" />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Hover Overlay */}
-                            <div className="absolute inset-0 bg-primary-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+                            {/* Background Serial Number */}
+                            <div className="absolute top-12 left-12 text-[80px] font-black text-black/[0.02] dark:text-white/[0.02] uppercase italic pointer-events-none tracking-tighter rotate-[-90deg] origin-left">
+                                SERIE-{index + 1}
+                            </div>
                         </motion.button>
                     ))}
                 </div>

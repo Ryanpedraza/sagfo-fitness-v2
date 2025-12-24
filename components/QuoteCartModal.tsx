@@ -372,10 +372,20 @@ const QuoteCartModal: React.FC<QuoteCartModalProps> = ({ isOpen, onClose, cartIt
                                                     </button>
                                                 </div>
                                                 <div className="flex items-center justify-between mt-3">
-                                                    <div className="flex items-center bg-neutral-100 dark:bg-zinc-800 rounded-lg p-0.5 border border-neutral-200 dark:border-white/5">
-                                                        <button onClick={() => onUpdateQuantity(item.equipment.id, item.quantity - 1)} className="w-6 h-6 text-xs font-black">-</button>
-                                                        <span className="w-6 text-center text-[9px] font-black text-neutral-900 dark:text-white">{item.quantity}</span>
-                                                        <button onClick={() => onUpdateQuantity(item.equipment.id, item.quantity + 1)} className="w-6 h-6 text-xs font-black">+</button>
+                                                    <div className="flex items-center bg-neutral-100 dark:bg-black/30 rounded-xl p-1 border border-neutral-200 dark:border-white/5 shadow-inner">
+                                                        <button
+                                                            onClick={() => onUpdateQuantity(item.equipment.id, item.quantity - 1)}
+                                                            className="w-8 h-8 flex items-center justify-center text-sm font-black text-neutral-900 dark:text-white hover:bg-white dark:hover:bg-white/10 rounded-lg transition-all active:scale-90"
+                                                        >
+                                                            -
+                                                        </button>
+                                                        <span className="w-8 text-center text-[10px] font-black text-neutral-900 dark:text-white">{item.quantity}</span>
+                                                        <button
+                                                            onClick={() => onUpdateQuantity(item.equipment.id, item.quantity + 1)}
+                                                            className="w-8 h-8 flex items-center justify-center text-sm font-black text-neutral-900 dark:text-white hover:bg-white dark:hover:bg-white/10 rounded-lg transition-all active:scale-90"
+                                                        >
+                                                            +
+                                                        </button>
                                                     </div>
                                                     <span className="text-[11px] font-black text-primary-600 italic">{formatCurrency(item.equipment.price * item.quantity)}</span>
                                                 </div>
@@ -511,18 +521,30 @@ const QuoteCartModal: React.FC<QuoteCartModalProps> = ({ isOpen, onClose, cartIt
                                     {/* Verification */}
                                     <div className="space-y-4">
                                         <h3 className="text-[10px] font-black text-neutral-400 uppercase tracking-widest italic border-l-2 border-primary-500 pl-3">Comprobante de Pago</h3>
-                                        <div className="bg-neutral-100 dark:bg-white/5 p-4 rounded-2xl space-y-3">
-                                            {bankAccounts.slice(0, 1).map(acc => (
-                                                <div key={acc.id} className="flex justify-between items-center">
+                                        <div className="bg-neutral-100 dark:bg-white/5 p-4 rounded-2xl space-y-4 divide-y divide-neutral-200 dark:divide-white/5">
+                                            {bankAccounts.map(acc => (
+                                                <div key={acc.id} className="flex justify-between items-center pt-3 first:pt-0">
                                                     <div>
                                                         <p className="text-[8px] font-black text-neutral-400 uppercase">{acc.bankName} - {acc.accountType}</p>
-                                                        <p className="text-sm font-black text-neutral-900 dark:text-white italic tracking-wider">{acc.accountNumber}</p>
+                                                        <p className="text-sm font-black text-neutral-900 dark:text-white italic tracking-wider leading-none mt-1">{acc.accountNumber}</p>
+                                                        <p className="text-[7px] font-medium text-neutral-400 uppercase mt-1">Titular: {acc.holderName}</p>
                                                     </div>
-                                                    <div className="w-8 h-8 rounded-lg bg-white dark:bg-zinc-800 flex items-center justify-center text-primary-600 shadow-sm">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            navigator.clipboard.writeText(acc.accountNumber);
+                                                            alert('Número de cuenta copiado');
+                                                        }}
+                                                        className="w-8 h-8 rounded-lg bg-white dark:bg-zinc-800 flex items-center justify-center text-primary-600 shadow-sm border border-neutral-100 dark:border-white/5 hover:scale-110 active:scale-90 transition-all"
+                                                        title="Copiar número"
+                                                    >
                                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
-                                                    </div>
+                                                    </button>
                                                 </div>
                                             ))}
+                                            {bankAccounts.length === 0 && (
+                                                <p className="text-[9px] font-black text-neutral-400 uppercase italic text-center py-2">No hay cuentas configuradas</p>
+                                            )}
                                         </div>
                                         <button
                                             type="button"

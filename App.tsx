@@ -95,7 +95,7 @@ const App: React.FC = () => {
   } = useCart();
   const [comparisonList, setComparisonList] = useState<EquipmentItem[]>([]);
   const [isComparisonModalOpen, setIsComparisonModalOpen] = useState(false);
-  const { user, updateUser } = useAuth();
+  const { user, updateUser, logout } = useAuth();
   const [view, setView] = useState<'catalog' | 'orders' | 'dashboard' | 'transporter_dashboard' | 'promos'>('catalog');
   const [isAdminViewInitialized, setIsAdminViewInitialized] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
@@ -133,6 +133,8 @@ const App: React.FC = () => {
   const [pendingCartOpen, setPendingCartOpen] = useState(false);
   const [sealUrl, setSealUrl] = useState('');
   const [loginModalInitialView, setLoginModalInitialView] = useState<'login' | 'register'>('login');
+
+  const [configId, setConfigId] = useState<string | number>('config');
 
   const isAdmin = user?.role === 'admin';
   const isTransporter = user?.role === 'transporter';
@@ -226,12 +228,17 @@ const App: React.FC = () => {
 
     const { data: configData } = await supabase.from('site_config').select('*').single();
     if (configData) {
+      if (configData.id) setConfigId(configData.id);
       if (configData.seal_url) setSealUrl(configData.seal_url);
       if (configData.whatsapp_number) setWhatsAppNumber(configData.whatsapp_number);
       if (configData.hero_slides) {
         // Ensure hero_slides is an array
         const slides = Array.isArray(configData.hero_slides) ? configData.hero_slides : [];
         if (slides.length > 0) setHeroSlides(slides);
+      }
+      if (configData.bank_accounts) {
+        const accounts = Array.isArray(configData.bank_accounts) ? configData.bank_accounts : [];
+        if (accounts.length > 0) setBankAccounts(accounts);
       }
     }
   }, []);
@@ -241,8 +248,7 @@ const App: React.FC = () => {
     const savedTheme = localStorage.getItem('theme') as Theme | null;
     if (savedTheme) setTheme(savedTheme);
     // El carrito se carga ahora desde useCart
-    const savedBankAccounts = localStorage.getItem('bankAccounts');
-    if (savedBankAccounts) setBankAccounts(JSON.parse(savedBankAccounts));
+    // El carrito se carga ahora desde useCart
     const savedSeal = localStorage.getItem('sealUrl');
     if (savedSeal) setSealUrl(savedSeal);
     const savedHero = localStorage.getItem('heroData');
@@ -301,9 +307,6 @@ const App: React.FC = () => {
 
   // La persistencia del carrito ahora se maneja en useCart
 
-  useEffect(() => {
-    localStorage.setItem('bankAccounts', JSON.stringify(bankAccounts));
-  }, [bankAccounts]);
 
   useEffect(() => {
     localStorage.setItem('displayByCategory', JSON.stringify(displayByCategory));
@@ -333,7 +336,7 @@ const App: React.FC = () => {
       const { error } = await supabase
         .from('site_config')
         .upsert({
-          id: 'config',
+          id: configId,
           hero_slides: finalSlides
         });
 
@@ -357,7 +360,7 @@ const App: React.FC = () => {
       const { error } = await supabase
         .from('site_config')
         .upsert({
-          id: 'config',
+          id: configId,
           whatsapp_number: newNumber
         });
 
@@ -650,17 +653,78 @@ const App: React.FC = () => {
     window.scrollTo(0, 0);
   };
 
-  const handleAddBankAccount = (account: BankAccount) => {
-    if (!isAdmin) return;
-    setBankAccounts([...bankAccounts, account]);
-    setNotification({ id: Date.now(), type: 'success', message: 'Cuenta bancaria añadida.' });
+  const handleAddBankAccount = async (account: BankAccount) => {
+    console.log('🏦 Intentando agregar cuenta bancaria:', account);
+    if (!isAdmin) {
+      console.warn('⛔ Acceso denegado: No es administrador');
+      return;
+    }
+
+    const previousAccounts = [...bankAccounts];
+    const newAccounts = [...bankAccounts, account];
+    setBankAccounts(newAccounts); // Optimistic update
+
+    try {
+      // Fetch latest ID to ensure sync
+      console.log('🔍 Buscando configuración de sitio existente...');
+      const { data: currentConfig, error: fetchError } = await supabase.from('site_config').select('id').single();
+
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        console.warn('⚠️ Alerta al buscar config:', fetchError);
+      }
+
+      const targetId = currentConfig?.id || configId;
+      console.log('🎯 ID Objetivo para guardar:', targetId);
+
+      const { error } = await supabase
+        .from('site_config')
+        .upsert({
+          id: targetId,
+          bank_accounts: newAccounts
+        });
+
+      if (error) throw error;
+      console.log('✅ Cuenta bancaria guardada exitosamente en DB');
+      setNotification({ id: Date.now(), type: 'success', message: 'Cuenta bancaria guardada.' });
+    } catch (error) {
+      console.error('❌ Error saving bank account:', error);
+      setBankAccounts(previousAccounts); // Rollback
+      setNotification({ id: Date.now(), type: 'error', message: 'Error al conectar base de datos.' });
+    }
   };
 
-  const handleDeleteBankAccount = (id: string) => {
-    if (!isAdmin) return;
-    if (window.confirm('¿Estás seguro de eliminar esta cuenta bancaria?')) {
-      setBankAccounts(bankAccounts.filter(acc => acc.id !== id));
-      setNotification({ id: Date.now(), type: 'success', message: 'Cuenta bancaria eliminada.' });
+  const handleDeleteBankAccount = async (id: string) => {
+    console.log('🗑️ Intentando eliminar cuenta bancaria ID:', id);
+    if (!isAdmin) {
+      console.warn('⛔ Acceso denegado: No es administrador');
+      return;
+    }
+
+    const previousAccounts = [...bankAccounts];
+    const newAccounts = bankAccounts.filter(acc => acc.id !== id);
+    setBankAccounts(newAccounts); // Optimistic update
+
+    try {
+      // Fetch latest ID to ensure sync
+      const { data: currentConfig, error: fetchError } = await supabase.from('site_config').select('id').single();
+      const targetId = currentConfig?.id || configId;
+      console.log('🎯 ID Objetivo para eliminación:', targetId);
+
+      const { error } = await supabase
+        .from('site_config')
+        .upsert({
+          id: targetId,
+          bank_accounts: newAccounts
+        });
+
+      if (error) throw error;
+
+      console.log('✅ Cuenta eliminada exitosamente en DB');
+      setNotification({ id: Date.now(), type: 'success', message: 'Cuenta eliminada correctamente.' });
+    } catch (error) {
+      console.error('❌ Error deleting bank account:', error);
+      setBankAccounts(previousAccounts); // Rollback
+      setNotification({ id: Date.now(), type: 'error', message: 'Error al actualizar base de datos.' });
     }
   };
 
@@ -1036,7 +1100,7 @@ const App: React.FC = () => {
       const { error } = await supabase
         .from('site_config')
         .upsert({
-          id: 'config',
+          id: configId,
           seal_url: url
         });
 
@@ -1079,22 +1143,24 @@ const App: React.FC = () => {
       <div style={{ opacity: (appVisible || !loading) ? 1 : 0 }} className={`min-h-screen ${resolvedTheme === 'dark' ? 'dark bg-[#0a0a0a]' : 'bg-white'} transition-colors duration-500`}>
 
         <NotificationToast notification={notification} onClose={() => setNotification(null)} />
-        <Header
-          onCartClick={() => setIsCartOpen(true)}
-          cartCount={cartItems.reduce((acc, item) => acc + item.quantity, 0)}
-          onNavigate={navigateToView}
-          onLoginClick={() => {
-            setLoginModalInitialView('login');
-            setIsLoginModalOpen(true);
-          }}
-          onAdminViewToggle={handleAdminViewToggle}
-          adminView={view === 'dashboard' ? 'dashboard' : 'site'}
-          searchTerm={searchTerm}
-          onSearchChange={(e) => setSearchTerm(e.target.value)}
-          onGymBuilderClick={() => setIsGymBuilderOpen(true)}
-        />
+        {(view === 'catalog' || view === 'promos' || view === 'orders') && (
+          <Header
+            onCartClick={() => setIsCartOpen(true)}
+            cartCount={cartItems.reduce((acc, item) => acc + item.quantity, 0)}
+            onNavigate={navigateToView}
+            onLoginClick={() => {
+              setLoginModalInitialView('login');
+              setIsLoginModalOpen(true);
+            }}
+            onAdminViewToggle={handleAdminViewToggle}
+            adminView={view === 'dashboard' ? 'dashboard' : 'site'}
+            searchTerm={searchTerm}
+            onSearchChange={(e) => setSearchTerm(e.target.value)}
+            onGymBuilderClick={() => setIsGymBuilderOpen(true)}
+          />
+        )}
 
-        <main className="relative z-10 pt-[80px] md:pt-[100px]">
+        <main className={`relative z-10 ${(view === 'catalog' || view === 'promos' || view === 'orders') ? 'pt-[80px] md:pt-[100px]' : ''}`}>
           <AnimatePresence mode="wait">
             {view === 'catalog' && (
               <motion.div
@@ -1291,6 +1357,9 @@ const App: React.FC = () => {
                   onUpdateItemStatus={handleUpdateItemStatus}
                   onAssignTransporter={handleAssignTransporter}
                   onDeleteProduct={handleDeleteProduct}
+                  onSaveProduct={handleSaveProduct}
+                  onAdminViewToggle={handleAdminViewToggle}
+                  onLogout={logout}
                 />
               </motion.div>
             )}
@@ -1323,9 +1392,9 @@ const App: React.FC = () => {
             )}
           </AnimatePresence>
         </main>
-        <Footer sealUrl={sealUrl} />
-        <ThemeSwitcher theme={theme} setTheme={setTheme} />
-        <WhatsAppButton phoneNumber={whatsAppNumber} />
+        {(view === 'catalog' || view === 'promos' || view === 'orders') && <Footer sealUrl={sealUrl} />}
+        {(view === 'catalog' || view === 'promos' || view === 'orders') && <ThemeSwitcher theme={theme} setTheme={setTheme} />}
+        {(view === 'catalog' || view === 'promos' || view === 'orders') && <WhatsAppButton phoneNumber={whatsAppNumber} />}
 
         <ProductModal
           product={selectedProduct}
@@ -1349,11 +1418,13 @@ const App: React.FC = () => {
           onUpdateItemCustomization={handleUpdateCartItemCustomization}
           bankAccounts={bankAccounts}
         />
-        <ComparisonBar
-          items={comparisonList}
-          onCompare={() => setIsComparisonModalOpen(true)}
-          onClear={() => setComparisonList([])}
-        />
+        {view !== 'dashboard' && comparisonList.length > 0 && (
+          <ComparisonBar
+            items={comparisonList}
+            onCompare={() => setIsComparisonModalOpen(true)}
+            onClear={() => setComparisonList([])}
+          />
+        )}
         <ComparisonModal
           items={comparisonList}
           isOpen={isComparisonModalOpen}

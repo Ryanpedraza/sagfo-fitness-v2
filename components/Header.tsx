@@ -163,38 +163,65 @@ const Header: React.FC<HeaderProps> = ({ cartCount, onCartClick, onLoginClick, o
               <AnimatePresence>
                 {isMenuOpen && user && (
                   <motion.div
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    initial={{ opacity: 0, y: 15, scale: 0.98 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    transition={{ type: "spring", damping: 20, stiffness: 300 }}
-                    className="absolute right-0 mt-4 w-72 premium-glass rounded-[2rem] shadow-3xl py-4 overflow-hidden"
+                    exit={{ opacity: 0, y: 15, scale: 0.98 }}
+                    transition={{ type: "spring", damping: 25, stiffness: 400 }}
+                    className="absolute right-0 mt-4 w-72 bg-white dark:bg-[#111111] rounded-[2rem] shadow-[0_25px_80px_-15px_rgba(0,0,0,0.3)] dark:shadow-[0_25px_80px_-15px_rgba(0,0,0,0.6)] border border-neutral-100 dark:border-white/5 overflow-hidden z-[110]"
                   >
-                    <div className="px-8 py-6 border-b border-white/5">
-                      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary-500 mb-2 italic">
-                        {user.role === 'admin' ? 'Master Admin' : user.role === 'transporter' ? 'Logistic Elite' : 'Elite Member'}
-                      </p>
-                      <p className="text-lg font-black text-neutral-900 dark:text-white truncate uppercase tracking-tighter leading-none">{user.name}</p>
-                      <p className="text-[10px] font-bold text-neutral-400 truncate mt-2 uppercase tracking-[0.1em]">{user.email}</p>
+                    {/* User Profile Header */}
+                    <div className="relative px-8 py-8 text-center overflow-hidden">
+                      {/* Subtitle Glow */}
+                      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-40 bg-primary-500/10 blur-[50px] rounded-full -mt-20" />
+
+                      <div className="relative z-10">
+                        <span className="inline-block text-[9px] font-black uppercase tracking-[0.4em] text-primary-500 mb-2 italic">
+                          {user.role === 'admin' ? 'Master Admin' : user.role === 'transporter' ? 'Logistic Elite' : 'Elite Member'}
+                        </span>
+                        <h4 className="text-xl font-black text-neutral-900 dark:text-white uppercase tracking-tighter leading-none mb-1">
+                          {user.name}
+                        </h4>
+                        <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest opacity-60">
+                          {user.email}
+                        </p>
+                      </div>
                     </div>
 
-                    <div className="py-2">
+                    {/* Navigation Items */}
+                    <div className="px-3 pb-3 space-y-1">
                       {isCustomer && (
-                        <button onClick={() => handleNavigation('orders')} className="w-full flex items-center gap-4 px-8 py-4 text-[10px] font-black uppercase tracking-[0.3em] text-neutral-600 dark:text-neutral-300 hover:bg-primary-500 hover:text-white transition-all duration-300 group">
-                          <ClipboardList size={18} className="opacity-50 group-hover:opacity-100" />
+                        <button
+                          onClick={() => handleNavigation('orders')}
+                          className="w-full flex items-center gap-4 px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-white/5 hover:text-primary-600 dark:hover:text-white transition-all duration-300 group"
+                        >
+                          <div className="w-8 h-8 rounded-lg bg-neutral-100 dark:bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <ClipboardList size={16} className="text-neutral-400 group-hover:text-primary-500" />
+                          </div>
                           <span>Mis Pedidos</span>
                         </button>
                       )}
+
                       {isAdmin && (
-                        <button onClick={onAdminViewToggle} className="w-full flex items-center gap-4 px-8 py-4 text-[10px] font-black uppercase tracking-[0.3em] text-neutral-600 dark:text-neutral-300 hover:bg-neutral-900 dark:hover:bg-white dark:hover:text-black transition-all duration-300 group">
-                          <ShieldCheck size={18} className="opacity-50 group-hover:opacity-100" />
+                        <button
+                          onClick={onAdminViewToggle}
+                          className="w-full flex items-center gap-4 px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-white/5 hover:text-blue-600 dark:hover:text-white transition-all duration-300 group"
+                        >
+                          <div className="w-8 h-8 rounded-lg bg-neutral-100 dark:bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <ShieldCheck size={16} className="text-neutral-400 group-hover:text-blue-500" />
+                          </div>
                           <span>{adminView === 'dashboard' ? 'Ver Tienda' : 'Panel de Control'}</span>
                         </button>
                       )}
-                    </div>
 
-                    <div className="mt-2 pt-2 border-t border-white/5">
-                      <button onClick={handleLogout} className="w-full flex items-center gap-4 px-8 py-4 text-[10px] font-black uppercase tracking-[0.3em] text-red-500 hover:bg-red-500 hover:text-white transition-all duration-300 group">
-                        <LogOut size={18} className="opacity-50 group-hover:opacity-100" />
+                      <div className="h-px bg-neutral-100 dark:bg-white/5 mx-5 my-2" />
+
+                      <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center gap-4 px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] text-red-500 hover:bg-red-50/50 dark:hover:bg-red-500/10 transition-all duration-300 group"
+                      >
+                        <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <LogOut size={16} className="text-red-500" />
+                        </div>
                         <span>Desconectar</span>
                       </button>
                     </div>

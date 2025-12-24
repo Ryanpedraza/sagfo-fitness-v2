@@ -26,7 +26,7 @@ const Hero: React.FC<HeroProps> = ({ onCartClick, slides, isAdmin, onEdit, onPro
   if (slides.length === 0) return null;
 
   return (
-    <div className="relative h-[75vh] md:h-[90vh] w-full overflow-hidden bg-zinc-900">
+    <div className="relative h-[65vh] md:h-[90vh] w-full overflow-hidden bg-zinc-900">
       {/* Admin Edit Button */}
       {isAdmin && (
         <button
@@ -44,12 +44,15 @@ const Hero: React.FC<HeroProps> = ({ onCartClick, slides, isAdmin, onEdit, onPro
             key={slide.id || index}
             className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
           >
-            {/* Background Image */}
-            <img
-              src={slide.imageUrl}
-              alt={slide.titleLine1}
-              className="w-full h-full object-cover"
-            />
+            {/* Background Image - Adjusted for Mobile Visibility */}
+            <div className="absolute inset-0 flex items-center justify-center bg-black">
+              <img
+                src={slide.imageUrl}
+                alt={slide.titleLine1}
+                className="w-full h-full object-cover md:object-cover"
+                style={{ objectPosition: 'center' }}
+              />
+            </div>
             {/* Dark Overlay */}
             <div className="absolute inset-0 bg-black/50" />
 

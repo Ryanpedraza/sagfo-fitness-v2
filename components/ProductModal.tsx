@@ -132,10 +132,27 @@ const ProductModal: React.FC<ProductModalProps> = ({
   };
 
   const addImageField = () => { if (formData) setFormData({ ...formData, imageUrls: [...formData.imageUrls, ''] }); };
-  const removeImageField = (index: number) => { if (formData && formData.imageUrls.length > 1) setFormData({ ...formData, imageUrls: formData.imageUrls.filter((_, i) => i !== index) }); };
+  const removeImageField = (index: number) => {
+    if (formData && window.confirm('¿Estás seguro de eliminar esta imagen?')) {
+      setFormData({
+        ...formData,
+        imageUrls: formData.imageUrls.filter((_, i) => i !== index)
+      });
+    }
+  };
   const addFeature = () => { if (newFeature.trim() && formData) { setFormData({ ...formData, features: [...formData.features, newFeature.trim()] }); setNewFeature(''); } };
   const removeFeature = (index: number) => { if (formData) setFormData({ ...formData, features: formData.features.filter((_, i) => i !== index) }); };
-  const addSpec = () => { if (newSpecKey.trim() && newSpecValue.trim() && formData) { setFormData({ ...formData, specifications: { ...formData.specifications, [newSpecKey.trim()]: newSpecValue.trim() } }); setNewSpecKey(''); setNewSpecValue(''); } };
+  const addSpec = () => {
+    if (newSpecKey.trim() && newSpecValue.trim() && formData) {
+      const currentSpecs = formData.specifications || {};
+      setFormData({
+        ...formData,
+        specifications: { ...currentSpecs, [newSpecKey.trim()]: newSpecValue.trim() }
+      });
+      setNewSpecKey('');
+      setNewSpecValue('');
+    }
+  };
   const removeSpec = (key: string) => { if (formData) { const newSpecs = { ...formData.specifications }; delete newSpecs[key]; setFormData({ ...formData, specifications: newSpecs }); } };
 
   const handleSave = () => { if (formData) onSave(formData, newImagesMap); };
@@ -221,15 +238,23 @@ const ProductModal: React.FC<ProductModalProps> = ({
                 /* EDIT MODE IMAGES */
                 <div className="grid grid-cols-2 gap-6 pb-20">
                   {formData?.imageUrls.map((url, index) => (
-                    <div key={index} className="relative aspect-square rounded-[3rem] bg-neutral-50 dark:bg-white/5 p-6 border-2 border-dashed border-neutral-200 dark:border-white/10 flex items-center justify-center group">
+                    <div key={index} className="relative aspect-square rounded-[3rem] bg-neutral-50 dark:bg-white/5 p-6 border-2 border-dashed border-neutral-200 dark:border-white/10 flex items-center justify-center group overflow-hidden">
                       {url ? (
-                        <>
-                          <img src={url} className="w-full h-full object-contain" alt="" />
-                          <button onClick={() => removeImageField(index)} className="absolute top-4 right-4 w-10 h-10 rounded-full bg-red-500 text-white flex items-center justify-center shadow-2xl hover:scale-110 transition-all"><Trash2 className="w-5 h-5" /></button>
-                        </>
+                        <img src={url} className="w-full h-full object-contain" alt="" />
                       ) : (
                         <div className="flex flex-col items-center gap-2 text-neutral-400 font-black uppercase text-[10px] tracking-widest"><Camera className="w-10 h-10 mb-2" /> Subir Imagen</div>
                       )}
+
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeImageField(index);
+                        }}
+                        className="absolute top-4 right-4 w-10 h-10 rounded-full bg-red-500 text-white flex items-center justify-center shadow-2xl hover:scale-110 transition-all z-10"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+
                       <input type="file" onChange={(e) => handleImageUpload(e, index)} className="absolute inset-0 opacity-0 cursor-pointer" accept="image/*" />
                     </div>
                   ))}
@@ -340,26 +365,76 @@ const ProductModal: React.FC<ProductModalProps> = ({
                   <div className="grid grid-cols-2 gap-6">
                     <div className="space-y-3">
                       <label className="text-[11px] font-black uppercase text-neutral-400 tracking-widest italic px-4">Segmento</label>
-                      <select name="category" value={formData?.category} onChange={handleInputChange} className="w-full bg-white dark:bg-zinc-900 p-5 rounded-2xl font-bold border border-neutral-100 dark:border-white/10 text-neutral-900 dark:text-white outline-none">
-                        <option value="Maquinaria" className="bg-white dark:bg-zinc-900">Maquinaria</option>
-                        <option value="Accesorios" className="bg-white dark:bg-zinc-900">Accesorios</option>
+                      <select
+                        name="category"
+                        value={formData?.category}
+                        onChange={(e) => {
+                          const val = e.target.value as 'Maquinaria' | 'Accesorios';
+                          setFormData(prev => prev ? { ...prev, category: val, muscleGroup: 'General' } : null);
+                        }}
+                        className="w-full bg-white dark:bg-zinc-900 p-5 rounded-2xl font-bold border border-neutral-100 dark:border-white/10 text-neutral-900 dark:text-white outline-none"
+                      >
+                        <option value="Maquinaria">Maquinaria</option>
+                        <option value="Accesorios">Accesorios</option>
                       </select>
                     </div>
                     <div className="space-y-3">
                       <label className="text-[11px] font-black uppercase text-neutral-400 tracking-widest italic px-4">Grupo Muscular</label>
-                      <input name="muscleGroup" value={formData?.muscleGroup} onChange={handleInputChange} className="w-full bg-white dark:bg-zinc-900 p-5 rounded-2xl font-bold border border-neutral-100 dark:border-white/10 text-neutral-900 dark:text-white focus:ring-primary-500/20 outline-none" />
+                      <select
+                        name="muscleGroup"
+                        value={formData?.muscleGroup || 'General'}
+                        onChange={handleInputChange}
+                        className="w-full bg-white dark:bg-zinc-900 p-5 rounded-2xl font-bold border border-neutral-100 dark:border-white/10 text-neutral-900 dark:text-white outline-none"
+                      >
+                        <option value="General">General</option>
+                        {formData?.category === 'Maquinaria' ? (
+                          <>
+                            <option value="Pecho">Pecho</option>
+                            <option value="Espalda">Espalda</option>
+                            <option value="Pierna">Pierna</option>
+                            <option value="Brazo">Brazo</option>
+                            <option value="Hombro">Hombro</option>
+                            <option value="Cardio">Cardio</option>
+                            <option value="Abdomen">Abdomen</option>
+                            <option value="Funcional">Funcional</option>
+                          </>
+                        ) : (
+                          <>
+                            <option value="Peso Libre">Peso Libre</option>
+                            <option value="Barras">Barras</option>
+                            <option value="Discos">Discos</option>
+                            <option value="Mancuernas">Mancuernas</option>
+                            <option value="Bancos">Bancos</option>
+                            <option value="Agarres">Agarres</option>
+                            <option value="Soportes">Soportes</option>
+                          </>
+                        )}
+                      </select>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-6">
                     <div className="space-y-3">
                       <label className="text-[11px] font-black uppercase text-neutral-400 tracking-widest italic px-4">Inversión COP</label>
-                      <input type="number" name="price" value={formData?.price} onChange={handleInputChange} className="w-full bg-white dark:bg-zinc-900 p-5 rounded-2xl font-black border border-neutral-100 dark:border-white/10 text-neutral-900 dark:text-white focus:ring-primary-500/20 outline-none" />
+                      <input type="number" name="price" value={formData?.price === 0 ? '' : formData?.price} onChange={handleInputChange} className="w-full bg-white dark:bg-zinc-900 p-5 rounded-2xl font-black border border-neutral-100 dark:border-white/10 text-neutral-900 dark:text-white focus:ring-primary-500/20 outline-none" />
                     </div>
                     <div className="space-y-3">
-                      <label className="text-[11px] font-black uppercase text-neutral-400 tracking-widest italic px-4">Promo COP</label>
-                      <input type="number" name="promotionalPrice" value={formData?.promotionalPrice || 0} onChange={handleInputChange} className="w-full bg-white dark:bg-zinc-900 p-5 rounded-2xl font-black border border-neutral-100 dark:border-white/10 text-neutral-900 dark:text-white focus:ring-primary-500/20 outline-none" />
+                      <label className="text-[11px] font-black uppercase text-neutral-400 tracking-widest italic px-4">Disponibilidad</label>
+                      <select
+                        name="availabilityStatus"
+                        value={formData?.availabilityStatus}
+                        onChange={handleInputChange}
+                        className="w-full bg-white dark:bg-zinc-900 p-5 rounded-2xl font-bold border border-neutral-100 dark:border-white/10 text-neutral-900 dark:text-white outline-none"
+                      >
+                        <option value="in-stock">En Stock (Despacho Inmediato)</option>
+                        <option value="made-to-order">Producción Bajo Pedido</option>
+                      </select>
                     </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <label className="text-[11px] font-black uppercase text-neutral-400 tracking-widest italic px-4">Promo COP (Opcional)</label>
+                    <input type="number" name="promotionalPrice" value={formData?.promotionalPrice === 0 ? '' : formData?.promotionalPrice} onChange={handleInputChange} className="w-full bg-white dark:bg-zinc-900 p-5 rounded-2xl font-black border border-neutral-100 dark:border-white/10 text-neutral-900 dark:text-white focus:ring-primary-500/20 outline-none" />
                   </div>
 
                   <div className="space-y-3">
@@ -400,49 +475,55 @@ const ProductModal: React.FC<ProductModalProps> = ({
             </div>
 
             <div className="lg:col-span-8 grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-1">
-              {Object.entries((isEditing ? formData?.specifications : product.specifications) || {}).map(([key, value]) => (
-                <div key={key} className="group relative py-8 border-b border-neutral-100 dark:border-white/5 hover:px-6 transition-all duration-700 rounded-2xl hover:bg-neutral-50 dark:hover:bg-white/[0.02]">
-                  <div className="space-y-1">
-                    <span className="text-[10px] font-black text-primary-600 uppercase tracking-[0.3em] italic mb-1 block">{key}</span>
-                    <p className="text-3xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter group-hover:text-primary-600 transition-colors leading-none">{value}</p>
-                  </div>
-                  {isEditing && (
-                    <button onClick={() => removeSpec(key)} className="absolute right-8 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-red-500 text-white flex items-center justify-center shadow-2xl opacity-0 group-hover:opacity-100 translate-x-10 group-hover:translate-x-0 transition-all font-black text-[10px]">ELIMINAR</button>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* RELACIONADOS (MÁS COMPACTO Y ELEGANTE) */}
-        {!isEditing && relatedProducts.length > 0 && (
-          <div className="mt-20 pt-20 border-t border-neutral-100 dark:border-white/10 pb-20">
-            <div className="flex flex-col items-center text-center mb-16 space-y-6">
-              <span className="text-[10px] font-black text-primary-600 uppercase tracking-[0.5em] italic">Catálogo Elite</span>
-              <h2 className="text-4xl md:text-6xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter leading-none">Explora Más</h2>
-              <div className="w-[1px] h-20 bg-gradient-to-b from-primary-600 to-transparent" />
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-              {relatedProducts.map(rp => (
-                <div key={rp.id} onClick={() => onProductClick?.(rp)} className="group cursor-pointer space-y-6">
-                  <div className="aspect-[3/4] rounded-[3rem] overflow-hidden bg-[#fafafa] dark:bg-white/[0.02] border border-neutral-100 dark:border-white/5 p-10 relative flex items-center justify-center transition-all duration-1000 group-hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.15)] group-hover:-translate-y-4 group-hover:bg-white dark:group-hover:bg-black">
-                    <img src={rp.imageUrls[0]} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-1000" alt={rp.name} />
-                  </div>
-                  <div className="px-4 space-y-3">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-black text-primary-600 uppercase tracking-[0.2em] italic">{rp.category}</span>
-                      <div className="h-[1px] flex-grow bg-neutral-200 dark:bg-white/10" />
+              {Object.entries((isEditing ? formData?.specifications : product.specifications) || {}).length > 0 ? (
+                Object.entries((isEditing ? formData?.specifications : product.specifications) || {}).map(([key, value]) => (
+                  <div key={key} className="group relative py-8 border-b border-neutral-100 dark:border-white/5 hover:px-6 transition-all duration-700 rounded-2xl hover:bg-neutral-50 dark:hover:bg-white/[0.02]">
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-black text-primary-600 uppercase tracking-[0.3em] italic mb-1 block">{key}</span>
+                      <p className="text-3xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter group-hover:text-primary-600 transition-colors leading-none">{value}</p>
                     </div>
-                    <h4 className="text-2xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter leading-[1] group-hover:text-primary-600 transition-colors duration-500">{rp.name}</h4>
-                    <p className="text-xl font-black text-neutral-900 dark:text-white italic opacity-80">{formatCurrency(rp.price)}</p>
+                    {isEditing && (
+                      <button onClick={(e) => { e.preventDefault(); removeSpec(key); }} className="absolute right-8 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-red-500 text-white flex items-center justify-center shadow-2xl opacity-0 group-hover:opacity-100 translate-x-10 group-hover:translate-x-0 transition-all font-black text-[10px]">ELIMINAR</button>
+                    )}
                   </div>
+                ))
+              ) : (
+                <div className="lg:col-span-2 py-10 text-neutral-400 font-bold uppercase italic text-xs opacity-50 border-2 border-dashed border-neutral-100 dark:border-white/5 rounded-[3rem] flex items-center justify-center">
+                  Sin especificaciones registradas
                 </div>
-              ))}
+              )}
             </div>
           </div>
-        )}
+
+          {/* RELACIONADOS (MÁS COMPACTO Y ELEGANTE) */}
+          {!isEditing && relatedProducts.length > 0 && (
+            <div className="mt-20 pt-20 border-t border-neutral-100 dark:border-white/10 pb-20">
+              <div className="flex flex-col items-center text-center mb-16 space-y-6">
+                <span className="text-[10px] font-black text-primary-600 uppercase tracking-[0.5em] italic">Catálogo Elite</span>
+                <h2 className="text-4xl md:text-6xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter leading-none">Explora Más</h2>
+                <div className="w-[1px] h-20 bg-gradient-to-b from-primary-600 to-transparent" />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                {relatedProducts.map(rp => (
+                  <div key={rp.id} onClick={() => onProductClick?.(rp)} className="group cursor-pointer space-y-6">
+                    <div className="aspect-[3/4] rounded-[3rem] overflow-hidden bg-[#fafafa] dark:bg-white/[0.02] border border-neutral-100 dark:border-white/5 p-10 relative flex items-center justify-center transition-all duration-1000 group-hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.15)] group-hover:-translate-y-4 group-hover:bg-white dark:group-hover:bg-black">
+                      <img src={rp.imageUrls[0]} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-1000" alt={rp.name} />
+                    </div>
+                    <div className="px-4 space-y-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-black text-primary-600 uppercase tracking-[0.2em] italic">{rp.category}</span>
+                        <div className="h-[1px] flex-grow bg-neutral-200 dark:bg-white/10" />
+                      </div>
+                      <h4 className="text-2xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter leading-[1] group-hover:text-primary-600 transition-colors duration-500">{rp.name}</h4>
+                      <p className="text-xl font-black text-neutral-900 dark:text-white italic opacity-80">{formatCurrency(rp.price)}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       <footer className="bg-neutral-950 py-16 text-center flex flex-col items-center gap-6">

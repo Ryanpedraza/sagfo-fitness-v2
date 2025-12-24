@@ -55,14 +55,19 @@ const Header: React.FC<HeaderProps> = ({ cartCount, onCartClick, onLoginClick, o
 
           {/* Brand Identity */}
           <div
-            className="flex items-center cursor-pointer group transition-all duration-500 hover:scale-105"
+            className="flex items-center cursor-pointer group transition-all duration-[600ms] hover:scale-105 active:scale-95"
             onClick={() => onNavigate('catalog')}
           >
-            <h1 className="text-3xl font-black text-neutral-900 dark:text-white tracking-tighter flex items-center italic">
-              <span className="bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 px-3 py-1 rounded-2xl mr-2 transform transition-all group-hover:rotate-[15deg] group-hover:bg-primary-600 group-hover:text-white group-hover:scale-110 not-italic">S</span>
-              AGFO FITNESS
-              <span className="font-light text-neutral-400 dark:text-neutral-500 ml-1.5 opacity-40 group-hover:opacity-100 group-hover:text-primary-500 transition-all duration-500 not-italic text-[10px] tracking-[0.3em]">PREMIUM</span>
-            </h1>
+            <img
+              src="/logo-light.png"
+              alt="SAGFO Logo"
+              className="h-10 md:h-12 w-auto object-contain transition-all duration-500 group-hover:drop-shadow-[0_0_20px_rgba(37,211,102,0.3)] dark:hidden"
+            />
+            <img
+              src="/logo-sf.png"
+              alt="SAGFO Logo"
+              className="h-10 md:h-12 w-auto object-contain transition-all duration-500 group-hover:drop-shadow-[0_0_20px_rgba(37,211,102,0.3)] hidden dark:block"
+            />
           </div>
 
           {/* Dynamic Search - Minimalist Art */}

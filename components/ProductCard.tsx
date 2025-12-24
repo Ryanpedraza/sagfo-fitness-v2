@@ -46,13 +46,22 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onClick, onToggleCom
         {/* Badges */}
         <div className="absolute top-6 left-6 z-20 flex flex-col gap-2">
           {hasDiscount && (
-            <div className="px-3 py-1 rounded-lg bg-primary-600 text-white text-[8px] font-black uppercase tracking-widest italic shadow-lg">
+            <div className="px-4 py-2 rounded-full bg-primary-600/90 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-widest italic shadow-lg shadow-primary-600/20 border border-white/10">
               OFERTA
             </div>
           )}
-          <div className="px-3 py-1 rounded-lg bg-black dark:bg-white text-white dark:text-black text-[8px] font-black uppercase tracking-widest italic shadow-lg">
-            {product.availabilityStatus === 'in-stock' ? 'Disponible' : 'Pedido'}
-          </div>
+
+          {product.availabilityStatus === 'in-stock' ? (
+            <div className="px-4 py-2 rounded-full bg-emerald-500/90 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-widest italic shadow-lg shadow-emerald-500/20 border border-white/10 flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+              DISPONIBLE
+            </div>
+          ) : (
+            <div className="px-4 py-2 rounded-full bg-amber-500/90 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-widest italic shadow-lg shadow-amber-500/20 border border-white/10 flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-white/50" />
+              SOBRE PEDIDO
+            </div>
+          )}
         </div>
 
         <div className="absolute top-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity">

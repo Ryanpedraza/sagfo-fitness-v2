@@ -50,6 +50,8 @@ export async function uploadMultipleToBlob(files: File[], folder: string = 'uplo
 
 /**
  * Elimina un archivo de Vercel Blob Storage
+ * NOTA: Las eliminaciones directas desde el navegador están bloqueadas por CORS y por seguridad de Vercel.
+ * Se requiere un entorno de servidor (Node.js/Edge Functions) para que funcione.
  * @param url - URL del archivo a eliminar
  */
 export async function deleteFromBlob(url: string): Promise<void> {
@@ -64,10 +66,15 @@ export async function deleteFromBlob(url: string): Promise<void> {
             return;
         }
 
+        // DETECCIÓN DE ENTORNO NAVEGADOR (CORS preventer)
+        if (typeof window !== 'undefined') {
+            console.warn('⚠️ Vercel Blob: Las eliminaciones no son posibles directamente desde el navegador debido a restricciones de CORS y seguridad.');
+            console.log('💡 El archivo permanecerá en Vercel Blob pero el registro ha sido eliminado de la base de datos.');
+            return;
+        }
+
         console.log(`🗑️ Eliminando archivo de Vercel Blob: ${url}`);
-
         await del(url, { token: BLOB_TOKEN });
-
         console.log(`✅ Archivo eliminado exitosamente`);
     } catch (error) {
         console.error('❌ Error eliminando archivo de Vercel Blob:', error);

@@ -17,11 +17,9 @@ const Footer: React.FC<FooterProps> = ({ sealUrl }) => {
 
           {/* Brand Identity */}
           <div className="space-y-10">
-            <div className="flex items-center group cursor-pointer">
-              <span className="bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 w-12 h-12 flex items-center justify-center rounded-[1.25rem] font-black text-xl mr-4 transform transition-all group-hover:rotate-[15deg] group-hover:bg-primary-600 group-hover:text-white shadow-xl">S</span>
-              <h2 className="text-3xl font-black text-neutral-900 dark:text-white tracking-tighter italic uppercase">
-                SAGFO FITNESS
-              </h2>
+            <div className="flex items-center group cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+              <img src="/logo-light.png" alt="Logo" className="h-10 w-auto object-contain dark:hidden transition-transform duration-500 group-hover:scale-110" />
+              <img src="/logo-sf.png" alt="Logo" className="h-10 w-auto object-contain hidden dark:block transition-transform duration-500 group-hover:scale-110" />
             </div>
             <p className="text-base leading-relaxed text-neutral-500 dark:text-neutral-400 font-medium italic">
               Engineering for the elite. Equipamiento de alto rendimiento diseñado para transformar la biomecánica en potencia pura.

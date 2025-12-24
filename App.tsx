@@ -66,9 +66,17 @@ const App: React.FC = () => {
 
   const [products, setProducts] = useState<EquipmentItem[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
-  const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
+
+  // Galería derivada de los productos para evitar duplicidad de datos
+  const galleryImages: GalleryImage[] = products.flatMap((p, pIdx) =>
+    p.imageUrls.map((url, iIdx) => ({
+      id: `gallery-${p.id}-${iIdx}`,
+      imageUrl: url,
+      caption: p.name
+    }))
+  );
 
   const [selectedProduct, setSelectedProduct] = useState<EquipmentItem | null>(null);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
@@ -172,15 +180,6 @@ const App: React.FC = () => {
         imageUrl: e.image_url,
       }));
       setEvents(mappedEvents);
-    }
-
-    const { data: galleryData } = await supabase.from('gallery').select('*');
-    if (galleryData) {
-      const mappedGallery: GalleryImage[] = galleryData.map((g: any) => ({
-        ...g,
-        imageUrl: g.image_url,
-      }));
-      setGalleryImages(mappedGallery);
     }
 
     const { data: profilesData } = await supabase.from('users').select('*');
@@ -307,23 +306,43 @@ const App: React.FC = () => {
     localStorage.setItem('displayByCategory', JSON.stringify(displayByCategory));
   }, [displayByCategory]);
 
-  const handleSaveHero = async (slides: HeroSlide[]) => {
+  const handleSaveHero = async (slides: HeroSlide[], newFilesMap?: Record<string, File>) => {
     if (!isAdmin) return;
-    setHeroSlides(slides);
 
     try {
+      let finalSlides = [...slides];
+
+      if (newFilesMap && Object.keys(newFilesMap).length > 0) {
+        console.log('📤 Subiendo nuevas imágenes de banner a Vercel Blob...');
+        const uploadPromises = finalSlides.map(async (slide) => {
+          if (newFilesMap[slide.imageUrl]) {
+            const file = newFilesMap[slide.imageUrl];
+            const blobUrl = await uploadToBlob(file, 'banners');
+            return { ...slide, imageUrl: blobUrl };
+          }
+          return slide;
+        });
+        finalSlides = await Promise.all(uploadPromises);
+      }
+
+      setHeroSlides(finalSlides);
+
       const { error } = await supabase
         .from('site_config')
         .upsert({
           id: 'config',
-          hero_slides: slides
+          hero_slides: finalSlides
         });
 
-      if (error) throw error;
-      setNotification({ id: Date.now(), type: 'success', message: 'Banners actualizados correctamente.' });
+      if (error) {
+        console.error('❌ Error de Supabase al guardar banners:', error);
+        throw error;
+      }
+
+      setNotification({ id: Date.now(), type: 'success', message: 'Banners sincronizados al 100%.' });
     } catch (error) {
-      console.error('Error saving hero slides:', error);
-      setNotification({ id: Date.now(), type: 'error', message: 'Error al guardar banners en la base de datos.' });
+      console.error('❌ Error fatal en el proceso de guardado de banners:', error);
+      setNotification({ id: Date.now(), type: 'error', message: 'Error crítico al procesar imágenes. Revisa la consola.' });
     }
   };
 
@@ -626,106 +645,6 @@ const App: React.FC = () => {
     }
     setView(targetView);
     window.scrollTo(0, 0);
-  };
-
-  const handleAddGalleryImage = async (file: File, caption: string) => {
-    if (!isAdmin) return;
-
-    const newId = `gal-${Date.now()}`;
-
-    try {
-      console.log('📤 Subiendo imagen de galería a Vercel Blob...');
-
-      // Subir a Vercel Blob en lugar de Supabase Storage
-      const blobUrl = await uploadToBlob(file, 'gallery');
-
-      console.log('✅ Imagen subida a Vercel Blob:', blobUrl);
-
-      const { error: dbError } = await supabase
-        .from('gallery')
-        .insert({
-          id: newId,
-          image_url: blobUrl,
-          caption: caption
-        });
-
-      if (dbError) {
-        console.error('Error saving to database:', dbError);
-        // Intentar borrar la imagen de Vercel Blob si falla la DB
-        await deleteFromBlob(blobUrl);
-        throw dbError;
-      }
-
-      // Refetch gallery to ensure consistency
-      console.log('Recargando galería desde la base de datos...');
-      const { data: galleryData } = await supabase.from('gallery').select('*');
-      if (galleryData) {
-        const mappedGallery: GalleryImage[] = galleryData.map((g: any) => ({
-          ...g,
-          imageUrl: g.image_url,
-        }));
-        setGalleryImages(mappedGallery);
-      }
-
-      setNotification({ id: Date.now(), type: 'success', message: 'Imagen añadida a la galería.' });
-    } catch (error: any) {
-      console.error('Error adding gallery image:', error);
-      setNotification({
-        id: Date.now(),
-        type: 'error',
-        message: error.message || 'Error al guardar imagen.'
-      });
-    }
-  };
-
-  const handleDeleteGalleryImage = async (imageId: string) => {
-    console.log('Intentando borrar imagen con ID:', imageId);
-    if (!isAdmin) {
-      console.log('No es admin, cancelando borrado.');
-      return;
-    }
-
-    try {
-      const imageToDelete = galleryImages.find(img => img.id === imageId);
-
-      if (!imageToDelete) {
-        console.error('Imagen no encontrada en el estado local. IDs disponibles:', galleryImages.map(img => img.id));
-        throw new Error('No se pudo encontrar la información de la imagen para borrarla.');
-      }
-
-      console.log('Imagen encontrada:', imageToDelete);
-
-      // 1. Borrar de la base de datos primero
-      console.log('Borrando registro de la base de datos...');
-      const { error: dbError } = await supabase
-        .from('gallery')
-        .delete()
-        .eq('id', imageId);
-
-      if (dbError) {
-        console.error('Error de Supabase al borrar registro:', dbError);
-        throw dbError;
-      }
-      console.log('Registro borrado de la base de datos.');
-
-      // 2. Borrar de Vercel Blob (si es una URL de Blob)
-      if (imageToDelete.imageUrl) {
-        console.log('🗑️ Intentando borrar archivo de Vercel Blob...');
-        await deleteFromBlob(imageToDelete.imageUrl);
-      }
-
-      // 3. Actualizar estado local
-      setGalleryImages(prev => prev.filter(img => img.id !== imageId));
-      setNotification({ id: Date.now(), type: 'success', message: 'Imagen eliminada correctamente.' });
-
-    } catch (error: any) {
-      console.error('Error crítico en handleDeleteGalleryImage:', error);
-      setNotification({
-        id: Date.now(),
-        type: 'error',
-        message: error.message || 'Error al eliminar la imagen.'
-      });
-    }
   };
 
   const handleAddBankAccount = (account: BankAccount) => {
@@ -1178,6 +1097,52 @@ const App: React.FC = () => {
                 onEdit={() => { if (isAdmin) setIsEditHeroModalOpen(true); }}
                 onPromosClick={() => navigateToView('promos')}
               />
+              {/* Purchase Models Info Window */}
+              <div className="w-full px-4 mt-16 mb-16 max-w-7xl mx-auto animate-fadeIn">
+                <div className="relative overflow-hidden rounded-[2rem] bg-neutral-900 border border-white/10 p-6 md:p-10 shadow-2xl">
+                  {/* Background Effects */}
+                  <div className="absolute top-0 right-0 w-96 h-96 bg-primary-600/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+                  <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-600/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 pointer-events-none"></div>
+
+                  <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-12">
+                    <div className="text-center lg:text-left space-y-3 max-w-xl">
+                      <h3 className="text-2xl md:text-3xl font-black text-white uppercase italic tracking-tighter">
+                        Modelos de <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-primary-600">Inversión</span>
+                      </h3>
+                      <p className="text-neutral-400 text-sm md:text-base font-medium leading-relaxed">
+                        En SAGFO te ofrecemos flexibilidad para adquirir tu equipamiento. Elige la modalidad que se adapte a tu flujo de caja.
+                      </p>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
+                      {/* Card 1: Disponible */}
+                      <div className="flex-1 min-w-[240px] bg-white/[0.03] border border-white/5 rounded-2xl p-5 backdrop-blur-sm hover:bg-white/[0.06] hover:border-white/20 transition-all duration-300 group cursor-default">
+                        <div className="flex items-center gap-3 mb-3">
+                          <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)] group-hover:scale-125 transition-transform"></div>
+                          <span className="text-xs font-black text-emerald-400 uppercase tracking-[0.2em]">Disponible</span>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-white text-lg font-bold">Entrega Inmediata</p>
+                          <p className="text-neutral-500 text-[10px] font-bold uppercase tracking-wider">Pago 100% Contra Entrega / Envío</p>
+                        </div>
+                      </div>
+
+                      {/* Card 2: Sobre Pedido */}
+                      <div className="flex-1 min-w-[240px] bg-white/[0.03] border border-white/5 rounded-2xl p-5 backdrop-blur-sm hover:bg-white/[0.06] hover:border-white/20 transition-all duration-300 group cursor-default">
+                        <div className="flex items-center gap-3 mb-3">
+                          <div className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.5)] group-hover:scale-125 transition-transform"></div>
+                          <span className="text-xs font-black text-amber-400 uppercase tracking-[0.2em]">Sobre Pedido</span>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-white text-lg font-bold">Reserva con 50%</p>
+                          <p className="text-neutral-500 text-[10px] font-bold uppercase tracking-wider">50% Restante al Finalizar Fabricación</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <QuickCategoryNav onSelectCategory={handleSelectQuickCategory} />
               <div id="catalog" className="w-full px-1 md:px-4 py-8">
                 <div className="w-full bg-white dark:bg-[#111] rounded-[2.5rem] sm:rounded-[3.5rem] shadow-2xl shadow-neutral-200/50 dark:shadow-[0_30px_60px_rgba(0,0,0,0.35)] overflow-hidden p-4 sm:p-8 md:p-12 border border-neutral-200 dark:border-white/5 relative">
@@ -1243,7 +1208,7 @@ const App: React.FC = () => {
                 onEditEvent={handleOpenEventModal}
                 onDeleteEvent={handleDeleteEvent}
               />
-              <GallerySection images={galleryImages} isAdmin={isAdmin} onAddImage={handleAddGalleryImage} onDeleteImage={handleDeleteGalleryImage} />
+              <GallerySection images={galleryImages} isAdmin={isAdmin} />
             </>
           )}
 
@@ -1301,8 +1266,6 @@ const App: React.FC = () => {
               onSaveEvent={handleSaveEvent}
               onDeleteEvent={handleDeleteEvent}
               onOpenEventModal={handleOpenEventModal}
-              onAddGalleryImage={handleAddGalleryImage}
-              onDeleteGalleryImage={handleDeleteGalleryImage}
               onOpenUserModal={handleOpenUserModal}
               onDeleteProfile={handleDeleteProfile}
               displayByCategory={displayByCategory}

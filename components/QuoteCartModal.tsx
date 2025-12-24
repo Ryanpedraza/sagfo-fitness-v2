@@ -374,7 +374,7 @@ const QuoteCartModal: React.FC<QuoteCartModalProps> = ({ isOpen, onClose, cartIt
                                                 <div className="flex items-center justify-between mt-3">
                                                     <div className="flex items-center bg-neutral-100 dark:bg-zinc-800 rounded-lg p-0.5 border border-neutral-200 dark:border-white/5">
                                                         <button onClick={() => onUpdateQuantity(item.equipment.id, item.quantity - 1)} className="w-6 h-6 text-xs font-black">-</button>
-                                                        <span className="w-6 text-center text-[9px] font-black">{item.quantity}</span>
+                                                        <span className="w-6 text-center text-[9px] font-black text-neutral-900 dark:text-white">{item.quantity}</span>
                                                         <button onClick={() => onUpdateQuantity(item.equipment.id, item.quantity + 1)} className="w-6 h-6 text-xs font-black">+</button>
                                                     </div>
                                                     <span className="text-[11px] font-black text-primary-600 italic">{formatCurrency(item.equipment.price * item.quantity)}</span>

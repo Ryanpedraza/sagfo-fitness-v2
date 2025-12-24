@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { HeroSlide } from '../types';
-import ScrollReveal from './ScrollReveal';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface HeroProps {
   onCartClick: () => void;
@@ -33,122 +32,122 @@ const Hero: React.FC<HeroProps> = ({ onCartClick, slides, isAdmin, onEdit, onPro
   if (slides.length === 0) return null;
 
   return (
-    <div className="relative bg-[#0a0a0a] text-white h-[600px] md:h-[750px] overflow-hidden group rounded-b-[3rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)]">
+    <div className="relative bg-[#050505] text-white h-[600px] md:h-[750px] overflow-hidden group rounded-b-[3rem] shadow-2xl">
       {isAdmin && (
         <button
           onClick={onEdit}
-          className="absolute top-10 right-10 z-[60] bg-white/10 hover:bg-white/20 backdrop-blur-md text-white font-black uppercase tracking-[0.2em] text-[10px] py-4 px-8 rounded-2xl transition-all duration-500 flex items-center space-x-3 border border-white/20 shadow-2xl"
+          className="absolute top-10 right-10 z-[60] bg-white/10 hover:bg-white/20 backdrop-blur-md text-white font-bold uppercase tracking-widest text-[10px] py-3 px-6 rounded-xl transition-all border border-white/20"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" /></svg>
-          <span>Configurar Banners</span>
+          Configurar Banners
         </button>
       )}
 
-      {/* Slides */}
+      {/* Slides Loop */}
       {slides.map((slide, index) => (
         <div
           key={slide.id}
-          className={`absolute inset-0 transition-all duration-[1500ms] cubic-bezier(0.4, 0, 0.2, 1) ${index === currentSlide ? 'opacity-100 scale-100 z-10' : 'opacity-0 scale-110 z-0'
+          className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'
             }`}
         >
-          <div className="absolute inset-0">
+          {/* Background Image & Overlay */}
+          <div className="absolute inset-0 z-0">
             <img
               src={slide.imageUrl}
               alt="Hero Background"
-              className={`w-full h-full object-cover transition-transform duration-[10s] ease-out ${index === currentSlide ? 'scale-110' : 'scale-100'}`}
+              className={`w-full h-full object-cover transition-transform duration-[10s] ease-out ${index === currentSlide ? 'scale-105' : 'scale-100'}`}
               loading={index === 0 ? "eager" : "lazy"}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/40 to-transparent"></div>
-            <div className="absolute inset-0 bg-black/20"></div>
+            {/* Soft Gradient for text readability only - preventing 'blackout' */}
+            <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent z-[1]"></div>
+            <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent opacity-60 z-[1]"></div>
           </div>
 
-          <div className="relative container mx-auto px-6 sm:px-12 lg:px-24 h-full flex flex-col justify-center items-start text-left pt-20">
-            <div className="max-w-4xl space-y-8">
-              <ScrollReveal direction="left" distance={100} delay={0.3}>
-                <div className="flex items-center space-x-4 mb-4">
-                  <div className="h-[2px] w-12 bg-primary-600"></div>
-                  <span className="text-[10px] font-black uppercase tracking-[0.5em] text-primary-500 italic">SAGFO Elite Performance</span>
+          {/* Content Container */}
+          {index === currentSlide && (
+            <div className="relative z-20 container mx-auto px-6 sm:px-12 lg:px-24 h-full flex flex-col justify-center items-start text-left pt-12">
+              <div className="max-w-4xl space-y-8 animate-fadeIn">
+
+                {/* Brand Badge - Clean & Premium */}
+                <div className="flex items-center space-x-4 mb-2 animate-slideInRight" style={{ animationDelay: '0.1s' }}>
+                  <div className="w-12 h-[2px] bg-primary-500 shadow-[0_0_15px_rgba(14,165,233,0.6)]"></div>
+                  <span className="text-xs font-bold tracking-[0.3em] text-white/90 uppercase">Elite Series</span>
                 </div>
-                <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-white uppercase italic leading-[0.95] drop-shadow-2xl">
+
+                {/* Main Title - Bold & Professional */}
+                <h1 className="text-5xl md:text-7xl lg:text-8xl font-extrabold text-white leading-[1.1] tracking-tight animate-slideInUp" style={{ animationDelay: '0.2s' }}>
                   {slide.titleLine1}
                   <br />
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-primary-600">{slide.titleLine2}</span>
                 </h1>
-              </ScrollReveal>
 
-              <ScrollReveal delay={0.5} direction="left" distance={80}>
-                <p className="max-w-xl text-xl md:text-2xl text-neutral-300 font-light leading-relaxed opacity-80 border-l-4 border-white/10 pl-8">
+                {/* Subtitle */}
+                <p className="max-w-xl text-lg md:text-2xl text-white font-medium leading-relaxed drop-shadow-md animate-slideInUp" style={{ animationDelay: '0.3s' }}>
                   {slide.subtitle}
                 </p>
-              </ScrollReveal>
 
-              <div className="pt-8 flex flex-col sm:flex-row gap-6">
-                <ScrollReveal delay={0.7} direction="up" distance={50}>
+                {/* Action Buttons - Elegant Pills */}
+                <div className="pt-8 flex flex-col sm:flex-row gap-5 animate-slideInUp" style={{ animationDelay: '0.4s' }}>
                   <button
                     onClick={onCartClick}
-                    className="group relative overflow-hidden bg-white text-black font-black uppercase tracking-[0.2em] text-[11px] py-6 px-12 rounded-[2rem] transition-all duration-500 hover:scale-105 active:scale-95 shadow-[0_20px_40px_-10px_rgba(255,255,255,0.3)]"
+                    className="bg-white text-black text-sm font-bold uppercase tracking-widest py-4 px-10 rounded-full hover:bg-neutral-100 transition-all shadow-lg hover:scale-105 active:scale-95"
                   >
-                    <span className="relative z-10">Comenzar Pedido</span>
-                    <div className="absolute inset-0 bg-primary-600 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
+                    Comenzar Pedido
                   </button>
-                </ScrollReveal>
 
-                <ScrollReveal delay={0.8} direction="up" distance={50}>
                   <button
                     onClick={onPromosClick}
-                    className="group bg-white/5 backdrop-blur-2xl text-white border border-white/20 font-black uppercase tracking-[0.2em] text-[11px] py-6 px-12 rounded-[2rem] transition-all duration-500 hover:bg-white/10 hover:border-white/40 hover:scale-105 active:scale-95 shadow-2xl"
+                    className="bg-black/30 backdrop-blur-md border border-white/30 text-white text-sm font-bold uppercase tracking-widest py-4 px-10 rounded-full hover:bg-white/10 hover:border-white transition-all active:scale-95"
                   >
-                    Explorar Promociones
+                    Ver Promociones
                   </button>
-                </ScrollReveal>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       ))}
 
-      {/* Navigation Arrows - Elite Stealth UI */}
+      {/* Navigation Controls */}
       {slides.length > 1 && (
         <>
-          <div className="absolute right-10 bottom-24 z-[50] flex flex-col space-y-4">
+          {/* Arrows */}
+          <div className="hidden md:flex absolute right-12 bottom-12 z-[50] space-x-4">
             <button
               onClick={prevSlide}
-              className="p-4 rounded-full bg-white/5 hover:bg-primary-600 backdrop-blur-md text-white transition-all duration-500 border border-white/10 hover:border-transparent group"
-              aria-label="Anterior"
+              className="w-14 h-14 rounded-full border border-white/10 bg-white/5 text-white flex items-center justify-center hover:bg-primary-600 hover:border-primary-600 transition-all duration-300 backdrop-blur-md group"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 group-hover:-translate-y-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
-              </svg>
+              <ChevronLeft className="w-6 h-6 group-hover:-translate-x-1 transition-transform" />
             </button>
             <button
               onClick={nextSlide}
-              className="p-4 rounded-full bg-white/5 hover:bg-primary-600 backdrop-blur-md text-white transition-all duration-500 border border-white/10 hover:border-transparent group"
-              aria-label="Siguiente"
+              className="w-14 h-14 rounded-full border border-white/10 bg-white/5 text-white flex items-center justify-center hover:bg-primary-600 hover:border-primary-600 transition-all duration-300 backdrop-blur-md group"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 group-hover:translate-y-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-              </svg>
+              <ChevronRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
             </button>
           </div>
 
-          {/* Indicators - Timeline Style */}
-          <div className="absolute left-10 md:left-24 bottom-12 z-[50] flex items-center space-x-6">
-            <span className="text-[10px] font-black text-white/40 tracking-[0.3em]">0{currentSlide + 1}</span>
-            <div className="flex space-x-3">
-              {slides.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentSlide(index)}
-                  className={`h-[3px] rounded-full transition-all duration-1000 ${index === currentSlide ? 'bg-primary-600 w-16' : 'bg-white/20 w-8 hover:bg-white/40'
-                    }`}
-                  aria-label={`Ir a slide ${index + 1}`}
-                />
-              ))}
-            </div>
-            <span className="text-[10px] font-black text-white/40 tracking-[0.3em]">0{slides.length}</span>
+          {/* Indicators */}
+          <div className="absolute left-8 md:left-24 bottom-16 z-[50] flex items-center space-x-3">
+            {slides.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentSlide(index)}
+                className={`h - 1.5 rounded - full transition - all duration - 500 ${index === currentSlide ? 'bg-primary-500 w-12 shadow-[0_0_10px_rgba(14,165,233,0.5)]' : 'bg-white/20 w-8 hover:bg-white/40'} `}
+              />
+            ))}
           </div>
         </>
       )}
+
+      {/* Smooth Animations */}
+      <style>{`
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideInRight { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+        .animate - fadeIn { animation: fadeIn 1s ease - out forwards; }
+        .animate - slideInUp { animation: slideInUp 0.8s cubic - bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+        .animate - slideInRight { animation: slideInRight 0.8s cubic - bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+`}</style>
     </div>
   );
 };

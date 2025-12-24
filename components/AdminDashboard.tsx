@@ -11,7 +11,6 @@ import {
     Settings,
     Plus,
     Search,
-    Filter,
     Edit,
     Trash2,
     DollarSign,
@@ -20,7 +19,10 @@ import {
     Truck,
     MessageSquare,
     Copy,
-    Check
+    Check,
+    Shield,
+    Camera,
+    X
 } from 'lucide-react';
 
 interface AdminDashboardProps {
@@ -38,8 +40,6 @@ interface AdminDashboardProps {
     onSaveEvent: (event: Event) => void;
     onDeleteEvent: (eventId: string) => void;
     onOpenEventModal: (event?: Event) => void;
-    onAddGalleryImage: (file: File, caption: string) => void;
-    onDeleteGalleryImage: (imageId: string) => void;
     onOpenUserModal: (user: Profile | null) => void;
     onDeleteProfile: (profileId: string) => void;
     displayByCategory: boolean;
@@ -70,8 +70,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
     onSaveEvent,
     onDeleteEvent,
     onOpenEventModal,
-    onAddGalleryImage,
-    onDeleteGalleryImage,
     onOpenUserModal,
     onDeleteProfile,
     displayByCategory,
@@ -210,42 +208,48 @@ generado por SAGFO Elite v2
     };
 
     const renderOverview = () => (
-        <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="space-y-12">
+            <div className="space-y-2">
+                <div className="w-12 h-1 bg-primary-600 rounded-full" />
+                <h2 className="text-4xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter">Resumen Global</h2>
+                <p className="text-[10px] text-neutral-500 font-bold uppercase tracking-[0.4em] italic leading-none">Inteligencia de Negocio y Métricas Élites</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                 <ScrollReveal delay={0.1}>
                     <StatCard
-                        title="Ingresos Totales"
+                        title="Ventas Totales"
                         value={`$${totalRevenue.toLocaleString()}`}
-                        icon={<DollarSign className="w-6 h-6 text-emerald-500" />}
+                        icon={<DollarSign className="w-6 h-6" />}
                         color="emerald"
-                        trend="+12% vs last month"
+                        trend="+18.4% este mes"
                     />
                 </ScrollReveal>
                 <ScrollReveal delay={0.2}>
                     <StatCard
-                        title="Pedidos Pendientes"
+                        title="Pedidos Críticos"
                         value={pendingOrders.toString()}
-                        icon={<Clock className={`w-6 h-6 text-amber-500 ${pendingOrders > 0 ? 'animate-pulse' : ''}`} />}
+                        icon={<Clock className={`w-6 h-6 ${pendingOrders > 0 ? 'animate-pulse' : ''}`} />}
                         color="amber"
-                        trend={pendingOrders > 0 ? "Atención requerida" : "Al día"}
+                        trend={pendingOrders > 0 ? "Acción inmediata" : "Sincronizado"}
                     />
                 </ScrollReveal>
                 <ScrollReveal delay={0.3}>
                     <StatCard
-                        title="Productos Activos"
+                        title="Catálogo Activo"
                         value={totalProducts.toString()}
-                        icon={<Package className="w-6 h-6 text-blue-500" />}
+                        icon={<Package className="w-6 h-6" />}
                         color="blue"
-                        trend="En catálogo"
+                        trend="Equipos Premium"
                     />
                 </ScrollReveal>
                 <ScrollReveal delay={0.4}>
                     <StatCard
-                        title="Usuarios"
+                        title="Comunidad SAGFO"
                         value={totalUsers.toString()}
-                        icon={<Users className="w-6 h-6 text-violet-500" />}
+                        icon={<Users className="w-6 h-6" />}
                         color="violet"
-                        trend="Verificados"
+                        trend="Clientes Elite"
                     />
                 </ScrollReveal>
             </div>
@@ -313,40 +317,58 @@ generado por SAGFO Elite v2
     );
 
     const renderProducts = () => (
-        <div className="space-y-6">
-            <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">Productos</h2>
+        <div className="space-y-12">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+                <div className="space-y-2">
+                    <div className="w-12 h-1 bg-primary-600 rounded-full" />
+                    <h2 className="text-4xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter leading-none">Inventario Élite</h2>
+                    <p className="text-[10px] text-neutral-500 font-bold uppercase tracking-[0.4em] italic leading-none">Gestión de Equipamiento de Alto Rendimiento</p>
+                </div>
                 <button
                     onClick={onOpenCreateProductModal}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    className="flex items-center gap-3 px-8 py-4 bg-neutral-950 dark:bg-white text-white dark:text-neutral-900 rounded-2xl font-black uppercase italic tracking-widest text-[10px] shadow-2xl hover:scale-105 active:scale-95 transition-all"
                 >
                     <Plus className="w-4 h-4" />
-                    Nuevo Producto
+                    Nuevo Equipo Premium
                 </button>
             </div>
 
-            <div className="flex gap-4 mb-6">
-                <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+            <div className="flex flex-col md:flex-row gap-6">
+                <div className="relative flex-1 group">
+                    <div className="absolute left-8 top-1/2 -translate-y-1/2 flex items-center gap-4 pointer-events-none">
+                        <Search className="w-6 h-6 text-neutral-300 dark:text-neutral-600 group-focus-within:text-primary-600 group-focus-within:scale-110 transition-all duration-500" />
+                        <div className="w-px h-6 bg-neutral-200 dark:bg-white/10" />
+                    </div>
                     <input
                         type="text"
-                        placeholder="Buscar productos..."
-                        className="w-full pl-10 pr-4 py-2 rounded-lg border border-neutral-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                        placeholder="EXPLORAR INVENTARIO ELITE..."
+                        className="w-full pl-24 pr-12 py-8 rounded-[3.5rem] border-2 border-transparent bg-neutral-50 dark:bg-white/[0.03] text-neutral-900 dark:text-white text-xl font-black uppercase italic tracking-[0.1em] placeholder:text-neutral-300 dark:placeholder:text-white/10 placeholder:font-black placeholder:not-italic focus:bg-white dark:focus:bg-white/[0.07] focus:border-primary-600/30 outline-none transition-all duration-700 shadow-2xl shadow-neutral-200/50 dark:shadow-none focus:shadow-primary-600/20"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
+                    {searchTerm && (
+                        <button
+                            onClick={() => setSearchTerm('')}
+                            className="absolute right-8 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-neutral-100 dark:bg-white/10 text-neutral-400 hover:text-red-500 hover:bg-red-500/10 transition-all flex items-center justify-center"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+                    )}
                 </div>
-                <button
-                    className="p-2 rounded-lg border border-neutral-200 dark:border-zinc-800 hover:bg-neutral-50 dark:hover:bg-zinc-800"
-                    aria-label="Filtrar productos"
-                >
-                    <Filter className="w-5 h-5 text-neutral-500" />
-                </button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {products
-                    .filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()))
+                    .filter(p => {
+                        if (!searchTerm) return true;
+                        const searchWords = searchTerm.toLowerCase().split(' ').filter(word => word.length > 0);
+                        return searchWords.every(word =>
+                            p.name.toLowerCase().includes(word) ||
+                            p.category.toLowerCase().includes(word) ||
+                            (p.muscleGroup && p.muscleGroup.toLowerCase().includes(word)) ||
+                            (p.description && p.description.toLowerCase().includes(word))
+                        );
+                    })
                     .map((product, index) => {
                         const availabilityClass = product.availabilityStatus === 'in-stock'
                             ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
@@ -370,7 +392,11 @@ generado por SAGFO Elite v2
                                                 <Edit className="w-5 h-5" />
                                             </button>
                                             <button
-                                                onClick={() => onDeleteProduct(product.id)}
+                                                onClick={() => {
+                                                    if (window.confirm('¿Estás seguro de eliminar este producto?')) {
+                                                        onDeleteProduct(product.id);
+                                                    }
+                                                }}
                                                 className="p-3 bg-white/95 dark:bg-zinc-800/95 text-neutral-700 dark:text-white rounded-full hover:bg-red-500 hover:text-white transition-colors shadow-lg backdrop-blur-sm"
                                             >
                                                 <Trash2 className="w-5 h-5" />
@@ -394,13 +420,19 @@ generado por SAGFO Elite v2
                         );
                     })}
             </div>
-        </div>
+        </div >
     );
 
     const renderOrders = () => (
-        <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">Pedidos</h2>
-            <div className="space-y-4">
+        <div className="space-y-12">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+                <div className="space-y-2">
+                    <div className="w-12 h-1 bg-amber-500 rounded-full" />
+                    <h2 className="text-4xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter leading-none">Flujo de Pedidos</h2>
+                    <p className="text-[10px] text-neutral-500 font-bold uppercase tracking-[0.4em] italic leading-none">Monitoreo de Logística y Ventas Activas</p>
+                </div>
+            </div>
+            <div className="space-y-8">
                 {orders.map(order => (
                     <div key={order.id} className="bg-white dark:bg-zinc-900 rounded-xl border border-neutral-200 dark:border-zinc-800 overflow-hidden">
                         <div
@@ -697,10 +729,20 @@ generado por SAGFO Elite v2
     );
 
     const renderUsers = () => (
-        <div className="space-y-6">
-            <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">Usuarios</h2>
-                <button onClick={() => onOpenUserModal(null)} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg"><Plus className="w-4 h-4" /> Nuevo</button>
+        <div className="space-y-12">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+                <div className="space-y-2">
+                    <div className="w-12 h-1 bg-purple-600 rounded-full" />
+                    <h2 className="text-4xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter leading-none">Equipo Administrativo</h2>
+                    <p className="text-[10px] text-neutral-500 font-bold uppercase tracking-[0.4em] italic leading-none">Gestión de Roles y Accesos de Seguridad</p>
+                </div>
+                <button
+                    onClick={() => onOpenUserModal(null)}
+                    className="flex items-center gap-3 px-8 py-4 bg-purple-600 text-white rounded-2xl font-black uppercase italic tracking-widest text-[10px] shadow-2xl shadow-purple-600/20 hover:scale-105 active:scale-95 transition-all"
+                >
+                    <Plus className="w-4 h-4" />
+                    Añadir Colaborador
+                </button>
             </div>
             <div className="bg-white dark:bg-zinc-900 rounded-xl border border-neutral-200 dark:border-zinc-800 overflow-hidden">
                 <table className="w-full">
@@ -747,7 +789,14 @@ generado por SAGFO Elite v2
                                         <button onClick={() => onOpenUserModal(profile)} className="text-blue-600 hover:text-blue-900 mr-4">
                                             <Edit className="w-4 h-4" />
                                         </button>
-                                        <button onClick={() => onDeleteProfile(profile.id)} className="text-red-600 hover:text-red-900">
+                                        <button
+                                            onClick={() => {
+                                                if (window.confirm('¿Estás seguro de eliminar este usuario?')) {
+                                                    onDeleteProfile(profile.id);
+                                                }
+                                            }}
+                                            className="text-red-600 hover:text-red-900"
+                                        >
                                             <Trash2 className="w-4 h-4" />
                                         </button>
                                     </td>
@@ -761,48 +810,121 @@ generado por SAGFO Elite v2
     );
 
     const renderEvents = () => (
-        <div className="space-y-6">
-            <h2 className="text-2xl font-bold">Eventos</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="space-y-12">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+                <div className="space-y-2">
+                    <div className="w-12 h-1 bg-primary-600 rounded-full" />
+                    <h2 className="text-4xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter leading-none">Eventos & Seminarios</h2>
+                    <p className="text-[10px] text-neutral-500 font-bold uppercase tracking-[0.4em] italic leading-none">Gestión de Presencia en Vivo</p>
+                </div>
+                <button
+                    onClick={() => onOpenEventModal()}
+                    className="flex items-center gap-3 px-8 py-4 bg-primary-600 text-white rounded-2xl font-black uppercase italic tracking-widest text-[10px] shadow-2xl shadow-primary-600/20 hover:scale-105 active:scale-95 transition-all"
+                >
+                    <Plus className="w-4 h-4" />
+                    Crear Nuevo Evento
+                </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {events.map(event => (
-                    <div key={event.id} className="bg-white dark:bg-zinc-900 rounded-xl overflow-hidden border">
-                        <img src={event.imageUrl} alt={event.title} className="w-full h-48 object-cover" />
-                        <div className="p-4">
-                            <h3 className="font-bold">{event.title}</h3>
-                            <div className="flex justify-end mt-4">
-                                <button onClick={() => onOpenEventModal(event)} className="p-2 text-blue-600"><Edit className="w-4 h-4" /></button>
-                                <button onClick={() => onDeleteEvent(event.id)} className="p-2 text-red-600"><Trash2 className="w-4 h-4" /></button>
+                    <div key={event.id} className="group bg-white dark:bg-zinc-900/50 rounded-[2.5rem] overflow-hidden border border-neutral-200 dark:border-white/5 shadow-xl hover:shadow-2xl transition-all duration-700">
+                        <div className="relative h-56 overflow-hidden">
+                            <img src={event.imageUrl} alt={event.title} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </div>
+                        <div className="p-8 space-y-4">
+                            <div className="space-y-1">
+                                <span className="text-[9px] font-black text-primary-600 uppercase tracking-widest italic">{event.date}</span>
+                                <h3 className="text-xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter leading-none">{event.title}</h3>
+                            </div>
+                            <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium italic line-clamp-3 leading-relaxed">{event.description}</p>
+                            <div className="flex items-center justify-between pt-4 border-t border-neutral-100 dark:border-white/5">
+                                <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">{event.location}</span>
+                                <div className="flex gap-2">
+                                    <button onClick={() => onOpenEventModal(event)} className="p-3 border border-neutral-100 dark:border-white/10 rounded-xl text-blue-500 hover:bg-blue-500/10 transition-all"><Edit className="w-4 h-4" /></button>
+                                    <button
+                                        onClick={() => {
+                                            if (window.confirm('¿Estás seguro de eliminar este evento?')) {
+                                                onDeleteEvent(event.id);
+                                            }
+                                        }}
+                                        className="p-3 border border-neutral-100 dark:border-white/10 rounded-xl text-red-500 hover:bg-red-500/10 transition-all"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 ))}
+                {events.length === 0 && (
+                    <div className="col-span-full py-20 flex flex-col items-center justify-center bg-neutral-50 dark:bg-white/5 rounded-[3rem] border-2 border-dashed border-neutral-200 dark:border-white/10">
+                        <Calendar className="w-12 h-12 text-neutral-300 mb-4" />
+                        <p className="text-[10px] font-black text-neutral-400 uppercase tracking-widest italic">No hay eventos programados en este momento</p>
+                    </div>
+                )}
             </div>
         </div>
     );
 
     const renderGallery = () => (
-        <div className="space-y-6">
-            <h2 className="text-2xl font-bold">Galería</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="space-y-12">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+                <div className="space-y-2">
+                    <div className="w-12 h-1 bg-primary-600 rounded-full" />
+                    <h2 className="text-4xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter leading-none">Exhibición Digital</h2>
+                    <p className="text-[10px] text-neutral-500 font-bold uppercase tracking-[0.4em] italic leading-none">Motor de Galería de Alto Impacto Automatizado</p>
+                </div>
+                <div className="flex items-center gap-4 px-6 py-4 bg-primary-600/5 rounded-2xl border border-primary-600/20">
+                    <Shield className="w-5 h-5 text-primary-600" />
+                    <span className="text-[10px] font-black uppercase italic tracking-widest text-primary-600">Sincronizado al 100% con el Catálogo</span>
+                </div>
+            </div>
+            <p className="text-[11px] text-neutral-500 font-bold uppercase italic opacity-70 leading-relaxed max-w-2xl">Todas las imágenes visualizadas en la galería pública se derivan automáticamente de las fotos cargadas en cada equipo del inventario.</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 mb-12">
                 {galleryImages.map(image => (
-                    <div key={image.id} className="relative aspect-square rounded-xl overflow-hidden group">
-                        <img src={image.imageUrl} alt={image.caption} className="w-full h-full object-cover" />
-                        <button onClick={() => onDeleteGalleryImage(image.id)} className="absolute inset-0 m-auto w-10 h-10 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Trash2 className="w-5 h-5 mx-auto" />
-                        </button>
+                    <div key={image.id} className="relative aspect-square rounded-3xl overflow-hidden group border border-neutral-100 dark:border-white/5 shadow-xl transition-transform hover:scale-[1.02]">
+                        <img src={image.imageUrl} alt={image.caption} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-4 flex flex-col justify-end">
+                            <p className="text-[8px] font-black text-white uppercase italic tracking-widest truncate">{image.caption}</p>
+                            <p className="text-[6px] text-primary-400 font-bold uppercase tracking-widest mt-1">Fuente: Catálogo Elite</p>
+                        </div>
                     </div>
                 ))}
+                {galleryImages.length === 0 && (
+                    <div className="col-span-full py-20 flex flex-col items-center justify-center bg-neutral-50 dark:bg-white/5 rounded-[3rem] border-2 border-dashed border-neutral-200 dark:border-white/10">
+                        <ImageIcon className="w-12 h-12 text-neutral-300 mb-4" />
+                        <p className="text-[10px] font-black text-neutral-400 uppercase tracking-widest italic">Sube equipos con fotos para activar la galería</p>
+                    </div>
+                )}
+            </div>
+
+            <div className="bg-primary-600/5 border border-primary-600/10 p-10 rounded-[3rem] text-center flex flex-col items-center gap-6">
+                <div className="w-16 h-16 rounded-full bg-primary-600/10 flex items-center justify-center text-primary-600">
+                    <Package className="w-8 h-8" />
+                </div>
+                <div>
+                    <h3 className="text-xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter mb-2">¿Necesitas añadir o remover imágenes?</h3>
+                    <p className="text-sm text-neutral-500 max-w-lg mb-8">La galería se alimenta de las fotos de tus productos. Simplemente edita un equipo o crea uno nuevo para actualizar el escaparate visual.</p>
+                    <button
+                        onClick={() => setActiveTab('products')}
+                        className="px-8 py-4 bg-primary-600 text-white rounded-2xl font-black uppercase italic tracking-widest text-[10px] shadow-2xl shadow-primary-600/20 hover:scale-105 transition-all"
+                    >
+                        Ir a Inventario Élite
+                    </button>
+                </div>
             </div>
         </div>
     );
 
     const renderWhatsApp = () => (
-        <div className="space-y-6">
-            <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">Centro de WhatsApp</h2>
-                <div className="flex items-center gap-2 px-4 py-2 bg-[#25D366]/10 text-[#25D366] rounded-lg border border-[#25D366]/20">
-                    <MessageSquare className="w-5 h-5" />
-                    <span className="text-sm font-bold uppercase italic tracking-tighter">Panel de Comunicación</span>
+        <div className="space-y-12">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+                <div className="space-y-2">
+                    <div className="w-12 h-1 bg-[#25D366] rounded-full" />
+                    <h2 className="text-4xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter leading-none">Comunicaciones Élite</h2>
+                    <p className="text-[10px] text-neutral-500 font-bold uppercase tracking-[0.4em] italic leading-none">Panel de Respuesta Inmediata y Fidelización</p>
                 </div>
             </div>
 
@@ -868,53 +990,114 @@ generado por SAGFO Elite v2
     );
 
     const renderSettings = () => (
-        <div className="space-y-6 max-w-2xl">
-            <h2 className="text-2xl font-bold">Ajustes</h2>
-            <div className="bg-white dark:bg-zinc-900 p-6 rounded-xl border space-y-4">
-                <div>
-                    <label className="block text-sm font-medium mb-1">WhatsApp de Ventas</label>
+        <div className="space-y-12 max-w-4xl">
+            <div className="space-y-4">
+                <div className="w-16 h-2 bg-primary-600 rounded-full" />
+                <h2 className="text-4xl md:text-5xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter">Configuración Élite</h2>
+                <p className="text-sm text-neutral-500 font-bold uppercase tracking-[0.3em] italic">Infraestructura digital y narrativa visual de SAGFO</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* WHATSAPP CARD */}
+                <div className="bg-white dark:bg-zinc-900/50 p-10 rounded-[3rem] border border-neutral-200 dark:border-white/5 shadow-sm hover:shadow-2xl transition-all duration-500 group relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-[#25D366] opacity-0 group-hover:opacity-5 blur-3xl transition-opacity" />
+                    <div className="w-16 h-16 rounded-2xl bg-[#25D366]/10 flex items-center justify-center mb-8 text-[#25D366] group-hover:scale-110 group-hover:rotate-12 transition-transform duration-500">
+                        <MessageSquare className="w-8 h-8" />
+                    </div>
+                    <label className="block text-[11px] font-black uppercase tracking-widest text-neutral-500 dark:text-neutral-400 mb-4 italic">Enlace de Ventas Global</label>
                     <input
                         type="text"
                         value={whatsAppNumber}
                         onChange={(e) => onUpdateWhatsAppNumber(e.target.value)}
-                        className="w-full px-3 py-2 rounded-lg border bg-transparent"
+                        placeholder="Ejem: 57310..."
+                        className="w-full px-6 py-5 rounded-2xl border border-neutral-100 dark:border-white/5 bg-neutral-50 dark:bg-black/40 text-neutral-900 dark:text-white font-black text-2xl tracking-tighter outline-none focus:ring-4 focus:ring-primary-500/10 transition-all shadow-inner"
                     />
+                    <p className="text-[10px] text-neutral-400 mt-6 italic font-bold uppercase opacity-60 flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#25D366]" />
+                        Formato internacional sin el símbolo "+"
+                    </p>
                 </div>
-                <div className="pt-4 border-t">
-                    <button onClick={onEditHero} className="px-4 py-2 border rounded-lg">Editar Banners</button>
+
+                {/* HERO/BANNER CARD */}
+                <div className="bg-white dark:bg-zinc-900/50 p-10 rounded-[3rem] border border-neutral-200 dark:border-white/5 shadow-sm hover:shadow-2xl transition-all duration-500 group relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-primary-600 opacity-0 group-hover:opacity-5 blur-3xl transition-opacity" />
+                    <div className="w-16 h-16 rounded-2xl bg-primary-600/10 flex items-center justify-center mb-8 text-primary-600 group-hover:scale-110 group-hover:-rotate-12 transition-transform duration-500">
+                        <ImageIcon className="w-8 h-8" />
+                    </div>
+                    <h3 className="text-2xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter mb-3">Escaparate Visual</h3>
+                    <p className="text-[11px] text-neutral-500 mb-10 font-bold uppercase italic leading-relaxed opacity-70">Control total del Hero Banner y las promociones dinámicas del catálogo.</p>
+
+                    <button
+                        onClick={onEditHero}
+                        className="w-full py-5 bg-neutral-950 dark:bg-white text-white dark:text-neutral-900 rounded-2xl font-black uppercase italic tracking-widest text-[12px] shadow-2xl hover:translate-y-[-4px] active:translate-y-0 transition-all duration-500 border border-transparent dark:border-white relative overflow-hidden group/btn"
+                    >
+                        <span className="relative z-10 flex items-center justify-center gap-3">
+                            <Edit className="w-4 h-4" />
+                            Redefinir Banners
+                        </span>
+                        <div className="absolute inset-0 bg-primary-600 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-500" />
+                    </button>
                 </div>
             </div>
         </div>
     );
 
     return (
-        <div className="min-h-screen bg-neutral-50 dark:bg-black flex">
-            <aside className="w-64 border-r border-neutral-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 fixed h-full">
-                <div className="p-6">
-                    <h1 className="text-xl font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-                        <LayoutDashboard className="w-6 h-6 text-blue-600" /> Admin
-                    </h1>
+        <div className="min-h-screen bg-[#fcfcfc] dark:bg-black flex">
+            {/* SIDEBAR ELITE */}
+            <aside className="w-72 border-r border-neutral-100 dark:border-white/5 bg-white dark:bg-[#0a0a0a] fixed top-20 bottom-0 left-0 z-40 transition-all duration-500 overflow-y-auto no-scrollbar">
+                <div className="p-10 mb-2">
+                    <div className="cursor-pointer group flex items-center gap-4" onClick={() => setActiveTab('overview')}>
+                        <img src="/logo-light.png" alt="Logo" className="h-10 w-auto object-contain dark:hidden transition-transform duration-500 group-hover:scale-110" />
+                        <img src="/logo-sf.png" alt="Logo" className="h-10 w-auto object-contain hidden dark:block transition-transform duration-500 group-hover:scale-110" />
+                    </div>
                 </div>
-                <nav className="px-3 space-y-1">
-                    <NavItem icon={<LayoutDashboard />} label="Resumen" active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} />
-                    <NavItem icon={<Package />} label="Productos" active={activeTab === 'products'} onClick={() => setActiveTab('products')} />
-                    <NavItem icon={<ShoppingCart />} label="Pedidos" active={activeTab === 'orders'} onClick={() => setActiveTab('orders')} />
-                    <NavItem icon={<Users />} label="Usuarios" active={activeTab === 'users'} onClick={() => setActiveTab('users')} />
+
+                <nav className="px-6 space-y-2">
+                    <div className="text-[10px] font-black text-neutral-400 dark:text-zinc-600 uppercase tracking-[0.3em] italic mb-4 px-4">Centro de Control</div>
+                    <NavItem icon={<LayoutDashboard />} label="Dashboard" active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} />
+                    <NavItem icon={<ShoppingCart />} label="Ventas y Pedidos" active={activeTab === 'orders'} onClick={() => setActiveTab('orders')} />
+                    <NavItem icon={<MessageSquare />} label="Comunicaciones" active={activeTab === 'whatsapp'} onClick={() => setActiveTab('whatsapp')} />
+
+                    <div className="pt-8 text-[10px] font-black text-neutral-400 dark:text-zinc-600 uppercase tracking-[0.3em] italic mb-4 px-4">Inventario & Medios</div>
+                    <NavItem icon={<Package />} label="Catálogo Elite" active={activeTab === 'products'} onClick={() => setActiveTab('products')} />
                     <NavItem icon={<Calendar />} label="Eventos" active={activeTab === 'events'} onClick={() => setActiveTab('events')} />
                     <NavItem icon={<ImageIcon />} label="Galería" active={activeTab === 'gallery'} onClick={() => setActiveTab('gallery')} />
-                    <NavItem icon={<MessageSquare />} label="WhatsApp" active={activeTab === 'whatsapp'} onClick={() => setActiveTab('whatsapp')} />
-                    <NavItem icon={<Settings />} label="Ajustes" active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} />
+
+                    <div className="pt-8 text-[10px] font-black text-neutral-400 dark:text-zinc-600 uppercase tracking-[0.3em] italic mb-4 px-4">Configuración</div>
+                    <NavItem icon={<Users />} label="Gestionar Personal" active={activeTab === 'users'} onClick={() => setActiveTab('users')} />
+                    <NavItem icon={<Settings />} label="Ajustes de Núcleo" active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} />
                 </nav>
+
+                {/* Footer Sidebar */}
+                <div className="absolute bottom-10 left-0 w-full px-10">
+                    <div className="p-4 rounded-3xl bg-neutral-50 dark:bg-zinc-900/50 border border-neutral-100 dark:border-white/5 flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-xl bg-primary-600/10 flex items-center justify-center text-primary-600">
+                            <Shield className="w-5 h-5" />
+                        </div>
+                        <div className="flex-1">
+                            <p className="text-[10px] font-black text-neutral-900 dark:text-white uppercase italic">Admin Mode</p>
+                            <p className="text-[8px] text-neutral-500 font-bold uppercase tracking-widest">Saga v2.4 Elite</p>
+                        </div>
+                    </div>
+                </div>
             </aside>
-            <main className="flex-1 ml-64 p-8">
-                {activeTab === 'overview' && renderOverview()}
-                {activeTab === 'products' && renderProducts()}
-                {activeTab === 'orders' && renderOrders()}
-                {activeTab === 'users' && renderUsers()}
-                {activeTab === 'events' && renderEvents()}
-                {activeTab === 'gallery' && renderGallery()}
-                {activeTab === 'whatsapp' && renderWhatsApp()}
-                {activeTab === 'settings' && renderSettings()}
+
+            {/* MAIN CONTENT AREA */}
+            <main className="flex-1 ml-72 p-12 lg:p-20 overflow-y-auto min-h-screen no-scrollbar">
+                <div className="max-w-7xl mx-auto">
+                    {/* Active View Container */}
+                    <div className="animate-in fade-in slide-in-from-bottom-5 duration-700">
+                        {activeTab === 'overview' && renderOverview()}
+                        {activeTab === 'products' && renderProducts()}
+                        {activeTab === 'orders' && renderOrders()}
+                        {activeTab === 'users' && renderUsers()}
+                        {activeTab === 'events' && renderEvents()}
+                        {activeTab === 'gallery' && renderGallery()}
+                        {activeTab === 'whatsapp' && renderWhatsApp()}
+                        {activeTab === 'settings' && renderSettings()}
+                    </div>
+                </div>
             </main>
         </div>
     );
@@ -923,17 +1106,17 @@ generado por SAGFO Elite v2
 const NavItem = ({ icon, label, active, onClick }: { icon: React.ReactNode, label: string, active: boolean, onClick: () => void }) => (
     <button
         onClick={onClick}
-        className={`group w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ${active
-            ? 'bg-primary-600 text-white shadow-lg shadow-primary-600/20 scale-[1.02] -skew-x-6'
-            : 'text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-white/5 hover:translate-x-1'
+        className={`group w-full flex items-center gap-4 px-6 py-4 rounded-2xl transition-all duration-500 ${active
+            ? 'bg-primary-600 text-white shadow-2xl shadow-primary-600/40 scale-[1.02]'
+            : 'text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-white/5 hover:translate-x-2'
             }`}
     >
         <div className={`transition-transform duration-300 ${active ? 'scale-110 rotate-12' : 'group-hover:rotate-12'}`}>
             {React.cloneElement(icon as React.ReactElement, { className: 'w-5 h-5' })}
         </div>
-        <span className={`font-black uppercase italic tracking-widest text-[10px] transition-all ${active ? 'opacity-100' : 'opacity-60 group-hover:opacity-100'}`}>{label}</span>
+        <span className={`font-black uppercase italic tracking-widest text-[11px] transition-all duration-500 ${active ? 'opacity-100' : 'opacity-50 group-hover:opacity-100'}`}>{label}</span>
         {active && (
-            <div className="ml-auto w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+            <div className="ml-auto w-2 h-2 rounded-full bg-white shadow-[0_0_15px_rgba(255,255,255,0.8)] animate-pulse" />
         )}
     </button>
 );

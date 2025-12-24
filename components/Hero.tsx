@@ -26,12 +26,12 @@ const Hero: React.FC<HeroProps> = ({ onCartClick, slides, isAdmin, onEdit, onPro
   if (slides.length === 0) return null;
 
   return (
-    <div className="relative h-[60vh] sm:h-[70vh] md:h-screen w-full overflow-hidden bg-zinc-900">
+    <div className="relative h-[70vh] sm:h-[85vh] md:h-screen w-full overflow-hidden bg-black">
       {/* Admin Edit Button */}
       {isAdmin && (
         <button
           onClick={onEdit}
-          className="absolute top-20 right-4 md:top-24 md:right-8 z-50 bg-black/60 hover:bg-black p-2 md:p-3 rounded-full text-white border border-white/20 transition-all"
+          className="absolute top-20 right-4 md:top-24 md:right-8 z-50 bg-black/60 hover:bg-black p-2 md:p-3 rounded-full text-white border border-white/20 transition-all font-bold"
         >
           <Edit3 size={18} />
         </button>
@@ -44,7 +44,7 @@ const Hero: React.FC<HeroProps> = ({ onCartClick, slides, isAdmin, onEdit, onPro
             key={slide.id || index}
             className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
           >
-            {/* Background Image - Optimized for all screens */}
+            {/* Background Image */}
             <div className="absolute inset-0 flex items-center justify-center bg-black">
               <img
                 src={slide.imageUrl}
@@ -53,27 +53,27 @@ const Hero: React.FC<HeroProps> = ({ onCartClick, slides, isAdmin, onEdit, onPro
                 style={{ objectPosition: 'center' }}
               />
             </div>
-            {/* Dark Overlay */}
-            <div className="absolute inset-0 bg-black/50" />
+            {/* Dark Overlay - More contrast for mobile readability */}
+            <div className="absolute inset-0 bg-black/65 md:bg-black/50" />
 
             {/* Text Overlay */}
-            <div className="absolute inset-0 flex items-center">
+            <div className="absolute inset-0 flex items-center pt-20 md:pt-0">
               <div className="container mx-auto px-6 md:px-12">
                 <div className="max-w-4xl text-white">
-                  <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
+                  <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-6">
                     <div className="w-8 md:w-10 h-[2px] bg-primary-500" />
-                    <span className="text-primary-500 font-bold uppercase tracking-widest text-[10px] md:text-sm">
+                    <span className="text-primary-500 font-bold uppercase tracking-widest text-[9px] md:text-sm">
                       SAGFO Fitness Excellence
                     </span>
                   </div>
 
-                  <h1 className="text-3xl sm:text-5xl md:text-8xl font-black uppercase leading-none mb-4 md:mb-6 tracking-tighter">
-                    {slide.titleLine1} <br />
-                    <span className="text-primary-500 italic">{slide.titleLine2}</span>
+                  <h1 className="text-4xl sm:text-6xl md:text-8xl font-black uppercase leading-[0.9] mb-3 md:mb-6 tracking-tighter">
+                    <span className="block">{slide.titleLine1}</span>
+                    <span className="text-primary-500 italic block mt-1">{slide.titleLine2}</span>
                   </h1>
 
                   {slide.subtitle && (
-                    <p className="text-sm md:text-xl text-zinc-300 mb-8 md:mb-10 max-w-2xl line-clamp-2 md:line-clamp-none">
+                    <p className="text-xs md:text-xl text-zinc-300 mb-6 md:mb-10 max-w-2xl font-bold leading-relaxed">
                       {slide.subtitle}
                     </p>
                   )}
@@ -81,13 +81,13 @@ const Hero: React.FC<HeroProps> = ({ onCartClick, slides, isAdmin, onEdit, onPro
                   <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
                     <button
                       onClick={onCartClick}
-                      className="bg-primary-600 hover:bg-primary-700 text-white px-8 md:px-10 py-3 md:py-4 rounded-xl font-bold uppercase tracking-wider text-xs md:text-base transition-all transform active:scale-95 shadow-lg shadow-primary-600/20"
+                      className="bg-primary-600 hover:bg-primary-700 text-white px-8 md:px-10 py-3.5 md:py-4 rounded-xl font-black uppercase tracking-widest text-[10px] md:text-sm transition-all shadow-lg shadow-primary-600/20 active:scale-95"
                     >
                       {isLoggedIn ? 'Ver Catálogo' : 'Regístrate'}
                     </button>
                     <button
                       onClick={onPromosClick}
-                      className="bg-white/10 hover:bg-white/20 text-white border border-white/20 px-8 md:px-10 py-3 md:py-4 rounded-xl font-bold uppercase tracking-wider text-xs md:text-base transition-all backdrop-blur-sm"
+                      className="bg-white/10 hover:bg-white/20 text-white border border-white/20 px-8 md:px-10 py-3.5 md:py-4 rounded-xl font-black uppercase tracking-widest text-[10px] md:text-sm transition-all backdrop-blur-sm"
                     >
                       Ofertas Especiales
                     </button>

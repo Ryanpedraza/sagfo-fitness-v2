@@ -83,15 +83,15 @@ const CustomCursor: React.FC = () => {
                 <div className={`relative flex items-center justify-center transition-transform duration-75 ${isActive ? 'scale-75' : 'scale-100'}`}>
                     {/* Outer Frame (Diamond) */}
                     <div className={`
-                        absolute w-5 h-5 border-[1.5px] transition-all duration-200 ease-out border-primary-500
+                        absolute w-5 h-5 border-[3px] transition-all duration-200 ease-out border-primary-500
                         ${isHovering
                             ? 'scale-125 rotate-[135deg] opacity-100 shadow-[0_0_15px_rgba(14,165,233,0.5)]'
-                            : 'opacity-60 rotate-45 shadow-[0_0_8px_rgba(14,165,233,0.3)]'}
+                            : 'opacity-70 rotate-45 shadow-[0_0_10px_rgba(14,165,233,0.4)]'}
                     `} />
 
                     {/* Inner Core */}
                     <div className={`
-                        w-1 h-1 bg-primary-500 transition-all duration-150 ease-out
+                        w-2 h-2 bg-primary-500 transition-all duration-150 ease-out
                         ${isHovering
                             ? 'scale-0'
                             : 'scale-100 rotate-45'}
@@ -102,10 +102,10 @@ const CustomCursor: React.FC = () => {
                         absolute transition-all duration-300
                         ${isHovering ? 'opacity-100 scale-100' : 'opacity-0 scale-0'}
                     `}>
-                        <div className="absolute w-[1px] h-3 bg-primary-500 -top-5 left-0" />
-                        <div className="absolute w-[1px] h-3 bg-primary-500 top-2 left-0" />
-                        <div className="absolute h-[1px] w-3 bg-primary-500 -left-5 top-0" />
-                        <div className="absolute h-[1px] w-3 bg-primary-500 left-2 top-0" />
+                        <div className="absolute w-[2px] h-3 bg-primary-500 -top-5 left-0" />
+                        <div className="absolute w-[2px] h-3 bg-primary-500 top-2 left-0" />
+                        <div className="absolute h-[2px] w-3 bg-primary-500 -left-5 top-0" />
+                        <div className="absolute h-[2px] w-3 bg-primary-500 left-2 top-0" />
                     </div>
                 </div>
             </div>

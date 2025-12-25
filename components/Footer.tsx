@@ -42,21 +42,21 @@ const Footer: React.FC<FooterProps> = ({ sealUrl }) => {
           </div>
 
           {/* Contact Core */}
-          <div className="space-y-10">
-            <h3 className="font-black text-neutral-900 dark:text-white tracking-[0.4em] uppercase text-[10px] italic border-l-4 border-primary-600 pl-6">Support Hub</h3>
-            <ul className="space-y-8">
+          <div className="space-y-8">
+            <h3 className="font-black text-neutral-900 dark:text-white tracking-[0.3em] uppercase text-[9px] italic border-l-2 border-primary-600 pl-4 opacity-80">Centro de Soporte</h3>
+            <ul className="space-y-6">
               {[
                 { icon: MapPin, text: "Calle 4 #3-17, Barrio La Victoria", subtext: "Sede Principal, Colombia" },
                 { icon: Phone, text: "310 393 6762", subtext: "Línea Directa" },
                 { icon: Mail, text: "contact@sagfo.com", subtext: "Atención 24/7" }
               ].map((item, idx) => (
                 <li key={idx} className="flex items-start group">
-                  <div className="w-10 h-10 rounded-xl bg-neutral-200 dark:bg-white/5 flex items-center justify-center text-primary-600 mr-5 group-hover:bg-primary-600 group-hover:text-white transition-all duration-500">
-                    <item.icon size={18} strokeWidth={2.5} />
+                  <div className="w-9 h-9 rounded-xl bg-neutral-200 dark:bg-white/5 flex items-center justify-center text-primary-600 mr-4 group-hover:bg-primary-600 group-hover:text-white transition-all duration-500">
+                    <item.icon size={16} strokeWidth={2.5} />
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-sm font-black text-neutral-900 dark:text-white transition-colors group-hover:text-primary-600">{item.text}</span>
-                    <span className="text-[10px] font-bold text-neutral-400 dark:text-neutral-600 uppercase tracking-widest mt-1">{item.subtext}</span>
+                    <span className="text-xs font-black text-neutral-900 dark:text-white transition-colors group-hover:text-primary-600">{item.text}</span>
+                    <span className="text-[9px] font-bold text-neutral-400 dark:text-neutral-600 uppercase tracking-widest mt-0.5">{item.subtext}</span>
                   </div>
                 </li>
               ))}
@@ -64,27 +64,27 @@ const Footer: React.FC<FooterProps> = ({ sealUrl }) => {
           </div>
 
           {/* Quality Certification */}
-          <div className="space-y-10">
-            <h3 className="font-black text-neutral-900 dark:text-white tracking-[0.4em] uppercase text-[10px] italic border-l-4 border-primary-600 pl-6">Certification</h3>
-            <div className="relative group p-8 bg-white dark:bg-white/5 rounded-[3rem] border border-neutral-200 dark:border-white/10 shadow-3xl text-center overflow-hidden">
+          <div className="space-y-8">
+            <h3 className="font-black text-neutral-900 dark:text-white tracking-[0.3em] uppercase text-[9px] italic border-l-2 border-primary-600 pl-4 opacity-80">Certificación</h3>
+            <div className="relative group p-6 bg-white dark:bg-white/5 rounded-[2.5rem] border border-neutral-200 dark:border-white/10 shadow-2xl text-center overflow-hidden">
               <div className="absolute inset-0 bg-primary-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
               {sealUrl ? (
-                <img src={sealUrl} alt="Sello de Calidad" className="w-32 h-32 object-contain mx-auto drop-shadow-4xl relative z-10 transform transition-transform duration-700 group-hover:scale-110 group-hover:rotate-12" />
+                <img src={sealUrl} alt="Sello de Calidad" className="w-28 h-28 object-contain mx-auto drop-shadow-4xl relative z-10 transform transition-transform duration-700 group-hover:scale-110 group-hover:rotate-12" />
               ) : (
-                <div className="w-24 h-24 mx-auto border-4 border-dotted border-neutral-300 dark:border-white/10 rounded-full flex items-center justify-center">
-                  <Award className="w-10 h-10 text-neutral-300 dark:text-neutral-700" />
+                <div className="w-20 h-20 mx-auto border-4 border-dotted border-neutral-300 dark:border-white/10 rounded-full flex items-center justify-center">
+                  <Award className="w-8 h-8 text-neutral-300 dark:text-neutral-700" />
                 </div>
               )}
-              <div className="mt-8 relative z-10">
-                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary-600 mb-2 italic">Standard Elite</p>
-                <p className="text-xs font-bold text-neutral-400 dark:text-neutral-500 px-4">Biomecánica Avanzada Certificada para Alto Tráfico</p>
+              <div className="mt-6 relative z-10">
+                <p className="text-[9px] font-black uppercase tracking-[0.3em] text-primary-600 mb-1 italic">Standard Elite</p>
+                <p className="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 px-4">Biomecánica Avanzada Certificada para Alto Tráfico</p>
               </div>
             </div>
           </div>
           {/* Legal Hub & Entities */}
-          <div className="space-y-10">
-            <h3 className="font-black text-neutral-900 dark:text-white tracking-[0.4em] uppercase text-[10px] italic border-l-4 border-primary-600 pl-6">Compliance</h3>
-            <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-8">
+            <h3 className="font-black text-neutral-900 dark:text-white tracking-[0.3em] uppercase text-[9px] italic border-l-2 border-primary-600 pl-4 opacity-80">Cumplimiento</h3>
+            <div className="grid grid-cols-2 gap-3">
               {[
                 { label: 'RUES', url: 'https://www.rues.org.co/' },
                 { label: 'MinTrabajo', url: 'https://www.mintrabajo.gov.co/' },
@@ -96,15 +96,15 @@ const Footer: React.FC<FooterProps> = ({ sealUrl }) => {
                   href={item.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group bg-white dark:bg-white/5 hover:bg-neutral-900 dark:hover:bg-white p-5 rounded-2xl flex items-center justify-center transition-all duration-500 border border-neutral-200 dark:border-white/10 hover:border-transparent h-16 shadow-lg cursor-pointer"
+                  className="group bg-white dark:bg-white/5 hover:bg-neutral-900 dark:hover:bg-white p-4 rounded-xl flex items-center justify-center transition-all duration-500 border border-neutral-200 dark:border-white/10 hover:border-transparent h-14 shadow-lg cursor-pointer"
                 >
-                  <span className="text-[11px] font-black text-neutral-400 group-hover:text-white dark:group-hover:text-neutral-900 transition-colors tracking-widest">{item.label}</span>
+                  <span className="text-[10px] font-black text-neutral-400 group-hover:text-white dark:group-hover:text-neutral-900 transition-colors tracking-widest">{item.label}</span>
                 </a>
               ))}
             </div>
-            <div className="pt-6 border-t border-neutral-200 dark:border-white/5 space-y-4">
-              <p className="text-[9px] font-black uppercase tracking-[0.4em] text-neutral-400 text-center italic flex items-center justify-center gap-2">
-                <ShieldCheck className="w-3 h-3 text-primary-600" />
+            <div className="pt-4 border-t border-neutral-200 dark:border-white/5">
+              <p className="text-[8px] font-black uppercase tracking-[0.4em] text-neutral-400 text-center italic flex items-center justify-center gap-2">
+                <ShieldCheck className="w-2.5 h-2.5 text-primary-600" />
                 Garantía de Origen Controlada
               </p>
             </div>
@@ -112,23 +112,16 @@ const Footer: React.FC<FooterProps> = ({ sealUrl }) => {
         </div>
 
         {/* Bottom Bar Content */}
-        <div className="mt-24 pt-12 border-t border-neutral-200 dark:border-white/5 flex flex-col md:flex-row justify-between items-center gap-10">
-          <div className="flex flex-col items-center md:items-start space-y-3">
-            <div className="flex items-center space-x-6 text-[10px] font-black uppercase tracking-[0.5em] text-neutral-900 dark:text-white italic">
-              <span>Legal</span>
-              <span className="w-1 h-1 bg-primary-600 rounded-full"></span>
-              <span>Privacy</span>
-              <span className="w-1 h-1 bg-primary-600 rounded-full"></span>
-              <span>Service</span>
-            </div>
-            <p className="text-[10px] font-bold text-neutral-400 dark:text-neutral-600 uppercase tracking-widest">
-              &copy; {new Date().getFullYear()} SAGFO FITNESS & BULLS EQUIPMENT. R-PB-02 V2.0
+        <div className="mt-16 pt-8 border-t border-neutral-200 dark:border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="flex flex-col items-center md:items-start">
+            <p className="text-[9px] font-black text-neutral-400 dark:text-neutral-600 uppercase tracking-[0.3em] italic">
+              © {new Date().getFullYear()} SAGFO FITNESS & BULLS EQUIPMENT. TODOS LOS DERECHOS RESERVADOS.
             </p>
           </div>
 
-          <div className="flex flex-col items-center md:items-end space-y-3">
-            <p className="text-[10px] font-medium text-neutral-400">
-              Premium Development by <span className="font-black text-neutral-900 dark:text-white italic uppercase group hover:text-primary-600 transition-all cursor-pointer">Ryan Pedraza</span>
+          <div className="flex flex-col items-center md:items-end">
+            <p className="text-[9px] font-medium text-neutral-400 tracking-widest uppercase">
+              Premium Development by <span className="font-black text-neutral-900 dark:text-white italic cursor-default">Ryan Pedraza</span>
             </p>
           </div>
         </div>

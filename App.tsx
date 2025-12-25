@@ -1202,7 +1202,7 @@ const App: React.FC = () => {
           />
         )}
 
-        <main className={`relative z-10 ${(view === 'catalog' || view === 'promos' || view === 'orders') ? 'pt-[80px] md:pt-[100px]' : ''}`}>
+        <main className={`relative z-10 ${(view === 'catalog' || view === 'orders') ? 'pt-[80px] md:pt-[100px]' : ''} ${view === 'promos' ? 'pt-[100px]' : ''}`}>
           <AnimatePresence mode="wait">
             {view === 'catalog' && (
               <motion.div
@@ -1345,18 +1345,18 @@ const App: React.FC = () => {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
-                className="w-full px-6 py-12 max-w-7xl mx-auto"
+                className="w-full px-6 pb-12 max-w-7xl mx-auto"
               >
-                <div className="mb-12">
+                <div className="mb-6">
                   <button
                     onClick={() => navigateToView('catalog')}
-                    className="flex items-center gap-4 text-neutral-500 hover:text-white transition-colors uppercase font-black tracking-widest text-[10px]"
+                    className="flex items-center gap-3 text-neutral-400 hover:text-white transition-colors uppercase font-bold tracking-widest text-xs"
                   >
-                    <ChevronRight size={14} className="rotate-180" />
-                    Regresar al Dashboard
+                    <ChevronRight size={16} className="rotate-180" />
+                    Regresar al Catálogo
                   </button>
                 </div>
-                <h1 className="text-6xl font-black text-white uppercase tracking-tighter mb-4">Oportunidades <span className="text-primary-500">Elite</span></h1>
+                <h1 className="text-5xl md:text-6xl font-black text-white uppercase tracking-tighter mb-4">Oportunidades <span className="text-primary-500">Elite</span></h1>
                 <p className="text-neutral-500 font-medium mb-12">Adquiere excelencia con condiciones preferenciales.</p>
 
                 {promoProducts.length > 0 ? (

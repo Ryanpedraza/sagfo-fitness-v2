@@ -48,7 +48,7 @@ const QuickCategoryNav: React.FC<QuickCategoryNavProps> = ({ onSelectCategory })
                     </motion.h2>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-x-8 gap-y-20">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-x-4 gap-y-16">
                     {quickCats.map((cat, index) => (
                         <motion.button
                             key={cat.label}
@@ -59,41 +59,29 @@ const QuickCategoryNav: React.FC<QuickCategoryNavProps> = ({ onSelectCategory })
                             onClick={() => onSelectCategory(cat.value)}
                             className="group relative flex flex-col items-center"
                         >
-                            {/* Floating Watermark SE */}
-                            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-8 text-[100px] font-black text-black/[0.03] dark:text-white/[0.03] uppercase italic pointer-events-none select-none leading-none z-0">
-                                SE
-                            </div>
-
-                            {/* Circular Image - No card container */}
+                            {/* Circular Image Container */}
                             <div className="relative z-10">
-                                <div className="relative w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 rounded-full overflow-hidden border-4 border-white dark:border-neutral-900 shadow-2xl transition-all duration-700 group-hover:scale-110 group-hover:shadow-primary-500/20">
+                                <div className="relative w-36 h-36 sm:w-44 sm:h-44 md:w-52 md:h-52 rounded-full overflow-hidden border-[6px] border-white dark:border-neutral-800 transition-all duration-700 group-hover:scale-105">
                                     <img
                                         src={cat.image}
                                         alt={cat.label}
-                                        className="w-full h-full object-cover scale-110 group-hover:scale-125 transition-transform duration-1000"
+                                        className="w-full h-full object-cover transition-transform duration-1000"
                                     />
-                                    {/* Overlay Gradient */}
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                                 </div>
 
-                                {/* Desc Badge Floating */}
-                                <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-white dark:bg-neutral-800 shadow-lg px-4 py-1.5 rounded-full border border-neutral-100 dark:border-white/5 whitespace-nowrap z-20">
-                                    <span className="text-[8px] font-black text-primary-600 dark:text-primary-400 uppercase tracking-widest italic">
+                                {/* Desc Badge Floating - Pill shape from image */}
+                                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 bg-white dark:bg-neutral-800 shadow-xl px-4 py-2 rounded-2xl border border-neutral-100 dark:border-white/5 whitespace-nowrap z-20 min-w-[80px]">
+                                    <span className="text-[7px] font-black text-primary-500 dark:text-primary-400 uppercase tracking-widest italic leading-none">
                                         {cat.desc.split(' ')[0]}
                                     </span>
                                 </div>
                             </div>
 
-                            {/* Minimalist Info */}
-                            <div className="mt-10 flex flex-col items-center text-center">
-                                <h3 className="text-xl md:text-2xl font-black text-neutral-900 dark:text-white uppercase tracking-tighter mb-4 group-hover:text-primary-500 transition-colors">
+                            {/* Info Section - matching the image */}
+                            <div className="mt-14 flex flex-col items-center">
+                                <h3 className="text-xl md:text-2xl font-black text-neutral-900 dark:text-white uppercase tracking-tighter">
                                     {cat.label}
                                 </h3>
-
-                                <div className="flex flex-col items-center gap-3">
-                                    <div className="w-px h-6 bg-neutral-200 dark:bg-neutral-800 group-hover:bg-primary-500 group-hover:h-10 transition-all duration-700" />
-                                    <ArrowUpRight size={16} className="text-neutral-300 dark:text-neutral-700 group-hover:text-primary-500 group-hover:-translate-y-1 group-hover:translate-x-1 transition-all duration-700" />
-                                </div>
                             </div>
                         </motion.button>
                     ))}

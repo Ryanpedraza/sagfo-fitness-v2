@@ -9,34 +9,33 @@ interface ThemeSwitcherProps {
 }
 
 const ThemeSwitcher: React.FC<ThemeSwitcherProps> = ({ theme, setTheme }) => {
-  const options: { id: Theme; label: string; icon: any }[] = [
-    { id: 'light', label: 'Light', icon: Sun },
-    { id: 'dark', label: 'Dark', icon: Moon },
-    { id: 'auto', label: 'Auto', icon: Monitor },
+  const options: { id: Theme; icon: React.ElementType }[] = [
+    { id: 'light', icon: Sun },
+    { id: 'dark', icon: Moon },
+    { id: 'auto', icon: Monitor },
   ];
   const activeIndex = options.findIndex(opt => opt.id === theme);
 
   return (
-    <div className="fixed bottom-8 left-8 z-[150]">
-      <div className="relative flex items-center p-1.5 bg-white/80 dark:bg-black/80 backdrop-blur-2xl rounded-2xl shadow-2xl border border-neutral-200 dark:border-white/10">
+    <div className="fixed bottom-6 left-6 z-[150]">
+      <div className="relative flex items-center gap-0.5 p-1 bg-neutral-200/80 dark:bg-neutral-800/80 backdrop-blur-xl rounded-full shadow-lg border border-neutral-300/50 dark:border-neutral-700/50">
+        {/* Sliding Indicator */}
         <div
-          className="absolute top-1.5 left-1.5 h-10 w-10 bg-primary-600 rounded-xl transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] shadow-lg shadow-primary-600/20"
-          style={{ transform: `translateX(calc(${activeIndex} * 2.75rem))` }} // 2.75rem = w-11
+          className="absolute top-1 left-1 h-7 w-7 bg-white dark:bg-neutral-900 rounded-full transition-all duration-300 ease-out shadow-md"
+          style={{ transform: `translateX(${activeIndex * 30}px)` }}
         />
+
         {options.map((option) => (
           <button
             key={option.id}
             onClick={() => setTheme(option.id)}
-            className={`relative z-10 w-11 h-10 flex items-center justify-center rounded-xl transition-all duration-500 group ${theme === option.id ? 'text-white' : 'text-neutral-400 dark:text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+            className={`relative z-10 w-7 h-7 flex items-center justify-center rounded-full transition-colors duration-300 ${theme === option.id
+                ? 'text-primary-600'
+                : 'text-neutral-500 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
               }`}
-            title={`Modo ${option.label}`}
+            aria-label={`Theme: ${option.id}`}
           >
-            <option.icon size={18} strokeWidth={theme === option.id ? 3 : 2} className="transition-transform group-hover:scale-110" />
-
-            {/* Tooltip on Hover */}
-            <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 px-3 py-1 bg-neutral-900 text-white text-[10px] font-black uppercase tracking-widest rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-xl">
-              {option.label}
-            </span>
+            <option.icon size={14} strokeWidth={2.5} />
           </button>
         ))}
       </div>
@@ -45,3 +44,4 @@ const ThemeSwitcher: React.FC<ThemeSwitcherProps> = ({ theme, setTheme }) => {
 };
 
 export default ThemeSwitcher;
+

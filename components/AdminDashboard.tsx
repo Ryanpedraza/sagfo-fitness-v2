@@ -82,7 +82,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
     const transporters = profiles.filter(p => p.role === 'transporter');
 
     return (
-        <div className="min-h-screen bg-[#fcfcfc] dark:bg-black flex">
+        <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-neutral-100 to-neutral-50 dark:from-neutral-950 dark:via-black dark:to-neutral-950 flex relative">
+            {/* Subtle Grid Pattern */}
+            <div className="absolute inset-0 opacity-[0.015] dark:opacity-[0.03] pointer-events-none"
+                style={{ backgroundImage: 'radial-gradient(circle, #000 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
+
             <AdminSidebar
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}
@@ -90,7 +94,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 onLogout={onLogout}
             />
 
-            <main className="flex-1 ml-72 p-12 lg:p-20 overflow-y-auto min-h-screen no-scrollbar">
+            <main className="flex-1 ml-72 p-12 lg:p-20 overflow-y-auto min-h-screen no-scrollbar relative z-10">
                 <div className="max-w-7xl mx-auto">
                     <div className="animate-in fade-in slide-in-from-bottom-5 duration-700">
                         {activeTab === 'overview' && (

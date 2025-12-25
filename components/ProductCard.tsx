@@ -52,12 +52,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onClick, onToggleCom
           )}
 
           {product.availabilityStatus === 'in-stock' ? (
-            <div className="px-5 py-2.5 rounded-full bg-white dark:bg-black/70 backdrop-blur-xl text-neutral-900 dark:text-white text-[9px] font-black uppercase tracking-[0.3em] shadow-2xl border border-neutral-200 dark:border-white/10 flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <div className="px-5 py-2.5 rounded-full bg-emerald-500 text-white text-[9px] font-black uppercase tracking-[0.3em] shadow-2xl border border-emerald-400 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
               Disponible
             </div>
           ) : (
-            <div className="px-5 py-2.5 rounded-full bg-amber-500/10 dark:bg-amber-500/20 backdrop-blur-xl text-amber-700 dark:text-amber-400 text-[9px] font-black uppercase tracking-[0.3em] border border-amber-500/20 shadow-xl">
+            <div className="px-5 py-2.5 rounded-full bg-amber-600 text-white text-[9px] font-black uppercase tracking-[0.3em] border border-amber-500 shadow-xl">
               Sobre Pedido
             </div>
           )}

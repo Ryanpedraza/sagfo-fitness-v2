@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { EquipmentItem, Order, Event, GalleryImage, Profile, BankAccount, OrderStatus, DeliveryStatus } from '../types';
+import { Menu } from 'lucide-react';
 import AdminSidebar from './admin/AdminSidebar';
 import AdminOverview from './admin/AdminOverview';
 import AdminProducts from './admin/AdminProducts';
@@ -78,6 +79,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
     onLogout
 }) => {
     const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'orders' | 'users' | 'events' | 'gallery' | 'settings' | 'whatsapp' | 'debts' | 'logistics' | 'bulk-prices' | 'quotes'>('overview');
+    const [sidebarOpen, setSidebarOpen] = useState(false);
 
     const transporters = profiles.filter(p => p.role === 'transporter');
 
@@ -92,9 +94,28 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 setActiveTab={setActiveTab}
                 onAdminViewToggle={onAdminViewToggle}
                 onLogout={onLogout}
+                isOpen={sidebarOpen}
+                onClose={() => setSidebarOpen(false)}
             />
 
-            <main className="flex-1 ml-72 p-12 lg:p-20 overflow-y-auto min-h-screen no-scrollbar relative z-10">
+            {/* Mobile Header with Hamburger */}
+            <div className="fixed top-0 left-0 right-0 z-30 lg:hidden bg-white/95 dark:bg-[#0a0a0a]/95 backdrop-blur-xl border-b border-neutral-100 dark:border-white/5 px-4 py-4">
+                <div className="flex items-center justify-between">
+                    <button
+                        onClick={() => setSidebarOpen(true)}
+                        className="p-3 rounded-xl bg-neutral-100 dark:bg-white/10 text-neutral-700 dark:text-white hover:bg-neutral-200 dark:hover:bg-white/20 transition-all"
+                    >
+                        <Menu className="w-6 h-6" />
+                    </button>
+                    <div className="flex items-center gap-3">
+                        <img src="/logo-light.png" alt="Logo" className="h-8 w-auto object-contain dark:hidden" />
+                        <img src="/logo-sf.png" alt="Logo" className="h-8 w-auto object-contain hidden dark:block" />
+                    </div>
+                    <div className="w-12" /> {/* Spacer for centering */}
+                </div>
+            </div>
+
+            <main className="flex-1 ml-0 lg:ml-72 p-6 pt-24 lg:pt-12 lg:p-20 overflow-y-auto min-h-screen no-scrollbar relative z-10">
                 <div className="max-w-7xl mx-auto">
                     <div className="animate-in fade-in slide-in-from-bottom-5 duration-700">
                         {activeTab === 'overview' && (

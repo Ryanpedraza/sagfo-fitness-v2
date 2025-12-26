@@ -17,7 +17,7 @@ const ThemeSwitcher: React.FC<ThemeSwitcherProps> = ({ theme, setTheme }) => {
   const activeIndex = options.findIndex(opt => opt.id === theme);
 
   return (
-    <div className="fixed top-24 right-6 z-[150]">
+    <div className="fixed bottom-6 left-6 z-[200]">
       <div className="relative flex items-center gap-0.5 p-1 bg-neutral-200/80 dark:bg-neutral-800/80 backdrop-blur-xl rounded-full shadow-lg border border-neutral-300/50 dark:border-neutral-700/50">
         {/* Sliding Indicator */}
         <div

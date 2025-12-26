@@ -7,24 +7,120 @@ if (!BLOB_TOKEN) {
 }
 
 /**
- * Sube un archivo a Vercel Blob Storage
+ * Convierte una imagen a formato WebP usando Canvas
+ * @param file - Archivo de imagen original
+ * @param quality - Calidad de compresión (0-1), default: 0.85
+ * @param maxWidth - Ancho máximo de la imagen, default: 1920
+ * @param maxHeight - Alto máximo de la imagen, default: 1920
+ * @returns Promise con el Blob en formato WebP
+ */
+async function convertToWebP(
+    file: File,
+    quality: number = 0.85,
+    maxWidth: number = 1920,
+    maxHeight: number = 1920
+): Promise<Blob> {
+    return new Promise((resolve, reject) => {
+        // Si no es una imagen, devolver el archivo original
+        if (!file.type.startsWith('image/')) {
+            resolve(file);
+            return;
+        }
+
+        // Si ya es WebP, verificar si necesita redimensionarse
+        const img = new Image();
+        const url = URL.createObjectURL(file);
+
+        img.onload = () => {
+            URL.revokeObjectURL(url);
+
+            // Calcular dimensiones manteniendo proporción
+            let { width, height } = img;
+
+            if (width > maxWidth) {
+                height = (height * maxWidth) / width;
+                width = maxWidth;
+            }
+            if (height > maxHeight) {
+                width = (width * maxHeight) / height;
+                height = maxHeight;
+            }
+
+            // Crear canvas para la conversión
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+                reject(new Error('No se pudo crear el contexto del canvas'));
+                return;
+            }
+
+            // Dibujar imagen en el canvas
+            ctx.drawImage(img, 0, 0, width, height);
+
+            // Convertir a WebP
+            canvas.toBlob(
+                (blob) => {
+                    if (blob) {
+                        console.log(`🖼️ Imagen convertida: ${file.name} (${(file.size / 1024).toFixed(1)}KB → ${(blob.size / 1024).toFixed(1)}KB, ${((1 - blob.size / file.size) * 100).toFixed(1)}% reducción)`);
+                        resolve(blob);
+                    } else {
+                        reject(new Error('Error al convertir a WebP'));
+                    }
+                },
+                'image/webp',
+                quality
+            );
+        };
+
+        img.onerror = () => {
+            URL.revokeObjectURL(url);
+            reject(new Error('Error al cargar la imagen'));
+        };
+
+        img.src = url;
+    });
+}
+
+/**
+ * Sube un archivo a Vercel Blob Storage (convierte imágenes a WebP automáticamente)
  * @param file - Archivo a subir
  * @param folder - Carpeta donde guardar (ej: 'products', 'gallery', 'events')
+ * @param options - Opciones de conversión: quality (0-1), maxWidth, maxHeight
  * @returns URL pública del archivo subido
  */
-export async function uploadToBlob(file: File, folder: string = 'uploads'): Promise<string> {
+export async function uploadToBlob(
+    file: File,
+    folder: string = 'uploads',
+    options: { quality?: number; maxWidth?: number; maxHeight?: number } = {}
+): Promise<string> {
     if (!BLOB_TOKEN) {
         throw new Error('Token de Vercel Blob no configurado');
     }
 
     try {
+        const { quality = 0.85, maxWidth = 1920, maxHeight = 1920 } = options;
         const timestamp = Date.now();
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${folder}/${timestamp}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+        const randomId = Math.random().toString(36).substring(7);
+
+        let fileToUpload: Blob = file;
+        let fileName: string;
+
+        // Si es una imagen, convertir a WebP
+        if (file.type.startsWith('image/')) {
+            console.log(`🔄 Convirtiendo imagen a WebP: ${file.name}`);
+            fileToUpload = await convertToWebP(file, quality, maxWidth, maxHeight);
+            fileName = `${folder}/${timestamp}-${randomId}.webp`;
+        } else {
+            const fileExt = file.name.split('.').pop();
+            fileName = `${folder}/${timestamp}-${randomId}.${fileExt}`;
+        }
 
         console.log(`📤 Subiendo archivo a Vercel Blob: ${fileName}`);
 
-        const blob = await put(fileName, file, {
+        const blob = await put(fileName, fileToUpload, {
             access: 'public',
             token: BLOB_TOKEN,
         });
@@ -38,13 +134,18 @@ export async function uploadToBlob(file: File, folder: string = 'uploads'): Prom
 }
 
 /**
- * Sube múltiples archivos a Vercel Blob Storage
+ * Sube múltiples archivos a Vercel Blob Storage (convierte imágenes a WebP)
  * @param files - Array de archivos a subir
  * @param folder - Carpeta donde guardar
+ * @param options - Opciones de conversión
  * @returns Array de URLs públicas
  */
-export async function uploadMultipleToBlob(files: File[], folder: string = 'uploads'): Promise<string[]> {
-    const uploadPromises = files.map(file => uploadToBlob(file, folder));
+export async function uploadMultipleToBlob(
+    files: File[],
+    folder: string = 'uploads',
+    options: { quality?: number; maxWidth?: number; maxHeight?: number } = {}
+): Promise<string[]> {
+    const uploadPromises = files.map(file => uploadToBlob(file, folder, options));
     return Promise.all(uploadPromises);
 }
 

@@ -58,23 +58,23 @@ const Hero: React.FC<HeroProps> = ({ onCartClick, slides, isAdmin, onEdit, onPro
               <div className="absolute inset-0 bg-black/65 md:bg-black/50" />
 
               {/* Text Overlay */}
-              <div className="absolute inset-0 flex items-center pt-8 md:pt-0 pb-12">
+              <div className="absolute inset-0 flex items-center pt-0 pb-32 md:pb-40">
                 <div className="w-full px-6 md:px-8 lg:px-12 xl:px-16">
                   <div className="max-w-4xl text-white">
-                    <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-6">
+                    <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-6">
                       <div className="w-8 md:w-10 h-[2px] bg-primary-500" />
-                      <span className="text-primary-500 font-bold uppercase tracking-widest text-[9px] md:text-sm">
+                      <span className="text-primary-500 font-bold uppercase tracking-widest text-[8px] md:text-sm">
                         SAGFO Fitness Excellence
                       </span>
                     </div>
 
-                    <h1 className="text-4xl sm:text-6xl md:text-8xl font-black uppercase leading-[0.9] mb-3 md:mb-6 tracking-tighter">
+                    <h1 className="text-3xl sm:text-5xl md:text-7xl font-black uppercase leading-[0.9] mb-3 md:mb-6 tracking-tighter">
                       <span className="block">{slide.titleLine1}</span>
                       <span className="text-primary-500 italic block mt-1">{slide.titleLine2}</span>
                     </h1>
 
                     {slide.subtitle && (
-                      <p className="text-[10px] md:text-xl text-zinc-300 mb-6 md:mb-10 max-w-2xl font-bold leading-relaxed">
+                      <p className="text-[10px] md:text-xl text-zinc-300 mb-4 md:mb-10 max-w-2xl font-bold leading-relaxed">
                         {slide.subtitle}
                       </p>
                     )}
@@ -82,13 +82,13 @@ const Hero: React.FC<HeroProps> = ({ onCartClick, slides, isAdmin, onEdit, onPro
                     <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
                       <button
                         onClick={onCartClick}
-                        className="bg-primary-600 hover:bg-primary-700 text-white px-8 md:px-10 py-3.5 md:py-4 rounded-xl font-black uppercase tracking-widest text-[10px] md:text-sm transition-all shadow-lg shadow-primary-600/20 active:scale-95"
+                        className="bg-primary-600 hover:bg-primary-700 text-white px-8 md:px-10 py-3 md:py-4 rounded-xl font-black uppercase tracking-widest text-[10px] md:text-sm transition-all shadow-lg shadow-primary-600/20 active:scale-95"
                       >
                         {isLoggedIn ? 'Ver Catálogo' : 'Regístrate'}
                       </button>
                       <button
                         onClick={onPromosClick}
-                        className="bg-white/20 hover:bg-white/30 text-white border-2 border-white/50 hover:border-white px-8 md:px-10 py-3.5 md:py-4 rounded-xl font-black uppercase tracking-widest text-[10px] md:text-sm transition-all backdrop-blur-sm shadow-lg"
+                        className="bg-white/20 hover:bg-white/30 text-white border-2 border-white/50 hover:border-white px-8 md:px-10 py-3 md:py-4 rounded-xl font-black uppercase tracking-widest text-[10px] md:text-sm transition-all backdrop-blur-sm shadow-lg"
                       >
                         Ofertas Especiales
                       </button>

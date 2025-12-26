@@ -17,25 +17,25 @@ const ThemeSwitcher: React.FC<ThemeSwitcherProps> = ({ theme, setTheme }) => {
   const activeIndex = options.findIndex(opt => opt.id === theme);
 
   return (
-    <div className="fixed bottom-6 left-6 z-[200]">
-      <div className="relative flex items-center gap-0.5 p-1 bg-neutral-200/80 dark:bg-neutral-800/80 backdrop-blur-xl rounded-full shadow-lg border border-neutral-300/50 dark:border-neutral-700/50">
+    <div className="fixed bottom-4 left-4 z-[200] scale-90 md:scale-100 origin-bottom-left">
+      <div className="relative flex items-center gap-0.5 p-1 bg-white/40 dark:bg-black/40 backdrop-blur-md rounded-full border border-white/20 dark:border-white/10 shadow-lg">
         {/* Sliding Indicator */}
         <div
-          className="absolute top-1 left-1 h-7 w-7 bg-white dark:bg-neutral-900 rounded-full transition-all duration-300 ease-out shadow-md"
-          style={{ transform: `translateX(${activeIndex * 30}px)` }}
+          className="absolute top-1 left-1 h-6 w-6 bg-white dark:bg-neutral-800 rounded-full transition-all duration-300 ease-out shadow-sm"
+          style={{ transform: `translateX(${activeIndex * 28}px)` }}
         />
 
         {options.map((option) => (
           <button
             key={option.id}
             onClick={() => setTheme(option.id)}
-            className={`relative z-10 w-7 h-7 flex items-center justify-center rounded-full transition-colors duration-300 ${theme === option.id
+            className={`relative z-10 w-6 h-6 flex items-center justify-center rounded-full transition-colors duration-300 ${theme === option.id
               ? 'text-primary-600'
-              : 'text-neutral-500 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
+              : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
               }`}
             aria-label={`Theme: ${option.id}`}
           >
-            <option.icon size={14} strokeWidth={2.5} />
+            <option.icon size={12} strokeWidth={2.5} />
           </button>
         ))}
       </div>

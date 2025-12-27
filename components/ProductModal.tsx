@@ -95,6 +95,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
     if (!product || !allProducts) return [];
     return allProducts
       .filter(p => p.category === product.category && p.id !== product.id)
+      .sort(() => 0.5 - Math.random())
       .slice(0, 4);
   }, [product, allProducts]);
 

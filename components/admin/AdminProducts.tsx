@@ -17,6 +17,7 @@ const AdminProducts: React.FC<AdminProductsProps> = ({
     onOpenCreateProductModal
 }) => {
     const [searchTerm, setSearchTerm] = useState('');
+    const [activeCategory, setActiveCategory] = useState<'All' | 'Maquinaria' | 'Accesorios'>('All');
 
     return (
         <div className="space-y-12">
@@ -35,7 +36,7 @@ const AdminProducts: React.FC<AdminProductsProps> = ({
                 </button>
             </div>
 
-            <div className="flex flex-col md:flex-row gap-6">
+            <div className="flex flex-col xl:flex-row gap-6">
                 <div className="relative flex-1 group">
                     <div className="absolute left-8 top-1/2 -translate-y-1/2 flex items-center gap-4 pointer-events-none">
                         <Search className="w-6 h-6 text-neutral-300 dark:text-neutral-600 group-focus-within:text-primary-600 group-focus-within:scale-110 transition-all duration-500" />
@@ -57,11 +58,31 @@ const AdminProducts: React.FC<AdminProductsProps> = ({
                         </button>
                     )}
                 </div>
+
+                {/* Category Filter Tabs */}
+                <div className="bg-neutral-100 dark:bg-white/5 p-2 rounded-[2.5rem] flex items-center gap-2">
+                    {(['All', 'Maquinaria', 'Accesorios'] as const).map(cat => (
+                        <button
+                            key={cat}
+                            onClick={() => setActiveCategory(cat)}
+                            className={`px-8 py-4 rounded-[2rem] text-[10px] font-black uppercase italic tracking-widest transition-all ${activeCategory === cat
+                                    ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 shadow-lg'
+                                    : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                                }`}
+                        >
+                            {cat === 'All' ? 'Todos' : cat}
+                        </button>
+                    ))}
+                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {products
                     .filter(p => {
+                        // Category Filter
+                        if (activeCategory !== 'All' && p.category !== activeCategory) return false;
+
+                        // Search Filter
                         if (!searchTerm) return true;
                         const searchWords = searchTerm.toLowerCase().split(' ').filter(word => word.length > 0);
                         return searchWords.every(word =>

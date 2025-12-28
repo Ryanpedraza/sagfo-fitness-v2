@@ -310,7 +310,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                   <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter leading-[0.85] animate-in fade-in slide-in-from-right-10 duration-1000">
                     {product.name}
                   </h1>
-                  <p className="text-lg text-neutral-500 dark:text-neutral-400 font-medium italic leading-relaxed max-w-lg">
+                  <p className="text-lg text-neutral-500 dark:text-neutral-400 font-medium italic leading-relaxed max-w-lg whitespace-pre-line">
                     {product.description}
                   </p>
                 </div>

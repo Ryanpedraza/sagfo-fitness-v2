@@ -51,14 +51,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onClick, onToggleCom
             </div>
           )}
 
-          {product.availabilityStatus === 'in-stock' ? (
+          {product.availabilityStatus === 'in-stock' && (
             <div className="px-5 py-2.5 rounded-full bg-emerald-500 text-white text-[9px] font-black uppercase tracking-[0.3em] border border-emerald-400 flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
               Disponible
-            </div>
-          ) : (
-            <div className="px-5 py-2.5 rounded-full bg-amber-600 text-white text-[9px] font-black uppercase tracking-[0.3em] border border-amber-500">
-              Sobre Pedido
             </div>
           )}
         </div>

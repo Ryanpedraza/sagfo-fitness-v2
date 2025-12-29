@@ -486,15 +486,10 @@ const ProductModal: React.FC<ProductModalProps> = ({
                         {hasDiscount && <span className="text-2xl font-bold text-neutral-400 line-through italic opacity-40">{formatCurrency(product.price)}</span>}
                       </div>
                     </div>
-                    {product.availabilityStatus === 'in-stock' ? (
+                    {product.availabilityStatus === 'in-stock' && (
                       <div className="px-5 py-2.5 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-full flex items-center gap-2">
                         <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                         <span className="text-[10px] font-black uppercase italic tracking-widest">Despacho Inmediato</span>
-                      </div>
-                    ) : (
-                      <div className="px-5 py-2.5 bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-full flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-                        <span className="text-[10px] font-black uppercase italic tracking-widest">Producción Bajo Pedido</span>
                       </div>
                     )}
                   </div>

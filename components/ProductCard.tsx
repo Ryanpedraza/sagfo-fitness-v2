@@ -72,7 +72,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onClick, onToggleCom
       </div>
 
       {/* Content Architecture */}
-      <div className="p-10 flex flex-col flex-grow">
+      <div className="p-6 flex flex-col flex-grow">
         <div className="mb-2">
           <div className="flex items-center gap-3 mb-2 flex-wrap">
             <span className="text-[10px] md:text-[11px] font-black text-primary-500 uppercase tracking-[0.3em] italic leading-none">{product.category}</span>
@@ -115,37 +115,37 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onClick, onToggleCom
             )}
           </div>
 
-          <h3 className="text-xl md:text-2xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter leading-[0.85] line-clamp-2 pr-1">
+          <h3 className="text-lg md:text-xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter leading-[0.85] line-clamp-2 pr-1">
             {product.name}
           </h3>
         </div>
 
-        <div className="mt-auto flex items-end justify-between">
-          <div className="flex flex-col">
-            <span className="text-3xl font-black text-neutral-900 dark:text-white italic tracking-tighter leading-none mb-1">
+        <div className="mt-auto flex items-end justify-between gap-2">
+          <div className="flex flex-col flex-1 min-w-0">
+            <span className="text-2xl font-black text-neutral-900 dark:text-white italic tracking-tighter leading-none mb-1 truncate">
               {formatCurrency(currentPrice)}
             </span>
             {hasDiscount && (
-              <span className="text-[10px] font-bold text-neutral-500 line-through italic opacity-50 tracking-widest">
+              <span className="text-[10px] font-bold text-neutral-500 line-through italic opacity-50 tracking-widest truncate">
                 {formatCurrency(product.price)}
               </span>
             )}
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex gap-2 flex-shrink-0">
             {isAdmin && (
               <button
                 onClick={(e) => { e.stopPropagation(); onEdit(); }}
-                className="w-12 h-12 rounded-2xl bg-neutral-100 dark:bg-white/5 text-neutral-500 hover:text-primary-500 transition-all flex items-center justify-center"
+                className="w-11 h-11 rounded-2xl bg-neutral-100 dark:bg-white/5 text-neutral-500 hover:text-primary-500 transition-all flex items-center justify-center"
               >
-                <Edit3 size={18} strokeWidth={2.5} />
+                <Edit3 size={16} strokeWidth={2.5} />
               </button>
             )}
             <button
               onClick={(e) => { e.stopPropagation(); onToggleCompare(); }}
-              className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-700 shadow-2xl ${isComparing ? 'bg-primary-600 text-white' : 'bg-black dark:bg-white text-white dark:text-black group-hover:rotate-[-5deg] group-hover:scale-110'}`}
+              className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-700 shadow-2xl ${isComparing ? 'bg-primary-600 text-white' : 'bg-black dark:bg-white text-white dark:text-black group-hover:rotate-[-5deg] group-hover:scale-110'}`}
             >
-              {isComparing ? <Check size={24} strokeWidth={3} /> : <Plus size={24} strokeWidth={3} />}
+              {isComparing ? <Check size={20} strokeWidth={3} /> : <Plus size={20} strokeWidth={3} />}
             </button>
           </div>
         </div>

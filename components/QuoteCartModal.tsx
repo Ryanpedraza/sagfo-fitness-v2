@@ -367,10 +367,8 @@ const QuoteCartModal: React.FC<QuoteCartModalProps> = ({ isOpen, onClose, cartIt
                                                     <div className="space-y-1">
                                                         <div className="flex items-center gap-2">
                                                             <h4 className="text-lg sm:text-xl font-black text-neutral-900 dark:text-white uppercase italic leading-none">{item.equipment.name}</h4>
-                                                            {item.equipment.availabilityStatus === 'in-stock' ? (
+                                                            {item.equipment.availabilityStatus === 'in-stock' && (
                                                                 <span className="px-1.5 py-0.5 rounded-md bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-[8px] font-black uppercase tracking-wider whitespace-nowrap">Entrega Inmediata</span>
-                                                            ) : (
-                                                                <span className="px-1.5 py-0.5 rounded-md bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 text-[8px] font-black uppercase tracking-wider whitespace-nowrap">Sobre Pedido</span>
                                                             )}
                                                         </div>
 

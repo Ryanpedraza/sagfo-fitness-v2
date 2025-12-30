@@ -39,6 +39,11 @@ import { uploadToBlob, deleteFromBlob } from './lib/vercel-blob';
 
 
 const App: React.FC = () => {
+  // Aplicar transición de modo oscuro globalmente
+  useEffect(() => {
+    document.documentElement.classList.add('dark-mode-transition');
+  }, []);
+
   // Estados
   const [loading, setLoading] = useState(true);
   const [appVisible, setAppVisible] = useState(false);

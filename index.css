@@ -665,9 +665,9 @@ select:focus {
 
 /* === DARK MODE TRANSITIONS === */
 .dark-mode-transition {
-    transition: background-color var(--transition-base),
-        color var(--transition-base),
-        border-color var(--transition-base);
+    transition: background-color 150ms ease-out,
+        color 150ms ease-out,
+        border-color 150ms ease-out;
 }
 
 /* === NO SCROLLBAR UTILITY === */

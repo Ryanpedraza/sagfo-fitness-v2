@@ -98,7 +98,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         address,
         city,
         department,
-        country,
+        // country, // Removed because it's missing in DB schema (error PGRST204)
         password, // Storing plain text as requested/legacy
         created_at: new Date().toISOString()
       };

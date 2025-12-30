@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { Trash2 } from 'lucide-react';
 import { CartItem, PaymentMethod, BankAccount } from '../types';
 import { useAuth } from '../hooks/useAuth';
 import { colombianDepartments } from '../data/colombia';
@@ -326,7 +327,7 @@ const QuoteCartModal: React.FC<QuoteCartModalProps> = ({ isOpen, onClose, cartIt
                         <h2 className="text-3xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter">
                             TU<span className="text-primary-600">CARRITO</span>
                         </h2>
-                        <p className="text-[10px] font-black text-neutral-400 uppercase tracking-[0.4em] opacity-60">SAGFOFITNESS ELITE</p>
+                        <p className="text-[10px] font-black text-neutral-400 dark:text-neutral-500 uppercase tracking-[0.4em]">SAGFOFITNESS ELITE</p>
                     </div>
                     <button
                         onClick={onClose}
@@ -350,7 +351,7 @@ const QuoteCartModal: React.FC<QuoteCartModalProps> = ({ isOpen, onClose, cartIt
                             {/* Product List */}
                             <div className="space-y-4">
                                 {cartItems.map(item => (
-                                    <div key={item.equipment.id + (item.selectedColor || '') + (item.selectedWeight || '')} className="bg-white dark:bg-zinc-800/50 p-4 sm:p-6 rounded-[2rem] border border-neutral-100 dark:border-white/5 shadow-lg group hover:shadow-2xl transition-all duration-300">
+                                    <div key={item.cartItemId || item.equipment.id} className="bg-white dark:bg-zinc-800/50 p-4 sm:p-6 rounded-[2rem] border border-neutral-100 dark:border-white/5 shadow-lg group hover:shadow-2xl transition-all duration-300">
                                         <div className="flex gap-6 sm:gap-8 items-center">
                                             {/* Big Image */}
                                             <div className="w-24 h-24 sm:w-32 sm:h-32 bg-neutral-100 dark:bg-black/20 rounded-2xl overflow-hidden p-4 flex-shrink-0 border border-neutral-200 dark:border-white/5">
@@ -364,7 +365,7 @@ const QuoteCartModal: React.FC<QuoteCartModalProps> = ({ isOpen, onClose, cartIt
                                             {/* Content */}
                                             <div className="flex-grow min-w-0 flex flex-col gap-3">
                                                 <div className="flex justify-between items-start">
-                                                    <div className="space-y-1">
+                                                    <div className="space-y-1 w-full">
                                                         <div className="flex items-center gap-2">
                                                             <h4 className="text-lg sm:text-xl font-black text-neutral-900 dark:text-white uppercase italic leading-none">{item.equipment.name}</h4>
                                                             {item.equipment.availabilityStatus === 'in-stock' ? (
@@ -374,54 +375,85 @@ const QuoteCartModal: React.FC<QuoteCartModalProps> = ({ isOpen, onClose, cartIt
                                                             )}
                                                         </div>
 
-                                                        {/* Variants Tags */}
-                                                        {(item.selectedColor || item.selectedWeight) && (
-                                                            <div className="flex flex-wrap gap-2">
-                                                                {item.selectedColor && (
-                                                                    <div className="flex items-center gap-1.5 border border-neutral-200 dark:border-white/10 px-2 py-0.5 rounded-lg bg-neutral-50 dark:bg-white/5">
-                                                                        <div className="w-2 h-2 rounded-full border border-neutral-300" style={{ backgroundColor: item.selectedColor.toLowerCase().includes('rojo') ? '#ef4444' : item.selectedColor.toLowerCase().includes('azul') ? '#3b82f6' : item.selectedColor.toLowerCase().includes('negro') ? '#171717' : item.selectedColor.toLowerCase().includes('blanco') ? '#ffffff' : '#9ca3af' }} />
-                                                                        <span className="text-[9px] font-bold text-neutral-500 dark:text-neutral-400 uppercase">{item.selectedColor}</span>
+                                                        {/* Variants Tags & Customization */}
+                                                        <div className="flex flex-wrap gap-2 w-full mt-2">
+                                                            {item.equipment.availabilityStatus === 'made-to-order' ? (
+                                                                <>
+                                                                    {/* Structure Input */}
+                                                                    <div className="flex flex-col gap-1.5 w-full sm:w-auto flex-1">
+                                                                        <label className="text-[8px] font-black text-neutral-400 dark:text-neutral-300 uppercase tracking-widest pl-1 italic">Color Estructura</label>
+                                                                        <input
+                                                                            type="text"
+                                                                            placeholder="Ej: Negro Mate"
+                                                                            value={item.structureColor || ''}
+                                                                            onChange={(e) => onUpdateItemCustomization(item.cartItemId!, 'structureColor', e.target.value)}
+                                                                            className="bg-neutral-100 dark:bg-white/5 border border-neutral-200 dark:border-white/10 rounded-xl px-3 py-2 text-[10px] font-bold uppercase outline-none focus:border-primary-500 transition-all placeholder:text-neutral-400 dark:placeholder:text-neutral-600 text-neutral-900 dark:text-white"
+                                                                        />
                                                                     </div>
-                                                                )}
-                                                                {item.selectedWeight && (
-                                                                    <div className="flex items-center gap-1.5 border border-neutral-200 dark:border-white/10 px-2 py-0.5 rounded-lg bg-neutral-50 dark:bg-white/5">
-                                                                        <span className="text-[9px] font-bold text-neutral-500 dark:text-neutral-400 uppercase">{item.selectedWeight}</span>
+                                                                    {/* Upholstery Input */}
+                                                                    <div className="flex flex-col gap-1.5 w-full sm:w-auto flex-1">
+                                                                        <label className="text-[8px] font-black text-neutral-400 dark:text-neutral-300 uppercase tracking-widest pl-1 italic">Color Tapicería</label>
+                                                                        <input
+                                                                            type="text"
+                                                                            placeholder="Ej: Rojo"
+                                                                            value={item.upholsteryColor || ''}
+                                                                            onChange={(e) => onUpdateItemCustomization(item.cartItemId!, 'upholsteryColor', e.target.value)}
+                                                                            className="bg-neutral-100 dark:bg-white/5 border border-neutral-200 dark:border-white/10 rounded-xl px-3 py-2 text-[10px] font-bold uppercase outline-none focus:border-primary-500 transition-all placeholder:text-neutral-400 dark:placeholder:text-neutral-600 text-neutral-900 dark:text-white"
+                                                                        />
                                                                     </div>
-                                                                )}
-                                                            </div>
-                                                        )}
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    {item.selectedWeight && (
+                                                                        <div className="flex flex-col gap-1.5 w-fit">
+                                                                            <label className="text-[8px] font-black text-neutral-400 uppercase tracking-widest pl-1 italic">Peso</label>
+                                                                            <div className="bg-neutral-100 dark:bg-white/5 border border-neutral-200 dark:border-white/10 px-3 py-2 rounded-xl">
+                                                                                <span className="text-[10px] font-bold text-neutral-500 dark:text-neutral-400 uppercase">{item.selectedWeight}</span>
+                                                                            </div>
+                                                                        </div>
+                                                                    )}
+                                                                    {/* Simple Color Input for In-Stock */}
+                                                                    <div className="flex flex-col gap-1.5 w-full sm:w-auto flex-1">
+                                                                        <label className="text-[8px] font-black text-neutral-400 dark:text-neutral-300 uppercase tracking-widest pl-1 italic">Color Deseado</label>
+                                                                        <input
+                                                                            type="text"
+                                                                            placeholder="Ej: Rojo, Negro..."
+                                                                            value={item.selectedColor || ''}
+                                                                            onChange={(e) => onUpdateItemCustomization(item.cartItemId!, 'selectedColor', e.target.value)}
+                                                                            className="bg-neutral-100 dark:bg-white/5 border border-neutral-200 dark:border-white/10 rounded-xl px-3 py-2 text-[10px] font-bold uppercase outline-none focus:border-primary-500 transition-all placeholder:text-neutral-400 dark:placeholder:text-neutral-600 text-neutral-900 dark:text-white"
+                                                                        />
+                                                                    </div>
+                                                                </>
+                                                            )}
+                                                        </div>
                                                     </div>
 
                                                     {/* Price (Top Right) */}
-                                                    <span className="text-lg sm:text-xl font-black text-neutral-900 dark:text-white italic tracking-tighter">{formatCurrency(item.equipment.price * item.quantity)}</span>
+                                                    <div className="flex flex-col items-end gap-1">
+                                                        <span className="text-lg sm:text-xl font-black text-neutral-900 dark:text-white italic tracking-tighter">{formatCurrency(item.equipment.price * item.quantity)}</span>
+                                                        <button onClick={() => onRemoveItem(item.cartItemId || item.equipment.id)} className="text-neutral-400 hover:text-red-500 transition-colors">
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    </div>
                                                 </div>
 
-                                                <div className="flex items-end justify-between mt-2">
+                                                <div className="flex items-center justify-between mt-auto">
                                                     {/* Quantity Control */}
-                                                    <div className="flex items-center bg-neutral-100 dark:bg-black/30 rounded-2xl p-1.5 border border-neutral-200 dark:border-white/5 shadow-inner gap-1">
+                                                    <div className="flex items-center bg-neutral-100 dark:bg-black/30 rounded-2xl p-1 border border-neutral-200 dark:border-white/5 shadow-inner gap-1">
                                                         <button
-                                                            onClick={() => onUpdateQuantity(item.equipment.id, item.quantity - 1)}
+                                                            onClick={() => onUpdateQuantity(item.cartItemId!, item.quantity - 1)}
                                                             className="w-10 h-10 flex items-center justify-center text-lg font-black text-neutral-900 dark:text-white bg-white dark:bg-white/5 hover:bg-white/80 rounded-xl transition-all active:scale-95 shadow-sm"
                                                         >
                                                             -
                                                         </button>
                                                         <span className="w-10 text-center text-sm font-black text-neutral-900 dark:text-white">{item.quantity}</span>
                                                         <button
-                                                            onClick={() => onUpdateQuantity(item.equipment.id, item.quantity + 1)}
+                                                            onClick={() => onUpdateQuantity(item.cartItemId!, item.quantity + 1)}
                                                             className="w-10 h-10 flex items-center justify-center text-lg font-black text-neutral-900 dark:text-white bg-white dark:bg-white/5 hover:bg-white/80 rounded-xl transition-all active:scale-95 shadow-sm"
                                                         >
                                                             +
                                                         </button>
                                                     </div>
-
-                                                    {/* Remove Button */}
-                                                    <button
-                                                        onClick={() => onRemoveItem(item.equipment.id)}
-                                                        className="group/trash flex items-center gap-2 px-4 py-2 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/10 text-neutral-300 hover:text-red-500 transition-all"
-                                                    >
-                                                        <span className="text-[10px] font-black uppercase hidden sm:block opacity-0 group-hover/trash:opacity-100 transition-all">Eliminar</span>
-                                                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                                    </button>
                                                 </div>
                                             </div>
                                         </div>
@@ -430,15 +462,15 @@ const QuoteCartModal: React.FC<QuoteCartModalProps> = ({ isOpen, onClose, cartIt
                             </div>
 
                             {/* Financial Summary */}
-                            <div className="p-8 bg-neutral-900 dark:bg-zinc-800 text-white rounded-[2.5rem] shadow-2xl space-y-6 relative overflow-hidden group border border-white/5">
+                            <div className="p-8 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white rounded-[2.5rem] shadow-premium space-y-6 relative overflow-hidden group border border-neutral-100 dark:border-white/5">
                                 <div className="absolute top-0 right-0 w-64 h-64 bg-primary-600/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
 
                                 <div className="space-y-3 relative z-10">
-                                    <div className="flex justify-between items-center text-xs font-bold uppercase tracking-wider opacity-60">
+                                    <div className="flex justify-between items-center text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-300">
                                         <span>Subtotal de Pedido</span>
                                         <span className="font-black">{formatCurrency(calculation.totalOrderValue)}</span>
                                     </div>
-                                    <div className="flex justify-between items-center text-xs font-bold uppercase tracking-wider text-primary-400">
+                                    <div className="flex justify-between items-center text-xs font-bold uppercase tracking-wider text-primary-600 dark:text-primary-400">
                                         <div className="flex items-center gap-2">
                                             <div className="w-1.5 h-1.5 rounded-full bg-primary-500 animate-pulse" />
                                             <span>Pendiente contra entrega</span>
@@ -446,13 +478,13 @@ const QuoteCartModal: React.FC<QuoteCartModalProps> = ({ isOpen, onClose, cartIt
                                         <span className="font-black">{formatCurrency(calculation.amountPending)}</span>
                                     </div>
 
-                                    <div className="pt-4 mt-4 border-t border-white/10">
+                                    <div className="pt-4 mt-4 border-t border-neutral-100 dark:border-white/10">
                                         <div className="flex justify-between items-baseline">
                                             <div className="space-y-1">
-                                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary-500">Monto del Anticipo</p>
+                                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary-600 dark:text-primary-500">Monto del Anticipo</p>
                                                 <p className="text-3xl font-black italic tracking-tighter">{formatCurrency(calculation.amountPaid)}</p>
                                             </div>
-                                            <span className="text-[9px] font-black px-2 py-1 bg-white/10 rounded-lg uppercase italic border border-white/10">
+                                            <span className="text-[9px] font-black px-2 py-1 bg-neutral-100 dark:bg-white/10 rounded-lg uppercase italic border border-neutral-200 dark:border-white/10">
                                                 {calculation.amountPending > 0 ? '50% Inicial' : 'Pago Total'}
                                             </span>
                                         </div>
@@ -466,7 +498,7 @@ const QuoteCartModal: React.FC<QuoteCartModalProps> = ({ isOpen, onClose, cartIt
                             {/* Authentication Guard */}
                             {!user ? (
                                 <div className="p-8 text-center bg-neutral-100 dark:bg-white/5 rounded-[2rem] border-2 border-dashed border-neutral-200 dark:border-white/10">
-                                    <p className="text-xs font-bold text-neutral-500 mb-6 uppercase italic">Accede para procesar el carrito</p>
+                                    <p className="text-xs font-bold text-neutral-500 dark:text-neutral-300 mb-6 uppercase italic">Accede para procesar el carrito</p>
                                     <button onClick={onLoginClick} className="w-full py-4 bg-primary-600 text-white font-black rounded-xl uppercase tracking-widest text-[10px] italic shadow-lg">Iniciar Sesión / Registro</button>
                                 </div>
                             ) : (
@@ -524,7 +556,7 @@ const QuoteCartModal: React.FC<QuoteCartModalProps> = ({ isOpen, onClose, cartIt
                                         <div className="space-y-3">
                                             <div className="flex gap-2">
                                                 <button type="button" onClick={handleGetLocation} className="flex-grow py-3 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-xl text-[9px] font-black uppercase italic tracking-widest">Obtener GPS Precise</button>
-                                                <button type="button" onClick={toggleMapManual} className="p-3 bg-neutral-100 dark:bg-white/5 rounded-xl text-neutral-500"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0121 18.382V7.618a1 1 0 01-.553-.894L15 4m0 13V4m0 0L9 7" /></svg></button>
+                                                <button type="button" onClick={toggleMapManual} className="p-3 bg-neutral-100 dark:bg-white/5 rounded-xl text-neutral-500 dark:text-neutral-400 hover:text-primary-500 transition-colors"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0121 18.382V7.618a1 1 0 01-.553-.894L15 4m0 13V4m0 0L9 7" /></svg></button>
                                             </div>
 
                                             {isMapVisible && (
@@ -554,7 +586,7 @@ const QuoteCartModal: React.FC<QuoteCartModalProps> = ({ isOpen, onClose, cartIt
                                                     <div>
                                                         <p className="text-[8px] font-black text-neutral-400 uppercase">{acc.bankName} - {acc.accountType}</p>
                                                         <p className="text-sm font-black text-neutral-900 dark:text-white italic tracking-wider leading-none mt-1">{acc.accountNumber}</p>
-                                                        <p className="text-[7px] font-medium text-neutral-400 uppercase mt-1">Titular: {acc.holderName}</p>
+                                                        <p className="text-[7px] font-medium text-neutral-400 dark:text-neutral-500 uppercase mt-1">Titular: {acc.holderName}</p>
                                                     </div>
                                                     <button
                                                         type="button"
@@ -570,7 +602,7 @@ const QuoteCartModal: React.FC<QuoteCartModalProps> = ({ isOpen, onClose, cartIt
                                                 </div>
                                             ))}
                                             {bankAccounts.length === 0 && (
-                                                <p className="text-[9px] font-black text-neutral-400 uppercase italic text-center py-2">No hay cuentas configuradas</p>
+                                                <p className="text-[9px] font-black text-neutral-400 dark:text-neutral-500 uppercase italic text-center py-2">No hay cuentas configuradas</p>
                                             )}
                                         </div>
                                         <button
@@ -614,7 +646,7 @@ const QuoteCartModal: React.FC<QuoteCartModalProps> = ({ isOpen, onClose, cartIt
                     )}
                 </div>
             </div>
-        </div >
+        </div>
     );
 };
 

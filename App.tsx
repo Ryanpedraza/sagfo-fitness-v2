@@ -79,13 +79,15 @@ const App: React.FC = () => {
   // Galería derivada de los productos para evitar duplicidad de datos
   // Galería derivada de los productos con Memoización para Estabilidad
   const galleryImages: GalleryImage[] = useMemo(() => {
-    return products.flatMap((p) =>
-      p.imageUrls.filter(url => url && url.startsWith('http')).map((url, iIdx) => ({
-        id: `gallery-${p.id}-${iIdx}`,
-        imageUrl: url,
-        caption: p.name
-      }))
-    );
+    return products
+      .filter(p => p.category === 'Maquinaria')
+      .flatMap((p) =>
+        p.imageUrls.filter(url => url && url.startsWith('http')).map((url, iIdx) => ({
+          id: `gallery-${p.id}-${iIdx}`,
+          imageUrl: url,
+          caption: p.name
+        }))
+      );
   }, [products]);
 
   const [selectedProduct, setSelectedProduct] = useState<EquipmentItem | null>(null);
@@ -1286,7 +1288,10 @@ const App: React.FC = () => {
                   </div>
                 </div>
 
-                <QuickCategoryNav onSelectCategory={handleSelectQuickCategory} />
+                <QuickCategoryNav
+                  onSelectCategory={handleSelectQuickCategory}
+                  galleryImages={galleryImages}
+                />
 
                 <div id="catalog" className="w-full px-1 md:px-4 py-20 md:py-32">
                   <div className="w-full bg-white dark:bg-[#111] rounded-[2.5rem] sm:rounded-[3.5rem] shadow-2xl overflow-hidden p-4 sm:p-8 md:p-12 border border-neutral-200 dark:border-white/5">

@@ -22,49 +22,57 @@ export const useCart = () => {
         localStorage.setItem('cartItems', JSON.stringify(cartItems));
     }, [cartItems]);
 
-    const handleAddToCart = (product: EquipmentItem, color?: string, weight?: string) => {
+    const handleAddToCart = (product: EquipmentItem, color?: string, weight?: string, structureColor?: string, upholsteryColor?: string) => {
         setCartItems(prevItems => {
             const existingItem = prevItems.find(item =>
                 item.equipment.id === product.id &&
                 item.selectedColor === color &&
-                item.selectedWeight === weight
+                item.selectedWeight === weight &&
+                item.structureColor === structureColor &&
+                item.upholsteryColor === upholsteryColor
             );
 
             if (existingItem) {
                 return prevItems.map(item =>
-                    (item.equipment.id === product.id && item.selectedColor === color && item.selectedWeight === weight)
+                    (item.equipment.id === product.id &&
+                        item.selectedColor === color &&
+                        item.selectedWeight === weight &&
+                        item.structureColor === structureColor &&
+                        item.upholsteryColor === upholsteryColor)
                         ? { ...item, quantity: item.quantity + 1 }
                         : item
                 );
             }
             return [...prevItems, {
+                cartItemId: Math.random().toString(36).substr(2, 9),
                 equipment: product,
                 quantity: 1,
                 selectedColor: color,
                 selectedWeight: weight,
-                structureColor: color // Initialize with selected color
+                structureColor: structureColor || color,
+                upholsteryColor: upholsteryColor
             }];
         });
     };
 
-    const handleUpdateCartItemCustomization = (productId: string, field: 'structureColor' | 'upholsteryColor', value: string, color?: string, weight?: string) => {
+    const handleUpdateCartItemCustomization = (cartItemId: string, field: 'structureColor' | 'upholsteryColor' | 'selectedColor', value: string) => {
         setCartItems(prev => prev.map(item =>
-            (item.equipment.id === productId && item.selectedColor === color && item.selectedWeight === weight)
+            (item.cartItemId === cartItemId)
                 ? { ...item, [field]: value }
                 : item
         ));
     };
 
-    const handleRemoveFromCart = (productId: string) => {
-        setCartItems(prev => prev.filter(item => item.equipment.id !== productId));
+    const handleRemoveFromCart = (cartItemId: string) => {
+        setCartItems(prev => prev.filter(item => item.cartItemId !== cartItemId));
     };
 
-    const handleUpdateQuantity = (productId: string, newQuantity: number) => {
+    const handleUpdateQuantity = (cartItemId: string, newQuantity: number) => {
         if (newQuantity < 1) {
-            handleRemoveFromCart(productId);
+            handleRemoveFromCart(cartItemId);
             return;
         }
-        setCartItems(prev => prev.map(item => item.equipment.id === productId ? { ...item, quantity: newQuantity } : item));
+        setCartItems(prev => prev.map(item => item.cartItemId === cartItemId ? { ...item, quantity: newQuantity } : item));
     };
 
     const handleAddPackageToCart = (items: CartItem[]) => {

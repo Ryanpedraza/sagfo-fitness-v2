@@ -18,6 +18,7 @@ ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS admin_notes text;
 ALTER TABLE public.users ADD COLUMN IF NOT EXISTS updated_at timestamp with time zone DEFAULT now();
 ALTER TABLE public.users ADD COLUMN IF NOT EXISTS last_login_at timestamp with time zone;
 ALTER TABLE public.users ADD COLUMN IF NOT EXISTS email_verified boolean DEFAULT false;
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS country text;
 
 ALTER TABLE public.events ADD COLUMN IF NOT EXISTS updated_at timestamp with time zone DEFAULT now();
 ALTER TABLE public.gallery ADD COLUMN IF NOT EXISTS updated_at timestamp with time zone DEFAULT now();

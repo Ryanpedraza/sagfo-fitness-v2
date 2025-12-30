@@ -100,7 +100,7 @@ const Header: React.FC<HeaderProps> = ({ cartCount, onCartClick, onLoginClick, o
                   placeholder="Buscar Equipamiento de Élite..."
                   value={searchTerm}
                   onChange={onSearchChange}
-                  className="w-full h-12 pl-14 pr-6 rounded-full bg-neutral-200/50 dark:bg-white/5 border border-transparent focus:border-white/10 focus:bg-white dark:focus:bg-zinc-900 transition-all duration-500 text-xs font-black uppercase tracking-widest placeholder:text-neutral-500 group-hover:bg-neutral-200 dark:group-hover:bg-white/10 focus:outline-none focus:ring-4 focus:ring-primary-500/5"
+                  className="w-full h-12 pl-14 pr-6 rounded-full bg-neutral-200/50 dark:bg-white/5 border border-transparent focus:border-white/10 focus:bg-white dark:focus:bg-zinc-900 transition-all duration-500 text-xs font-black uppercase tracking-widest placeholder:text-neutral-500 group-hover:bg-neutral-200 dark:group-hover:bg-white/10 focus:outline-none focus:ring-4 focus:ring-primary-500/5 text-neutral-900 dark:text-white"
                 />
               </motion.div>
             )}

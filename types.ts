@@ -53,6 +53,7 @@ export interface CartItem {
   selectedWeight?: string;
   structureColor?: string;
   upholsteryColor?: string;
+  cartItemId?: string;
 }
 
 export type PaymentMethod = 'standard' | 'production' | 'mixed';

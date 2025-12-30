@@ -8,7 +8,7 @@ interface ProductModalProps {
   product: EquipmentItem | null;
   isOpen: boolean;
   onClose: () => void;
-  onAddToCart: (product: EquipmentItem, color?: string, weight?: string) => void;
+  onAddToCart: (product: EquipmentItem, color?: string, weight?: string, structureColor?: string, upholsteryColor?: string) => void;
   cartItems: CartItem[];
   isEditing: boolean;
   onSave: (product: EquipmentItem, newImagesMap?: Record<string, File>) => void;
@@ -31,6 +31,12 @@ const ProductModal: React.FC<ProductModalProps> = ({
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [selectedColor, setSelectedColor] = useState<string | undefined>(undefined);
   const [selectedWeight, setSelectedWeight] = useState<string | undefined>(undefined);
+  const [structureColor, setStructureColor] = useState<string>('Negro Mate');
+  const [upholsteryColor, setUpholsteryColor] = useState<string>('Negro');
+  const [customStructure, setCustomStructure] = useState<string>('');
+  const [customUpholstery, setCustomUpholstery] = useState<string>('');
+  const [showCustomStructure, setShowCustomStructure] = useState(false);
+  const [showCustomUpholstery, setShowCustomUpholstery] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   // High-End Zoom Logic
@@ -240,8 +246,16 @@ const ProductModal: React.FC<ProductModalProps> = ({
       setCurrentImageIndex(0);
       setFormData({ ...product });
       setNewImagesMap({});
-      if (product.availableColors?.length) setSelectedColor(product.availableColors[0]);
+      if (product.availableColors?.length) {
+        setSelectedColor(product.availableColors[0]);
+        setStructureColor(product.availableColors[0]);
+      }
       if (product.availableWeights?.length) setSelectedWeight(product.availableWeights[0]);
+      setUpholsteryColor('Negro');
+      setCustomStructure('');
+      setCustomUpholstery('');
+      setShowCustomStructure(false);
+      setShowCustomUpholstery(false);
     }
   }, [product, isEditing]);
 
@@ -499,28 +513,6 @@ const ProductModal: React.FC<ProductModalProps> = ({
                     )}
                   </div>
 
-                  {product.availableColors && product.availableColors.length > 0 && (
-                    <div className="space-y-6">
-                      <label className="text-[11px] font-black uppercase text-neutral-400 tracking-widest italic flex items-center gap-3"><div className="w-8 h-[1px] bg-neutral-300" /> Personalizar Estructura</label>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                        {product.availableColors.map(c => {
-                          const isSelected = selectedColor === c;
-                          const style = getColorStyle(c);
-                          return (
-                            <button
-                              key={c}
-                              onClick={() => setSelectedColor(c)}
-                              style={isSelected ? { backgroundColor: style.bg, color: style.text, borderColor: style.bg } : {}}
-                              className={`py-5 rounded-3xl text-[10px] font-black uppercase transition-all border-2 ${isSelected ? 'scale-105 shadow-2xl italic skew-x-[-12deg]' : 'bg-white dark:bg-zinc-900 text-neutral-500 border-neutral-100 dark:border-white/5 hover:border-primary-500/30'}`}
-                            >
-                              {c}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-
                   {product.availableWeights && product.availableWeights.length > 0 && (
                     <div className="space-y-6 mt-6">
                       <label className="text-[11px] font-black uppercase text-neutral-400 tracking-widest italic flex items-center gap-3"><div className="w-8 h-[1px] bg-neutral-300" /> Seleccionar Peso</label>
@@ -550,7 +542,13 @@ const ProductModal: React.FC<ProductModalProps> = ({
                       onClick={() => {
                         if (isAddingToCart || isProductInCart) return;
                         setIsAddingToCart(true);
-                        onAddToCart(product, selectedColor, selectedWeight);
+                        onAddToCart(
+                          product,
+                          undefined, // No pre-selected color
+                          selectedWeight,
+                          undefined, // Color to be written in cart
+                          undefined  // Upholstery to be written in cart
+                        );
                         setTimeout(() => setIsAddingToCart(false), 1000);
                       }}
                       disabled={isAddingToCart}

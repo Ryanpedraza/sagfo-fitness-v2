@@ -87,14 +87,13 @@ export interface Order {
     amountPaid: number;
     amountPending: number;
   };
-  assignedTransporterId?: string;
 }
 
 export interface Profile {
   id: string;
   name: string;
   email: string;
-  role: 'customer' | 'admin' | 'transporter';
+  role: 'customer' | 'admin';
   phone?: string;
   address?: string;
   city?: string;

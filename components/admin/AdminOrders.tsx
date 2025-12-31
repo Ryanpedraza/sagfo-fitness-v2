@@ -20,15 +20,13 @@ interface AdminOrdersProps {
     profiles: Profile[];
     onUpdateOrderStatus: (orderId: string, status: OrderStatus, note?: string) => void;
     onUpdateItemStatus: (orderId: string, itemIndex: number, status: DeliveryStatus) => void;
-    onAssignTransporter: (orderId: string, transporterId: string) => void;
 }
 
 const AdminOrders: React.FC<AdminOrdersProps> = ({
     orders,
     profiles,
     onUpdateOrderStatus,
-    onUpdateItemStatus,
-    onAssignTransporter
+    onUpdateItemStatus
 }) => {
     const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
     const [statusModalOpen, setStatusModalOpen] = useState(false);
@@ -37,7 +35,7 @@ const AdminOrders: React.FC<AdminOrdersProps> = ({
     const [statusNote, setStatusNote] = useState('');
     const [copiedOrderId, setCopiedOrderId] = useState<string | null>(null);
 
-    const transporters = profiles.filter(p => p.role === 'transporter');
+
 
     const handleWhatsAppMessage = (phone: string, message: string) => {
         const cleanPhone = phone.replace(/\D/g, '');
@@ -256,21 +254,7 @@ generado por SAGFO Elite v2
                                             </div>
                                         </div>
 
-                                        {transporters.length > 0 && (
-                                            <div className="bg-white dark:bg-zinc-900 rounded-xl p-4 border border-neutral-200 dark:border-zinc-800">
-                                                <label className="block text-xs font-bold text-neutral-500 dark:text-zinc-400 uppercase tracking-wider mb-3">Asignar Transportador</label>
-                                                <select
-                                                    value={order.assignedTransporterId || ''}
-                                                    onChange={(e) => onAssignTransporter(order.id, e.target.value)}
-                                                    className="w-full px-4 py-3 rounded-lg border border-neutral-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-neutral-900 dark:text-white"
-                                                >
-                                                    <option value="">Sin asignar</option>
-                                                    {transporters.map(t => (
-                                                        <option key={t.id} value={t.id}>{t.name}</option>
-                                                    ))}
-                                                </select>
-                                            </div>
-                                        )}
+
 
                                         <div className="bg-white dark:bg-zinc-900 rounded-xl p-4 border border-neutral-200 dark:border-zinc-800">
                                             <h4 className="font-bold mb-4 text-neutral-900 dark:text-white">Items del Pedido</h4>
@@ -279,8 +263,17 @@ generado por SAGFO Elite v2
                                                     const product = item?.equipment;
                                                     const isInStock = product?.availabilityStatus === 'in-stock';
                                                     const isMadeToOrder = product?.availabilityStatus === 'made-to-order';
+
+                                                    // Logic: Stock items can be dispatched as soon as payment is confirmed (Recibido)
+                                                    // Production items follow the full cycle and only dispatch when order is in dispatch phase
+                                                    const orderCanShipStock = order.status !== 'Pendiente de Aprobación' && order.status !== 'Rechazado' && order.status !== 'Cancelado';
                                                     const orderIsDispatched = order.status === 'Despachado' || order.status === 'En Envío' || order.status === 'Entregado';
-                                                    const canDispatch = item.deliveryStatus === 'pending' && (isInStock || (isMadeToOrder && orderIsDispatched));
+
+                                                    const canDispatch = item.deliveryStatus === 'pending' && (
+                                                        (isInStock && orderCanShipStock) ||
+                                                        (isMadeToOrder && orderIsDispatched)
+                                                    );
+
                                                     const isShipped = item.deliveryStatus === 'shipped';
                                                     const isDelivered = item.deliveryStatus === 'delivered';
 
@@ -289,7 +282,7 @@ generado por SAGFO Elite v2
                                                         ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
                                                         : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400';
 
-                                                    const itemTypeLabel = isInStock ? 'Stock' : 'Producción';
+                                                    const itemTypeLabel = isInStock ? 'STOCK ELITE' : 'A PRODUCCIÓN';
 
                                                     return (
                                                         <div key={`${order.id}-item-${idx}`} className="flex items-start justify-between p-4 bg-neutral-50 dark:bg-zinc-800/50 rounded-xl border border-neutral-100 dark:border-zinc-700/50">
@@ -345,6 +338,11 @@ generado por SAGFO Elite v2
                                                                                 {getDeliveryStatusText(item.deliveryStatus)}
                                                                             </span>
                                                                         )}
+                                                                        {isInStock && !orderCanShipStock && item.deliveryStatus === 'pending' && (
+                                                                            <p className="text-[9px] text-red-600 dark:text-red-500 font-bold uppercase italic tracking-tight">
+                                                                                ⚠️ Pago no aprobado
+                                                                            </p>
+                                                                        )}
                                                                         {isMadeToOrder && !orderIsDispatched && item.deliveryStatus === 'pending' && (
                                                                             <p className="text-[9px] text-amber-600 dark:text-amber-500 font-bold uppercase italic tracking-tight">
                                                                                 ⚠️ Pendiente de despacho general
@@ -353,19 +351,32 @@ generado por SAGFO Elite v2
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                            {!isDelivered ? (
-                                                                <button
-                                                                    onClick={() => canDispatch && onUpdateItemStatus(order.id, idx, 'shipped')}
-                                                                    disabled={!canDispatch}
-                                                                    className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase italic tracking-widest transition-all ${getDispatchButtonClass(canDispatch, isShipped)}`}
-                                                                >
-                                                                    {isShipped ? '✓ Despachado' : 'Despachar'}
-                                                                </button>
-                                                            ) : (
-                                                                <div className="px-4 py-2 rounded-xl text-[10px] font-black uppercase italic tracking-widest bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                                                                    Entregado
-                                                                </div>
-                                                            )}
+                                                            <div className="flex items-center gap-2">
+                                                                {!isDelivered ? (
+                                                                    <>
+                                                                        {!isShipped ? (
+                                                                            <button
+                                                                                onClick={() => canDispatch && onUpdateItemStatus(order.id, idx, 'shipped')}
+                                                                                disabled={!canDispatch}
+                                                                                className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase italic tracking-widest transition-all ${getDispatchButtonClass(canDispatch, isShipped)}`}
+                                                                            >
+                                                                                Despachar
+                                                                            </button>
+                                                                        ) : (
+                                                                            <button
+                                                                                onClick={() => onUpdateItemStatus(order.id, idx, 'delivered')}
+                                                                                className="px-4 py-2 rounded-xl text-[10px] font-black uppercase italic tracking-widest bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm transition-all"
+                                                                            >
+                                                                                Marcar Entregado
+                                                                            </button>
+                                                                        )}
+                                                                    </>
+                                                                ) : (
+                                                                    <div className="px-4 py-2 rounded-xl text-[10px] font-black uppercase italic tracking-widest bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                                                                        Entregado
+                                                                    </div>
+                                                                )}
+                                                            </div>
                                                         </div>
                                                     );
                                                 })}
@@ -401,7 +412,6 @@ generado por SAGFO Elite v2
                                                     { label: 'Confirmar Pago', icon: DollarSign, msg: `¡Hola ${order.customerInfo?.name || 'Cliente'}! 👋 Confirmamos el recibo de tu pago para el pedido #${order.id.slice(-6)}. Tu equipo ya está en proceso de gestión.` },
                                                     { label: 'Notificar Despacho', icon: Truck, msg: `¡Hola ${order.customerInfo?.name || 'Cliente'}! 👋 Tu pedido #${order.id.slice(-6)} ha sido despachado y está en camino. ¡Pronto disfrutarás de tu equipo SAGFO elite!` },
                                                     { label: 'Notificar Rechazo', icon: AlertTriangle, msg: `¡Hola ${order.customerInfo?.name || 'Cliente'}! 👋 Te informamos que tu pedido #${order.id.slice(-6)} ha sido RECHAZADO debido a inconvenientes con la verificación del pago. ❌` },
-                                                    { label: 'Solicitar Ubicación GPS', icon: Search, msg: `¡Hola ${order.customerInfo?.name || 'Cliente'}! 👋 Tu pedido #${order.id.slice(-6)} está listo para salir. Por favor envíanos tu ubicación actual por WhatsApp para que la ruta de nuestro capitán sea exacta y el equipo llegue perfecto. 📍` },
                                                     { label: 'Seguimiento Post-Venta', icon: Check, msg: `¡Hola ${order.customerInfo?.name || 'Cliente'}! 👋 ¿Cómo vas con tu nuevo equipo SAGFO? Nos encantaría saber tu opinión y si todo quedó como esperabas. ¡Tu satisfacción es nuestra prioridad elite! 🏅` }
                                                 ].map((btn, i) => (
                                                     <button

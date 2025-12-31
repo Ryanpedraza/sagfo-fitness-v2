@@ -27,14 +27,13 @@ import TestimonialsSection from './components/TestimonialsSection';
 import NotificationToast, { NotificationState } from './components/NotificationToast';
 import EditUserModal from './components/EditUserModal';
 import EventDetailModal from './components/EventDetailModal';
-import TransporterDashboard from './components/TransporterDashboard';
 import AdminDashboard from './components/AdminDashboard';
 
 
 import { supabase } from './lib/supabase';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, ShoppingBag } from 'lucide-react';
+import { ChevronRight, ShoppingBag, ChevronLeft } from 'lucide-react';
 import { uploadToBlob, deleteFromBlob } from './lib/vercel-blob';
 
 
@@ -106,7 +105,7 @@ const App: React.FC = () => {
   const [comparisonList, setComparisonList] = useState<EquipmentItem[]>([]);
   const [isComparisonModalOpen, setIsComparisonModalOpen] = useState(false);
   const { user, updateUser, logout } = useAuth();
-  const [view, setView] = useState<'catalog' | 'orders' | 'dashboard' | 'transporter_dashboard' | 'promos'>('catalog');
+  const [view, setView] = useState<'catalog' | 'orders' | 'dashboard' | 'promos'>('catalog');
   const [isAdminViewInitialized, setIsAdminViewInitialized] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isEditHeroModalOpen, setIsEditHeroModalOpen] = useState(false);
@@ -144,10 +143,14 @@ const App: React.FC = () => {
   const [sealUrl, setSealUrl] = useState('');
   const [loginModalInitialView, setLoginModalInitialView] = useState<'login' | 'register'>('login');
 
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 12;
+
+
   const [configId, setConfigId] = useState<string | number>('config');
 
   const isAdmin = user?.role === 'admin';
-  const isTransporter = user?.role === 'transporter';
   const isCustomer = user?.role === 'customer';
 
   const handleCategoryChange = (category: CategoryFilter) => {
@@ -230,7 +233,12 @@ const App: React.FC = () => {
           structureColor: i.structure_color,
           upholsteryColor: i.upholstery_color,
           deliveryStatus: i.delivery_status,
-          equipment: i.equipment
+          equipment: i.equipment ? {
+            ...i.equipment,
+            availabilityStatus: i.equipment.availability_status,
+            imageUrls: i.equipment.image_urls || [],
+            muscleGroup: i.equipment.muscle_group
+          } : null
         }))
       }));
       setOrders(mappedOrders);
@@ -292,9 +300,6 @@ const App: React.FC = () => {
         setView('dashboard');
         setIsAdminViewInitialized(true);
         window.scrollTo(0, 0);
-      } else if (isTransporter) {
-        setView('transporter_dashboard');
-        window.scrollTo(0, 0);
       } else if (isCustomer) {
         setView('orders');
         window.scrollTo(0, 0);
@@ -303,7 +308,7 @@ const App: React.FC = () => {
       setView('catalog');
       setIsAdminViewInitialized(false);
     }
-  }, [user, isAdmin, isCustomer, isTransporter, isAdminViewInitialized, pendingCartOpen]);
+  }, [user, isAdmin, isCustomer, isAdminViewInitialized, pendingCartOpen]);
 
   useEffect(() => {
     if (theme === 'auto') {
@@ -321,6 +326,14 @@ const App: React.FC = () => {
   useEffect(() => {
     localStorage.setItem('displayByCategory', JSON.stringify(displayByCategory));
   }, [displayByCategory]);
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+    // Scroll to top of catalog when filter changes
+    // const catalogEl = document.getElementById('catalog');
+    // if (catalogEl) catalogEl.scrollIntoView({ behavior: 'smooth' });
+  }, [categoryFilter, muscleFilter, searchTerm, sortOrder]);
 
   const handleSaveHero = async (slides: HeroSlide[], newFilesMap?: Record<string, File>) => {
     if (!isAdmin) return;
@@ -647,7 +660,7 @@ const App: React.FC = () => {
       setIsCartOpen(false);
       clearCart();
 
-      if (!isAdmin && !isTransporter) {
+      if (!isAdmin) {
         setView('orders');
       }
 
@@ -669,7 +682,7 @@ const App: React.FC = () => {
     else navigateToView('dashboard');
   };
 
-  const navigateToView = (targetView: 'catalog' | 'orders' | 'dashboard' | 'transporter_dashboard' | 'promos') => {
+  const navigateToView = (targetView: 'catalog' | 'orders' | 'dashboard' | 'promos') => {
     if (targetView === 'orders' && !user) {
       setIsLoginModalOpen(true);
       return;
@@ -677,9 +690,7 @@ const App: React.FC = () => {
     if (targetView === 'dashboard' && !isAdmin) {
       return;
     }
-    if (targetView === 'transporter_dashboard' && !isTransporter) {
-      return;
-    }
+
     setView(targetView);
     window.scrollTo(0, 0);
   };
@@ -760,7 +771,7 @@ const App: React.FC = () => {
   };
 
   const handleUpdateOrderStatus = async (orderId: string, status: OrderStatus, note?: string) => {
-    if (!isAdmin && !isTransporter) return;
+    if (!isAdmin) return;
 
     try {
       const targetOrder = orders.find(o => o.id === orderId);
@@ -808,7 +819,7 @@ const App: React.FC = () => {
   };
 
   const handleUpdateItemStatus = async (orderId: string, itemIndex: number, status: DeliveryStatus) => {
-    if (!isAdmin && !isTransporter) return;
+    if (!isAdmin) return;
 
     try {
       const order = orders.find(o => o.id === orderId);
@@ -865,26 +876,7 @@ const App: React.FC = () => {
     }, 100);
   };
 
-  const handleAssignTransporter = async (orderId: string, transporterId: string) => {
-    if (!isAdmin) return;
 
-    try {
-      const { error } = await supabase
-        .from('orders')
-        .update({
-          assigned_transporter_id: transporterId
-        })
-        .eq('id', orderId);
-
-      if (error) throw error;
-
-      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, assignedTransporterId: transporterId } : o));
-      setNotification({ id: Date.now(), type: 'success', message: 'Transportador asignado correctamente.' });
-    } catch (error) {
-      console.error('Error assigning transporter:', error);
-      setNotification({ id: Date.now(), type: 'error', message: 'Error al asignar transportador en la base de datos.' });
-    }
-  };
 
   const handleToggleCompare = (product: EquipmentItem) => {
     setComparisonList(prev => {
@@ -1102,6 +1094,62 @@ const App: React.FC = () => {
     }
   };
 
+  const handleOptimizeImages = async () => {
+    if (!isAdmin) return;
+
+    const unoptimizedProducts = products.filter(p =>
+      p.imageUrls.some(url => url && !url.includes('.webp') && !url.includes('blob.vercel-storage.com'))
+    );
+
+    if (unoptimizedProducts.length === 0) {
+      setNotification({ id: Date.now(), type: 'success', message: '¡Todas tus imágenes ya están optimizadas!' });
+      return;
+    }
+
+    setNotification({
+      id: Date.now(),
+      type: 'success',
+      message: `Iniciando optimización de ${unoptimizedProducts.length} productos. Esto puede tardar...`
+    });
+
+    let optimizedCount = 0;
+
+    for (const product of unoptimizedProducts) {
+      try {
+        const newUrls = await Promise.all(product.imageUrls.map(async (url) => {
+          if (url && !url.includes('.webp') && !url.includes('blob.vercel-storage.com')) {
+            try {
+              const response = await fetch(url);
+              const blob = await response.blob();
+              const file = new File([blob], "image.jpg", { type: blob.type });
+              return await uploadToBlob(file, 'products_optimized');
+            } catch (e) {
+              console.error(`Error optimizando imagen individual: ${url}`, e);
+              return url;
+            }
+          }
+          return url;
+        }));
+
+        const { error } = await supabase
+          .from('equipment')
+          .update({ image_urls: newUrls })
+          .eq('id', product.id);
+
+        if (!error) optimizedCount++;
+      } catch (err) {
+        console.error(`Error optimizando producto ${product.name}:`, err);
+      }
+    }
+
+    await refetchAll();
+    setNotification({
+      id: Date.now(),
+      type: 'success',
+      message: `Optimización completada: ${optimizedCount} productos procesados.`
+    });
+  };
+
   const handleDeleteEvent = async (eventId: string) => {
     if (!isAdmin) return;
 
@@ -1308,14 +1356,56 @@ const App: React.FC = () => {
 
                     {categoryFilter === 'Maquinaria' && (
                       machinery.length > 0 ? (
-                        <ProductGrid
-                          products={machinery}
-                          onProductClick={handleProductClick}
-                          onToggleCompare={handleToggleCompare}
-                          comparisonList={comparisonList}
-                          isAdmin={isAdmin}
-                          onEditProduct={handleEditProduct}
-                        />
+                        <>
+                          <ProductGrid
+                            products={machinery.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)}
+                            onProductClick={handleProductClick}
+                            onToggleCompare={handleToggleCompare}
+                            comparisonList={comparisonList}
+                            isAdmin={isAdmin}
+                            onEditProduct={handleEditProduct}
+                          />
+
+                          {/* Pagination Controls */}
+                          {machinery.length > ITEMS_PER_PAGE && (
+                            <div className="flex justify-center items-center gap-2 mt-12">
+                              <button
+                                onClick={() => {
+                                  setCurrentPage(prev => Math.max(1, prev - 1));
+                                  document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
+                                }}
+                                disabled={currentPage === 1}
+                                className="p-3 rounded-xl bg-neutral-100 dark:bg-white/5 disabled:opacity-30 hover:bg-neutral-200 dark:hover:bg-white/10 transition-colors"
+                              >
+                                <ChevronLeft className="w-5 h-5 text-neutral-600 dark:text-zinc-300" />
+                              </button>
+                              <div className="flex gap-2">
+                                {Array.from({ length: Math.ceil(machinery.length / ITEMS_PER_PAGE) }, (_, i) => i + 1).map((page) => (
+                                  <button
+                                    key={page}
+                                    onClick={() => {
+                                      setCurrentPage(page);
+                                      document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
+                                    }}
+                                    className={`w-10 h-10 rounded-xl font-black text-xs transition-all ${currentPage === page ? 'bg-primary-600 text-white shadow-lg scale-110' : 'bg-neutral-100 dark:bg-white/5 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-white/10'}`}
+                                  >
+                                    {page}
+                                  </button>
+                                ))}
+                              </div>
+                              <button
+                                onClick={() => {
+                                  setCurrentPage(prev => Math.min(Math.ceil(machinery.length / ITEMS_PER_PAGE), prev + 1));
+                                  document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
+                                }}
+                                disabled={currentPage === Math.ceil(machinery.length / ITEMS_PER_PAGE)}
+                                className="p-3 rounded-xl bg-neutral-100 dark:bg-white/5 disabled:opacity-30 hover:bg-neutral-200 dark:hover:bg-white/10 transition-colors"
+                              >
+                                <ChevronRight className="w-5 h-5 text-neutral-600 dark:text-zinc-300" />
+                              </button>
+                            </div>
+                          )}
+                        </>
                       ) : (
                         <div className="text-center py-20 bg-neutral-100 dark:bg-zinc-800/50 rounded-3xl mt-6">
                           <h2 className="text-2xl font-bold text-neutral-400">No hay maquinaria disponible.</h2>
@@ -1326,14 +1416,56 @@ const App: React.FC = () => {
 
                     {categoryFilter === 'Accesorios' && (
                       accessories.length > 0 ? (
-                        <ProductGrid
-                          products={accessories}
-                          onProductClick={handleProductClick}
-                          onToggleCompare={handleToggleCompare}
-                          comparisonList={comparisonList}
-                          isAdmin={isAdmin}
-                          onEditProduct={handleEditProduct}
-                        />
+                        <>
+                          <ProductGrid
+                            products={accessories.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)}
+                            onProductClick={handleProductClick}
+                            onToggleCompare={handleToggleCompare}
+                            comparisonList={comparisonList}
+                            isAdmin={isAdmin}
+                            onEditProduct={handleEditProduct}
+                          />
+
+                          {/* Pagination Controls for Accessories */}
+                          {accessories.length > ITEMS_PER_PAGE && (
+                            <div className="flex justify-center items-center gap-2 mt-12">
+                              <button
+                                onClick={() => {
+                                  setCurrentPage(prev => Math.max(1, prev - 1));
+                                  document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
+                                }}
+                                disabled={currentPage === 1}
+                                className="p-3 rounded-xl bg-neutral-100 dark:bg-white/5 disabled:opacity-30 hover:bg-neutral-200 dark:hover:bg-white/10 transition-colors"
+                              >
+                                <ChevronLeft className="w-5 h-5 text-neutral-600 dark:text-zinc-300" />
+                              </button>
+                              <div className="flex gap-2">
+                                {Array.from({ length: Math.ceil(accessories.length / ITEMS_PER_PAGE) }, (_, i) => i + 1).map((page) => (
+                                  <button
+                                    key={page}
+                                    onClick={() => {
+                                      setCurrentPage(page);
+                                      document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
+                                    }}
+                                    className={`w-10 h-10 rounded-xl font-black text-xs transition-all ${currentPage === page ? 'bg-primary-600 text-white shadow-lg scale-110' : 'bg-neutral-100 dark:bg-white/5 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-white/10'}`}
+                                  >
+                                    {page}
+                                  </button>
+                                ))}
+                              </div>
+                              <button
+                                onClick={() => {
+                                  setCurrentPage(prev => Math.min(Math.ceil(accessories.length / ITEMS_PER_PAGE), prev + 1));
+                                  document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
+                                }}
+                                disabled={currentPage === Math.ceil(accessories.length / ITEMS_PER_PAGE)}
+                                className="p-3 rounded-xl bg-neutral-100 dark:bg-white/5 disabled:opacity-30 hover:bg-neutral-200 dark:hover:bg-white/10 transition-colors"
+                              >
+                                <ChevronRight className="w-5 h-5 text-neutral-600 dark:text-zinc-300" />
+                              </button>
+                            </div>
+                          )}
+                        </>
                       ) : (
                         <div className="text-center py-20 bg-neutral-100 dark:bg-zinc-800/50 rounded-3xl mt-6">
                           <h2 className="text-2xl font-bold text-neutral-400">No hay accesorios disponibles.</h2>
@@ -1430,30 +1562,16 @@ const App: React.FC = () => {
                   onUpdateSeal={handleUpdateSeal}
                   onUploadSeal={handleUploadSeal}
                   onUpdateItemStatus={handleUpdateItemStatus}
-                  onAssignTransporter={handleAssignTransporter}
                   onDeleteProduct={handleDeleteProduct}
                   onSaveProduct={handleSaveProduct}
                   onAdminViewToggle={handleAdminViewToggle}
                   onLogout={logout}
+                  onOptimizeImages={handleOptimizeImages}
                 />
               </motion.div>
             )}
 
-            {view === 'transporter_dashboard' && isTransporter && (
-              <motion.div
-                key="transporter"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-              >
-                <TransporterDashboard
-                  orders={orders}
-                  onUpdateOrderStatus={handleUpdateOrderStatus}
-                  onUpdateItemStatus={handleUpdateItemStatus}
-                  currentUserId={user?.id}
-                />
-              </motion.div>
-            )}
+
 
             {view === 'orders' && user && (
               <motion.div

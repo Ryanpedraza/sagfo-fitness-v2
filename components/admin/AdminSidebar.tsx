@@ -92,7 +92,6 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, setActiveTab, on
 
                     <div className="pt-8 text-[10px] font-black text-neutral-400 dark:text-neutral-500 uppercase tracking-[0.3em] italic mb-4 px-4">Operación Élite</div>
                     <NavItem icon={<Wallet />} label="Cuentas por Cobrar" active={activeTab === 'debts'} onClick={() => handleNavClick('debts')} />
-                    <NavItem icon={<Truck />} label="Logística" active={activeTab === 'logistics'} onClick={() => handleNavClick('logistics')} />
                     <NavItem icon={<FileText />} label="Cotizaciones" active={activeTab === 'quotes'} onClick={() => handleNavClick('quotes')} />
                     <NavItem icon={<Table />} label="Editar Precios" active={activeTab === 'bulk-prices'} onClick={() => handleNavClick('bulk-prices')} />
 

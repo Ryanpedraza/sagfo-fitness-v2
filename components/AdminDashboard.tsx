@@ -11,7 +11,6 @@ import AdminGallery from './admin/AdminGallery';
 import AdminWhatsApp from './admin/AdminWhatsApp';
 import AdminSettings from './admin/AdminSettings';
 import AdminDebts from './admin/AdminDebts';
-import AdminLogistics from './admin/AdminLogistics';
 import AdminBulkPrices from './admin/AdminBulkPrices';
 import AdminQuotes from './admin/AdminQuotes';
 
@@ -40,12 +39,12 @@ interface AdminDashboardProps {
     sealUrl: string;
     onUpdateSeal: (url: string) => void;
     onUpdateItemStatus?: (orderId: string, itemIndex: number, status: DeliveryStatus) => void;
-    onAssignTransporter?: (orderId: string, transporterId: string) => void;
     onDeleteProduct: (productId: string) => void;
     onUploadSeal: (file: File) => void;
     onSaveProduct: (product: EquipmentItem) => void;
     onAdminViewToggle: () => void;
     onLogout: () => void;
+    onOptimizeImages?: () => void;
 }
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({
@@ -71,17 +70,17 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
     sealUrl,
     onUpdateSeal,
     onUpdateItemStatus,
-    onAssignTransporter,
     onDeleteProduct,
     onUploadSeal,
     onSaveProduct,
     onAdminViewToggle,
-    onLogout
+    onLogout,
+    onOptimizeImages
 }) => {
-    const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'orders' | 'users' | 'events' | 'gallery' | 'settings' | 'whatsapp' | 'debts' | 'logistics' | 'bulk-prices' | 'quotes'>('overview');
+    const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'orders' | 'users' | 'events' | 'gallery' | 'settings' | 'whatsapp' | 'debts' | 'bulk-prices' | 'quotes'>('overview');
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
-    const transporters = profiles.filter(p => p.role === 'transporter');
+
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-neutral-100 to-neutral-50 dark:from-neutral-950 dark:via-black dark:to-neutral-950 flex relative">
@@ -140,7 +139,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                 profiles={profiles}
                                 onUpdateOrderStatus={onUpdateOrderStatus}
                                 onUpdateItemStatus={onUpdateItemStatus || (() => { })}
-                                onAssignTransporter={onAssignTransporter || (() => { })}
                             />
                         )}
                         {activeTab === 'users' && (
@@ -179,6 +177,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                 sealUrl={sealUrl}
                                 onUpdateSeal={onUpdateSeal}
                                 onUploadSeal={onUploadSeal}
+                                onOptimizeImages={onOptimizeImages}
                             />
                         )}
                         {activeTab === 'debts' && (
@@ -186,12 +185,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                 orders={orders}
                             />
                         )}
-                        {activeTab === 'logistics' && (
-                            <AdminLogistics
-                                orders={orders}
-                                transporters={transporters}
-                            />
-                        )}
+
                         {activeTab === 'bulk-prices' && (
                             <AdminBulkPrices
                                 products={products}

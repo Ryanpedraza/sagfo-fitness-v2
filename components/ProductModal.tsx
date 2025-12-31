@@ -671,151 +671,153 @@ const ProductModal: React.FC<ProductModalProps> = ({
                   </div>
 
                   {/* VARIANTES PROFESIONALES - REDISEÑADO */}
-                  <div className="bg-neutral-50 dark:bg-white/5 rounded-[2.5rem] p-8 space-y-8 border border-neutral-100 dark:border-white/10 relative">
-                    {/* Fondo decorativo eliminado para evitar problemas de clic */}
+                  {formData?.availabilityStatus === 'in-stock' && (
+                    <div className="bg-neutral-50 dark:bg-white/5 rounded-[2.5rem] p-8 space-y-8 border border-neutral-100 dark:border-white/10 relative">
+                      {/* Fondo decorativo eliminado para evitar problemas de clic */}
 
-                    <div className="flex items-center gap-4 mb-2 relative z-10">
-                      <div className="w-10 h-10 rounded-2xl bg-white dark:bg-white/10 flex items-center justify-center text-primary-600 shadow-sm">
-                        <Palette size={20} />
-                      </div>
-                      <h3 className="text-sm font-black uppercase italic tracking-widest text-neutral-900 dark:text-white">Configuración de Variantes</h3>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 relative z-10">
-                      {/* COLORES */}
-                      <div className="space-y-4">
-                        <label className="text-[11px] font-black uppercase text-neutral-400 tracking-widest italic px-2 flex justify-between items-center">
-                          Colores Disponibles
-                          <span className="text-[9px] opacity-40 font-normal normal-case hidden sm:block">Click para activar</span>
-                        </label>
-
-                        {/* Predefined Colors Grid */}
-                        <div className="flex flex-wrap gap-2 mb-2">
-                          {["Negro Mate", "Negro Brillante", "Rojo", "Azul", "Blanco", "Gris", "Plata", "Amarillo", "Verde", "Naranja", "Cromado"].map(color => {
-                            const isActive = formData?.availableColors?.includes(color);
-                            return (
-                              <button
-                                key={color}
-                                onClick={() => {
-                                  if (isActive) {
-                                    setFormData({ ...formData, availableColors: formData.availableColors.filter(c => c !== color) });
-                                  } else {
-                                    setFormData({ ...formData, availableColors: [...(formData.availableColors || []), color] });
-                                  }
-                                }}
-                                className={`px-3 py-2 rounded-xl text-[10px] font-bold uppercase transition-all flex items-center gap-2 border ${isActive ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 border-neutral-900 dark:border-white shadow-lg scale-105' : 'bg-white dark:bg-zinc-800 text-neutral-500 border-neutral-200 dark:border-white/5 invsible-border hover:border-neutral-300'}`}
-                              >
-                                <div className={`w-2 h-2 rounded-full border ${isActive ? 'border-white/20' : 'border-neutral-300'}`} style={{ backgroundColor: color.toLowerCase().includes('rojo') ? '#ef4444' : color.toLowerCase().includes('azul') ? '#3b82f6' : color.toLowerCase().includes('negro') ? '#171717' : color.toLowerCase().includes('blanco') ? '#ffffff' : color.toLowerCase().includes('amarillo') ? '#eab308' : color.toLowerCase().includes('verde') ? '#22c55e' : color.toLowerCase().includes('naranja') ? '#f97316' : '#9ca3af' }} />
-                                {color}
-                              </button>
-                            );
-                          })}
+                      <div className="flex items-center gap-4 mb-2 relative z-10">
+                        <div className="w-10 h-10 rounded-2xl bg-white dark:bg-white/10 flex items-center justify-center text-primary-600 shadow-sm">
+                          <Palette size={20} />
                         </div>
-
-                        {/* Custom Color Input */}
-                        <div className="flex gap-2">
-                          <div className="relative flex-grow min-w-0 group">
-                            <input
-                              placeholder="Otro color personalizado..."
-                              value={newColor}
-                              onChange={(e) => setNewColor(e.target.value)}
-                              className="w-full bg-white dark:bg-zinc-900 p-3 pl-4 rounded-xl font-bold border border-neutral-200 dark:border-white/10 text-neutral-900 dark:text-white outline-none focus:ring-2 focus:ring-primary-500/20 text-xs transition-all shadow-sm"
-                              onKeyDown={(e) => e.key === 'Enter' && addColor()}
-                            />
-                          </div>
-                          <button
-                            onClick={addColor}
-                            className="px-4 bg-neutral-100 dark:bg-zinc-800 text-neutral-600 dark:text-neutral-300 rounded-xl font-black shadow-sm hover:bg-neutral-200 dark:hover:bg-zinc-700 transition-all text-xs uppercase"
-                          >
-                            Agregar
-                          </button>
-                        </div>
-
-                        {/* Active List (for custom ones mostly) */}
-                        {formData?.availableColors?.filter(c => !["Negro Mate", "Negro Brillante", "Rojo", "Azul", "Blanco", "Gris", "Plata", "Amarillo", "Verde", "Naranja", "Cromado"].includes(c)).length > 0 && (
-                          <div className="flex flex-wrap gap-2 pt-2 border-t border-dashed border-neutral-200 dark:border-white/10">
-                            <span className="text-[9px] text-neutral-400 w-full">Personalizados:</span>
-                            {formData.availableColors.filter(c => !["Negro Mate", "Negro Brillante", "Rojo", "Azul", "Blanco", "Gris", "Plata", "Amarillo", "Verde", "Naranja", "Cromado"].includes(c)).map((c, idx) => (
-                              <div key={idx} className="flex items-center gap-2 pl-3 pr-2 py-1.5 bg-white dark:bg-zinc-800 rounded-lg border border-neutral-200 dark:border-white/5 shadow-sm">
-                                <span className="text-[10px] font-bold text-neutral-700 dark:text-neutral-300 uppercase">{c}</span>
-                                <button onClick={() => setFormData({ ...formData, availableColors: formData.availableColors.filter(col => col !== c) })} className="hover:text-red-500 transition-colors">
-                                  <X size={12} strokeWidth={3} />
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        )}
+                        <h3 className="text-sm font-black uppercase italic tracking-widest text-neutral-900 dark:text-white">Configuración de Variantes</h3>
                       </div>
 
-                      {/* PESOS - Condicional & Simplificado */}
-                      {['Discos', 'Mancuernas'].includes(formData?.muscleGroup || '') ? (
-                        <div className="space-y-4 animate-in fade-in slide-in-from-right-8 duration-500 border-l border-dashed border-neutral-200 dark:border-white/10 pl-0 md:pl-8">
-                          <label className="text-[11px] font-black uppercase text-primary-600 tracking-widest italic px-2">
-                            Pesos / Carga
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 relative z-10">
+                        {/* COLORES - Disponibles solo en Stock (Redundant check inside, but logical for structure) */}
+                        <div className="space-y-4">
+                          <label className="text-[11px] font-black uppercase text-neutral-400 tracking-widest italic px-2 flex justify-between items-center">
+                            Colores Disponibles
+                            <span className="text-[9px] opacity-40 font-normal normal-case hidden sm:block">Click para activar</span>
                           </label>
 
-                          <div className="space-y-3">
-                            {/* Fila 1: Input */}
-                            <input
-                              placeholder="Ingrese valor (ej: 45)"
-                              value={newWeight}
-                              onChange={(e) => setNewWeight(e.target.value)}
-                              className="w-full bg-white dark:bg-zinc-900 border border-neutral-200 dark:border-white/10 p-4 rounded-xl font-black text-2xl text-center text-neutral-900 dark:text-white outline-none focus:border-primary-500 transition-colors placeholder:text-neutral-300/50"
-                              type="text"
-                              inputMode="decimal"
-                              onKeyDown={(e) => e.key === 'Enter' && addWeight()}
-                            />
+                          {/* Predefined Colors Grid */}
+                          <div className="flex flex-wrap gap-2 mb-2">
+                            {["Negro Mate", "Negro Brillante", "Rojo", "Azul", "Blanco", "Gris", "Plata", "Amarillo", "Verde", "Naranja", "Cromado"].map(color => {
+                              const isActive = formData?.availableColors?.includes(color);
+                              return (
+                                <button
+                                  key={color}
+                                  onClick={() => {
+                                    if (isActive) {
+                                      setFormData({ ...formData, availableColors: formData.availableColors.filter(c => c !== color) });
+                                    } else {
+                                      setFormData({ ...formData, availableColors: [...(formData.availableColors || []), color] });
+                                    }
+                                  }}
+                                  className={`px-3 py-2 rounded-xl text-[10px] font-bold uppercase transition-all flex items-center gap-2 border ${isActive ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 border-neutral-900 dark:border-white shadow-lg scale-105' : 'bg-white dark:bg-zinc-800 text-neutral-500 border-neutral-200 dark:border-white/5 invsible-border hover:border-neutral-300'}`}
+                                >
+                                  <div className={`w-2 h-2 rounded-full border ${isActive ? 'border-white/20' : 'border-neutral-300'}`} style={{ backgroundColor: color.toLowerCase().includes('rojo') ? '#ef4444' : color.toLowerCase().includes('azul') ? '#3b82f6' : color.toLowerCase().includes('negro') ? '#171717' : color.toLowerCase().includes('blanco') ? '#ffffff' : color.toLowerCase().includes('amarillo') ? '#eab308' : color.toLowerCase().includes('verde') ? '#22c55e' : color.toLowerCase().includes('naranja') ? '#f97316' : '#9ca3af' }} />
+                                  {color}
+                                </button>
+                              );
+                            })}
+                          </div>
 
-                            {/* Fila 2: Selección de Unidad */}
-                            <div className="grid grid-cols-2 gap-3">
-                              <button
-                                onClick={() => setWeightUnit('LB')}
-                                className={`p-3 rounded-xl font-black text-xs uppercase tracking-wider transition-all border ${weightUnit === 'LB' ? 'bg-neutral-900 text-white border-neutral-900 dark:bg-white dark:text-black shadow-md' : 'bg-white dark:bg-zinc-800 text-neutral-400 border-neutral-200 dark:border-white/5 hover:border-neutral-300'}`}
-                              >
-                                Libras (LB)
-                              </button>
-                              <button
-                                onClick={() => setWeightUnit('KG')}
-                                className={`p-3 rounded-xl font-black text-xs uppercase tracking-wider transition-all border ${weightUnit === 'KG' ? 'bg-neutral-900 text-white border-neutral-900 dark:bg-white dark:text-black shadow-md' : 'bg-white dark:bg-zinc-800 text-neutral-400 border-neutral-200 dark:border-white/5 hover:border-neutral-300'}`}
-                              >
-                                Kilos (KG)
-                              </button>
+                          {/* Custom Color Input */}
+                          <div className="flex gap-2">
+                            <div className="relative flex-grow min-w-0 group">
+                              <input
+                                placeholder="Otro color personalizado..."
+                                value={newColor}
+                                onChange={(e) => setNewColor(e.target.value)}
+                                className="w-full bg-white dark:bg-zinc-900 p-3 pl-4 rounded-xl font-bold border border-neutral-200 dark:border-white/10 text-neutral-900 dark:text-white outline-none focus:ring-2 focus:ring-primary-500/20 text-xs transition-all shadow-sm"
+                                onKeyDown={(e) => e.key === 'Enter' && addColor()}
+                              />
                             </div>
-
-                            {/* Fila 3: Botón Agregar */}
                             <button
-                              onClick={addWeight}
-                              className="w-full py-4 bg-primary-600 text-white rounded-xl font-black shadow-lg hover:bg-primary-700 active:scale-95 transition-all flex items-center justify-center gap-2 uppercase text-xs tracking-widest"
+                              onClick={addColor}
+                              className="px-4 bg-neutral-100 dark:bg-zinc-800 text-neutral-600 dark:text-neutral-300 rounded-xl font-black shadow-sm hover:bg-neutral-200 dark:hover:bg-zinc-700 transition-all text-xs uppercase"
                             >
-                              <Plus size={18} />
-                              Agregar Peso
+                              Agregar
                             </button>
                           </div>
 
-                          <div className="flex flex-wrap gap-2 min-h-[40px] content-start bg-primary-600/5 p-2 rounded-xl border border-dashed border-primary-500/10">
-                            {formData?.availableWeights?.length ? formData.availableWeights.map((w, idx) => (
-                              <div key={idx} className="flex items-center gap-2 pl-3 pr-2 py-1.5 bg-white dark:bg-zinc-800 rounded-lg border border-primary-500/10 shadow-sm group hover:border-primary-500/30 transition-all animate-in zoom-in duration-300">
-                                <span className="text-[10px] font-black text-primary-700 dark:text-primary-400 uppercase leading-none">{w}</span>
-                                <button onClick={() => removeWeight(idx)} className="w-5 h-5 flex items-center justify-center rounded-md hover:bg-red-50 text-neutral-400 hover:text-red-500 transition-colors ml-1">
-                                  <X size={12} strokeWidth={3} />
+                          {/* Active List (for custom ones mostly) */}
+                          {formData?.availableColors?.filter(c => !["Negro Mate", "Negro Brillante", "Rojo", "Azul", "Blanco", "Gris", "Plata", "Amarillo", "Verde", "Naranja", "Cromado"].includes(c)).length > 0 && (
+                            <div className="flex flex-wrap gap-2 pt-2 border-t border-dashed border-neutral-200 dark:border-white/10">
+                              <span className="text-[9px] text-neutral-400 w-full">Personalizados:</span>
+                              {formData.availableColors.filter(c => !["Negro Mate", "Negro Brillante", "Rojo", "Azul", "Blanco", "Gris", "Plata", "Amarillo", "Verde", "Naranja", "Cromado"].includes(c)).map((c, idx) => (
+                                <div key={idx} className="flex items-center gap-2 pl-3 pr-2 py-1.5 bg-white dark:bg-zinc-800 rounded-lg border border-neutral-200 dark:border-white/5 shadow-sm">
+                                  <span className="text-[10px] font-bold text-neutral-700 dark:text-neutral-300 uppercase">{c}</span>
+                                  <button onClick={() => setFormData({ ...formData, availableColors: formData.availableColors.filter(col => col !== c) })} className="hover:text-red-500 transition-colors">
+                                    <X size={12} strokeWidth={3} />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* PESOS - Condicional & Simplificado */}
+                        {['Discos', 'Mancuernas'].includes(formData?.muscleGroup || '') ? (
+                          <div className="space-y-4 animate-in fade-in slide-in-from-right-8 duration-500 border-l border-dashed border-neutral-200 dark:border-white/10 pl-0 md:pl-8">
+                            <label className="text-[11px] font-black uppercase text-primary-600 tracking-widest italic px-2">
+                              Pesos / Carga
+                            </label>
+
+                            <div className="space-y-3">
+                              {/* Fila 1: Input */}
+                              <input
+                                placeholder="Ingrese valor (ej: 45)"
+                                value={newWeight}
+                                onChange={(e) => setNewWeight(e.target.value)}
+                                className="w-full bg-white dark:bg-zinc-900 border border-neutral-200 dark:border-white/10 p-4 rounded-xl font-black text-2xl text-center text-neutral-900 dark:text-white outline-none focus:border-primary-500 transition-colors placeholder:text-neutral-300/50"
+                                type="text"
+                                inputMode="decimal"
+                                onKeyDown={(e) => e.key === 'Enter' && addWeight()}
+                              />
+
+                              {/* Fila 2: Selección de Unidad */}
+                              <div className="grid grid-cols-2 gap-3">
+                                <button
+                                  onClick={() => setWeightUnit('LB')}
+                                  className={`p-3 rounded-xl font-black text-xs uppercase tracking-wider transition-all border ${weightUnit === 'LB' ? 'bg-neutral-900 text-white border-neutral-900 dark:bg-white dark:text-black shadow-md' : 'bg-white dark:bg-zinc-800 text-neutral-400 border-neutral-200 dark:border-white/5 hover:border-neutral-300'}`}
+                                >
+                                  Libras (LB)
+                                </button>
+                                <button
+                                  onClick={() => setWeightUnit('KG')}
+                                  className={`p-3 rounded-xl font-black text-xs uppercase tracking-wider transition-all border ${weightUnit === 'KG' ? 'bg-neutral-900 text-white border-neutral-900 dark:bg-white dark:text-black shadow-md' : 'bg-white dark:bg-zinc-800 text-neutral-400 border-neutral-200 dark:border-white/5 hover:border-neutral-300'}`}
+                                >
+                                  Kilos (KG)
                                 </button>
                               </div>
-                            )) : (
-                              <div className="w-full py-2 text-center text-[10px] text-primary-600/40 font-medium italic">
-                                Sin pesos
-                              </div>
-                            )}
+
+                              {/* Fila 3: Botón Agregar */}
+                              <button
+                                onClick={addWeight}
+                                className="w-full py-4 bg-primary-600 text-white rounded-xl font-black shadow-lg hover:bg-primary-700 active:scale-95 transition-all flex items-center justify-center gap-2 uppercase text-xs tracking-widest"
+                              >
+                                <Plus size={18} />
+                                Agregar Peso
+                              </button>
+                            </div>
+
+                            <div className="flex flex-wrap gap-2 min-h-[40px] content-start bg-primary-600/5 p-2 rounded-xl border border-dashed border-primary-500/10">
+                              {formData?.availableWeights?.length ? formData.availableWeights.map((w, idx) => (
+                                <div key={idx} className="flex items-center gap-2 pl-3 pr-2 py-1.5 bg-white dark:bg-zinc-800 rounded-lg border border-primary-500/10 shadow-sm group hover:border-primary-500/30 transition-all animate-in zoom-in duration-300">
+                                  <span className="text-[10px] font-black text-primary-700 dark:text-primary-400 uppercase leading-none">{w}</span>
+                                  <button onClick={() => removeWeight(idx)} className="w-5 h-5 flex items-center justify-center rounded-md hover:bg-red-50 text-neutral-400 hover:text-red-500 transition-colors ml-1">
+                                    <X size={12} strokeWidth={3} />
+                                  </button>
+                                </div>
+                              )) : (
+                                <div className="w-full py-2 text-center text-[10px] text-primary-600/40 font-medium italic">
+                                  Sin pesos
+                                </div>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      ) : (
-                        /* Placeholder si no hay pesos */
-                        <div className="hidden md:flex flex-col items-center justify-center border-l border-dashed border-neutral-200 dark:border-white/10 pl-8 opacity-30 select-none">
-                          <Dumbbell className="w-12 h-12 mb-4 text-neutral-400" />
-                          <span className="text-[10px] font-bold text-neutral-400 uppercase italic text-center max-w-[150px]">Configuración de peso no requerida</span>
-                        </div>
-                      )}
+                        ) : (
+                          /* Placeholder si no hay pesos */
+                          <div className="hidden md:flex flex-col items-center justify-center border-l border-dashed border-neutral-200 dark:border-white/10 pl-8 opacity-30 select-none">
+                            <Dumbbell className="w-12 h-12 mb-4 text-neutral-400" />
+                            <span className="text-[10px] font-bold text-neutral-400 uppercase italic text-center max-w-[150px]">Configuración de peso no requerida</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   <div className="space-y-3 relative z-10">
                     <div className="flex items-center justify-between px-4">

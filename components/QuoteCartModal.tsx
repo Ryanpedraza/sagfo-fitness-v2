@@ -38,14 +38,7 @@ const QuoteCartModal: React.FC<QuoteCartModalProps> = ({ isOpen, onClose, cartIt
     const [formData, setFormData] = useState({ name: '', email: '', phone: '', message: '', city: '', department: '', country: 'Colombia', mapsLink: '', address: '' });
 
     const [paymentProof, setPaymentProof] = useState<File | null>(null);
-    const [isLocating, setIsLocating] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
-
-    // Map Refs
-    const mapContainerRef = useRef<HTMLDivElement>(null);
-    const mapRef = useRef<any>(null);
-    const markerRef = useRef<any>(null);
-    const [isMapVisible, setIsMapVisible] = useState(false);
 
     const availableDepartments = useMemo(() => {
         return formData.country === 'Venezuela' ? venezuelanStates : colombianDepartments;
@@ -69,100 +62,11 @@ const QuoteCartModal: React.FC<QuoteCartModalProps> = ({ isOpen, onClose, cartIt
                 message: '',
                 mapsLink: user.locationUrl || ''
             });
-
-            // If user has a location saved, try to show map
-            if (user.locationUrl && user.locationUrl.includes('maps')) {
-                setIsMapVisible(true);
-            }
         } else if (!user) {
             setFormData({ name: '', email: '', phone: '', message: '', city: '', department: '', country: 'Colombia', mapsLink: '', address: '' });
-            setIsMapVisible(false);
         }
     }, [user, isOpen]);
 
-    // Initialize Map when visible
-    useEffect(() => {
-        if (isOpen && isMapVisible && mapContainerRef.current) {
-            // Use requestAnimationFrame for smoother initialization
-            requestAnimationFrame(() => {
-                const coords = parseMapsLink(formData.mapsLink) || { lat: 4.6097, lng: -74.0817 }; // Default Bogota
-                initMap(coords.lat, coords.lng);
-            });
-        }
-    }, [isOpen, isMapVisible, formData.mapsLink]);
-
-    // Parse Google Maps Link
-    const parseMapsLink = (link: string) => {
-        try {
-            const url = new URL(link);
-            const q = url.searchParams.get('q');
-            if (q) {
-                const [lat, lng] = q.split(',').map(Number);
-                if (!isNaN(lat) && !isNaN(lng)) return { lat, lng };
-            }
-        } catch (e) {
-            return null;
-        }
-        return null;
-    };
-
-    const initMap = (lat: number, lng: number) => {
-        if (typeof window === 'undefined' || !window.L || !mapContainerRef.current) {
-            console.warn('Map dependencies not ready');
-            return;
-        }
-
-        try {
-            if (!mapRef.current) {
-                // Force container to have dimensions
-                mapContainerRef.current.style.width = '100%';
-                mapContainerRef.current.style.height = '100%';
-
-                mapRef.current = window.L.map(mapContainerRef.current, {
-                    center: [lat, lng],
-                    zoom: 16,
-                    zoomControl: true
-                });
-
-                window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '&copy; OpenStreetMap',
-                    maxZoom: 19
-                }).addTo(mapRef.current);
-            } else {
-                mapRef.current.setView([lat, lng], 16);
-                // Force map to recalculate size
-                setTimeout(() => {
-                    if (mapRef.current) {
-                        mapRef.current.invalidateSize();
-                    }
-                }, 100);
-            }
-
-            // Custom Icon to avoid 404s with webpack/react issues in some setups
-            const icon = window.L.icon({
-                iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-                iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-                shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-                iconSize: [25, 41],
-                iconAnchor: [12, 41],
-                popupAnchor: [1, -34],
-                shadowSize: [41, 41]
-            });
-
-            if (markerRef.current) {
-                markerRef.current.setLatLng([lat, lng]);
-            } else {
-                markerRef.current = window.L.marker([lat, lng], { draggable: true, icon }).addTo(mapRef.current);
-                markerRef.current.on('dragend', (event: any) => {
-                    const position = event.target.getLatLng();
-                    const mapsUrl = `https://www.google.com/maps?q=${position.lat},${position.lng}`;
-                    setFormData(prev => ({ ...prev, mapsLink: mapsUrl }));
-                });
-            }
-        } catch (error) {
-            console.error('Error initializing map:', error);
-        }
-    };
 
     // --- LOGIC FOR SPLIT PAYMENTS ---
     const calculation = useMemo(() => {
@@ -224,34 +128,6 @@ const QuoteCartModal: React.FC<QuoteCartModalProps> = ({ isOpen, onClose, cartIt
         }
     };
 
-    const handleGetLocation = () => {
-        if (!navigator.geolocation) {
-            alert("La geolocalización no es compatible con tu navegador.");
-            return;
-        }
-
-        setIsLocating(true);
-
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                const { latitude, longitude } = position.coords;
-                const mapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
-                setFormData(prev => ({ ...prev, mapsLink: mapsUrl }));
-                setIsLocating(false);
-                setIsMapVisible(true);
-                // Init map will happen via useEffect
-            },
-            (error) => {
-                console.error(error);
-                alert("No se pudo obtener tu ubicación. Por favor, asegúrate de dar permisos de ubicación o ingresa el enlace manualmente.");
-                setIsLocating(false);
-            }
-        );
-    };
-
-    const toggleMapManual = () => {
-        setIsMapVisible(!isMapVisible);
-    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -291,7 +167,6 @@ const QuoteCartModal: React.FC<QuoteCartModalProps> = ({ isOpen, onClose, cartIt
         // RESET STATE
         setPaymentProof(null);
         setFormData(prev => ({ ...prev, message: '' }));
-        setIsMapVisible(false);
 
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
@@ -412,17 +287,7 @@ const QuoteCartModal: React.FC<QuoteCartModalProps> = ({ isOpen, onClose, cartIt
                                                                             </div>
                                                                         </div>
                                                                     )}
-                                                                    {/* Simple Color Input for In-Stock */}
-                                                                    <div className="flex flex-col gap-1.5 w-full sm:w-auto flex-1">
-                                                                        <label className="text-[8px] font-black text-neutral-400 dark:text-neutral-300 uppercase tracking-widest pl-1 italic">Color Deseado</label>
-                                                                        <input
-                                                                            type="text"
-                                                                            placeholder="Ej: Rojo, Negro..."
-                                                                            value={item.selectedColor || ''}
-                                                                            onChange={(e) => onUpdateItemCustomization(item.cartItemId!, 'selectedColor', e.target.value)}
-                                                                            className="bg-neutral-100 dark:bg-white/5 border border-neutral-200 dark:border-white/10 rounded-xl px-3 py-2 text-[10px] font-bold uppercase outline-none focus:border-primary-500 transition-all placeholder:text-neutral-400 dark:placeholder:text-neutral-600 text-neutral-900 dark:text-white"
-                                                                        />
-                                                                    </div>
+                                                                    {/* Simple Color Input for In-Stock - REMOVED AS PER USER REQUEST */}
                                                                 </>
                                                             )}
                                                         </div>
@@ -553,18 +418,8 @@ const QuoteCartModal: React.FC<QuoteCartModalProps> = ({ isOpen, onClose, cartIt
                                             </div>
                                         </div>
 
-                                        <div className="space-y-3">
-                                            <div className="flex gap-2">
-                                                <button type="button" onClick={handleGetLocation} className="flex-grow py-3 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-xl text-[9px] font-black uppercase italic tracking-widest">Obtener GPS Precise</button>
-                                                <button type="button" onClick={toggleMapManual} className="p-3 bg-neutral-100 dark:bg-white/5 rounded-xl text-neutral-500 dark:text-neutral-400 hover:text-primary-500 transition-colors"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0121 18.382V7.618a1 1 0 01-.553-.894L15 4m0 13V4m0 0L9 7" /></svg></button>
-                                            </div>
-
-                                            {isMapVisible && (
-                                                <div className="w-full h-48 rounded-2xl overflow-hidden border border-primary-500/20 shadow-inner">
-                                                    <div ref={mapContainerRef} className="w-full h-full" />
-                                                </div>
-                                            )}
-
+                                        <div className="space-y-1">
+                                            <label className="text-[8px] font-black text-neutral-400 uppercase pl-1">Dirección de Entrega</label>
                                             <textarea
                                                 name="address"
                                                 placeholder="Dirección exacta, barrio, apto..."
@@ -572,7 +427,7 @@ const QuoteCartModal: React.FC<QuoteCartModalProps> = ({ isOpen, onClose, cartIt
                                                 onChange={handleInputChange}
                                                 required
                                                 rows={2}
-                                                className="w-full p-4 bg-white dark:bg-white/5 border border-neutral-100 dark:border-white/10 rounded-xl text-xs font-medium text-neutral-900 dark:text-white outline-none"
+                                                className="w-full p-4 bg-white dark:bg-white/5 border border-neutral-100 dark:border-white/10 rounded-xl text-xs font-medium text-neutral-900 dark:text-white outline-none focus:border-primary-500 transition-all"
                                             />
                                         </div>
                                     </div>
@@ -619,12 +474,12 @@ const QuoteCartModal: React.FC<QuoteCartModalProps> = ({ isOpen, onClose, cartIt
                                                             className="w-full h-full object-contain"
                                                         />
                                                     </div>
-                                                    <p className="text-[9px] font-black uppercase text-primary-600">Clic para cambiar imagen</p>
+                                                    <p className="text-[9px] font-black uppercase text-primary-600">Clic para cambiar comprobante</p>
                                                     <p className="text-[8px] font-medium opacity-50 uppercase text-neutral-900 dark:text-white mt-1">{paymentProof.name}</p>
                                                 </div>
                                             ) : (
                                                 <>
-                                                    <p className="text-[10px] font-black uppercase italic text-neutral-900 dark:text-white">{paymentProof ? '✓ Comprobante Cargado' : 'Subir Comprobante'}</p>
+                                                    <p className="text-[10px] font-black uppercase italic text-neutral-900 dark:text-white">{paymentProof ? '✓ Comprobante Cargado' : 'Subir Comprobante de Pago'}</p>
                                                     {paymentProof && <p className="text-[8px] font-medium opacity-50 uppercase text-neutral-900 dark:text-white">{paymentProof.name}</p>}
                                                 </>
                                             )}

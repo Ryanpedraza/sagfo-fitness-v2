@@ -8,7 +8,7 @@ interface AuthContextType {
   user: Profile | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  register: (name: string, email: string, password: string, role: 'customer' | 'admin' | 'transporter', phone: string, address: string, city: string, department: string, country: string) => Promise<void>;
+  register: (name: string, email: string, password: string, role: 'customer' | 'admin', phone: string, address: string, city: string, department: string, country: string) => Promise<void>;
   updateUser: (user: Profile) => Promise<void>;
 }
 
@@ -76,7 +76,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  const register = async (name: string, email: string, password: string, role: 'customer' | 'admin' | 'transporter', phone: string, address: string, city: string, department: string, country: string) => {
+  const register = async (name: string, email: string, password: string, role: 'customer' | 'admin', phone: string, address: string, city: string, department: string, country: string) => {
     try {
       // Check if email exists
       const { data: existingUser } = await supabase

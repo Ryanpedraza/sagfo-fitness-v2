@@ -176,7 +176,7 @@ const Header: React.FC<HeaderProps> = ({ cartCount, onCartClick, onLoginClick, o
 
                       <div className="relative z-10">
                         <span className="inline-block text-[9px] font-black uppercase tracking-[0.4em] text-primary-500 mb-2 italic">
-                          {user.role === 'admin' ? 'Master Admin' : user.role === 'transporter' ? 'Logistic Elite' : 'Elite Member'}
+                          {user.role === 'admin' ? 'Master Admin' : 'Elite Member'}
                         </span>
                         <h4 className="text-xl font-black text-neutral-900 dark:text-white uppercase tracking-tighter leading-none mb-1">
                           {user.name}

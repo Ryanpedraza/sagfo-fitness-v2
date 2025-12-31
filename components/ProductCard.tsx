@@ -39,6 +39,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onClick, onToggleCom
           alt={product.name}
           className={`w-full h-full object-contain transition-[transform,opacity] duration-[1000ms] ease-out group-hover:scale-110 group-hover:rotate-2 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
           onLoad={() => setImageLoaded(true)}
+          loading="lazy"
         />
 
         {!imageLoaded && <div className="absolute inset-0 bg-neutral-100 dark:bg-zinc-800 animate-pulse" />}
@@ -75,8 +76,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onClick, onToggleCom
             <div className="w-1 h-1 rounded-full bg-neutral-200 dark:bg-white/10" />
             <span className="text-[10px] md:text-[11px] font-bold text-neutral-500 uppercase tracking-[0.2em]">{product.muscleGroup}</span>
 
-            {/* Color Indicators inline with metadata */}
-            {product.availableColors && product.availableColors.length > 0 && (
+            {/* Color Indicators ONLY for Made-to-order (Production) products */}
+            {product.availabilityStatus === 'made-to-order' && product.availableColors && product.availableColors.length > 0 && (
               <>
                 <div className="w-1 h-1 rounded-full bg-neutral-200 dark:bg-white/10" />
                 <div className="flex items-center gap-1.5 align-middle">

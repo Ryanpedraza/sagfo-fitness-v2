@@ -26,7 +26,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, onSave, 
           id: '', // Empty ID signals creation to parent
           name: '',
           email: '',
-          role: 'transporter', // Default to transporter
+          role: 'customer', // Default to customer
           phone: '',
           address: '',
           city: '',
@@ -139,7 +139,6 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, onSave, 
                   <select id="role" name="role" value={formData.role} onChange={handleChange} className="mt-1 w-full p-3 rounded-md bg-neutral-100 dark:bg-zinc-800 border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-white">
                     <option value="customer" className="dark:bg-zinc-900">Cliente</option>
                     <option value="admin" className="dark:bg-zinc-900">Administrador</option>
-                    <option value="transporter" className="dark:bg-zinc-900">Transportador</option>
                   </select>
                 </div>
               </div>

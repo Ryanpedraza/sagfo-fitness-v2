@@ -12,6 +12,7 @@ interface AdminSettingsProps {
     sealUrl: string;
     onUpdateSeal: (url: string) => void;
     onUploadSeal: (file: File) => void;
+    onOptimizeImages?: () => void;
 }
 
 const AdminSettings: React.FC<AdminSettingsProps> = ({
@@ -23,7 +24,8 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({
     onDeleteBankAccount,
     sealUrl,
     onUpdateSeal,
-    onUploadSeal
+    onUploadSeal,
+    onOptimizeImages
 }) => {
     const [tempWhatsApp, setTempWhatsApp] = useState(whatsAppNumber || '');
     const [newAccount, setNewAccount] = useState<Partial<BankAccount>>({ bankName: '', accountNumber: '', accountType: 'Ahorros', holderName: '', holderId: '' });
@@ -290,6 +292,55 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({
                     <div className="flex items-center gap-3">
                         <Shield className="w-4 h-4 text-primary-600" />
                         <p className="text-xs text-neutral-500 dark:text-neutral-400 font-bold uppercase tracking-widest italic">Nucleus System Version 2.0</p>
+                    </div>
+                </div>
+
+                {/* OPTIMIZATION CARD - FOR 200+ PRODUCTS */}
+                <div className="bg-gradient-to-br from-neutral-900 to-black p-8 rounded-[2rem] border border-white/10 shadow-2xl md:col-span-2 overflow-hidden relative group">
+                    <div className="absolute top-0 right-0 p-8 opacity-20 group-hover:opacity-40 transition-opacity">
+                        <Settings className="w-24 h-24 text-white animate-spin-slow" />
+                    </div>
+
+                    <div className="relative z-10">
+                        <div className="flex items-center gap-4 mb-6">
+                            <div className="w-12 h-12 rounded-xl bg-primary-600/20 flex items-center justify-center text-primary-500">
+                                <Shield className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <h3 className="font-black text-white uppercase italic tracking-tight">Optimización de Infraestructura</h3>
+                                <p className="text-xs text-neutral-400 font-bold uppercase tracking-widest">Protección de Datos & Rendimiento</p>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                            <div className="space-y-4">
+                                <p className="text-neutral-300 text-sm leading-relaxed">
+                                    Hemos detectado más de <span className="text-white font-black italic">200 productos</span> con formatos de imagen antiguos. Esta herramienta procesará toda la base de datos para convertir imágenes a <span className="text-primary-400 font-bold italic">WebP de Alta Definición</span> y reducir su peso hasta un 80%.
+                                </p>
+                                <ul className="space-y-2 text-xs text-neutral-500 font-bold uppercase tracking-tighter">
+                                    <li className="flex items-center gap-2">✅ Conversión masiva a Formato Ultra-Light WebP</li>
+                                    <li className="flex items-center gap-2">✅ Redimensión automática a 1200px (Nitidez Premium)</li>
+                                    <li className="flex items-center gap-2">✅ Ahorro drástico en el límite de 10GB de Vercel</li>
+                                </ul>
+                            </div>
+
+                            <div className="bg-white/5 p-6 rounded-2xl border border-white/10 backdrop-blur-sm">
+                                <button
+                                    onClick={() => {
+                                        if (window.confirm('⚠️ ATENCIÓN: Este proceso optimizará las imágenes de los 200 productos. ¿Deseas iniciar la limpieza masiva?')) {
+                                            onOptimizeImages?.();
+                                        }
+                                    }}
+                                    className="w-full py-6 bg-white text-black hover:bg-primary-500 hover:text-white rounded-xl font-black uppercase italic tracking-[0.2em] text-xs transition-all shadow-xl hover:scale-[1.02] active:scale-95 flex flex-col items-center gap-2"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <Settings className="w-5 h-5 animate-spin-slow" />
+                                        <span>Ejecutar Optimización Maestra</span>
+                                    </div>
+                                    <span className="text-[8px] opacity-60 tracking-[0.4em]">PROCESO AUTOMÁTICO • SIN PÉRDIDA DE CALIDAD</span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

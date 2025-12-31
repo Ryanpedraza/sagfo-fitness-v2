@@ -1368,18 +1368,19 @@ const App: React.FC = () => {
 
                           {/* Pagination Controls */}
                           {machinery.length > ITEMS_PER_PAGE && (
-                            <div className="flex justify-center items-center gap-2 mt-12">
+                            <div className="flex justify-center items-center gap-2 mt-12 bg-neutral-50 dark:bg-white/5 p-2 rounded-2xl w-fit mx-auto shadow-inner">
                               <button
                                 onClick={() => {
                                   setCurrentPage(prev => Math.max(1, prev - 1));
                                   document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
                                 }}
                                 disabled={currentPage === 1}
-                                className="p-3 rounded-xl bg-neutral-100 dark:bg-white/5 disabled:opacity-30 hover:bg-neutral-200 dark:hover:bg-white/10 transition-colors"
+                                className="p-3 rounded-xl hover:bg-white dark:hover:bg-white/10 disabled:opacity-30 transition-colors flex-shrink-0"
                               >
                                 <ChevronLeft className="w-5 h-5 text-neutral-600 dark:text-zinc-300" />
                               </button>
-                              <div className="flex gap-2">
+
+                              <div className="flex gap-2 overflow-x-auto max-w-[200px] sm:max-w-none no-scrollbar px-2 mask-linear">
                                 {Array.from({ length: Math.ceil(machinery.length / ITEMS_PER_PAGE) }, (_, i) => i + 1).map((page) => (
                                   <button
                                     key={page}
@@ -1387,19 +1388,20 @@ const App: React.FC = () => {
                                       setCurrentPage(page);
                                       document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
                                     }}
-                                    className={`w-10 h-10 rounded-xl font-black text-xs transition-all ${currentPage === page ? 'bg-primary-600 text-white shadow-lg scale-110' : 'bg-neutral-100 dark:bg-white/5 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-white/10'}`}
+                                    className={`w-10 h-10 rounded-xl font-black text-xs flex-shrink-0 transition-all ${currentPage === page ? 'bg-primary-600 text-white shadow-lg' : 'hover:bg-white dark:hover:bg-white/10 text-neutral-500 dark:text-neutral-400'}`}
                                   >
                                     {page}
                                   </button>
                                 ))}
                               </div>
+
                               <button
                                 onClick={() => {
                                   setCurrentPage(prev => Math.min(Math.ceil(machinery.length / ITEMS_PER_PAGE), prev + 1));
                                   document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
                                 }}
                                 disabled={currentPage === Math.ceil(machinery.length / ITEMS_PER_PAGE)}
-                                className="p-3 rounded-xl bg-neutral-100 dark:bg-white/5 disabled:opacity-30 hover:bg-neutral-200 dark:hover:bg-white/10 transition-colors"
+                                className="p-3 rounded-xl hover:bg-white dark:hover:bg-white/10 disabled:opacity-30 transition-colors flex-shrink-0"
                               >
                                 <ChevronRight className="w-5 h-5 text-neutral-600 dark:text-zinc-300" />
                               </button>
@@ -1428,18 +1430,18 @@ const App: React.FC = () => {
 
                           {/* Pagination Controls for Accessories */}
                           {accessories.length > ITEMS_PER_PAGE && (
-                            <div className="flex justify-center items-center gap-2 mt-12">
+                            <div className="flex justify-center items-center gap-2 mt-12 bg-neutral-50 dark:bg-white/5 p-2 rounded-2xl w-fit mx-auto shadow-inner">
                               <button
                                 onClick={() => {
                                   setCurrentPage(prev => Math.max(1, prev - 1));
                                   document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
                                 }}
                                 disabled={currentPage === 1}
-                                className="p-3 rounded-xl bg-neutral-100 dark:bg-white/5 disabled:opacity-30 hover:bg-neutral-200 dark:hover:bg-white/10 transition-colors"
+                                className="p-3 rounded-xl hover:bg-white dark:hover:bg-white/10 disabled:opacity-30 transition-colors flex-shrink-0"
                               >
                                 <ChevronLeft className="w-5 h-5 text-neutral-600 dark:text-zinc-300" />
                               </button>
-                              <div className="flex gap-2">
+                              <div className="flex gap-2 overflow-x-auto max-w-[200px] sm:max-w-none no-scrollbar px-2 mask-linear">
                                 {Array.from({ length: Math.ceil(accessories.length / ITEMS_PER_PAGE) }, (_, i) => i + 1).map((page) => (
                                   <button
                                     key={page}
@@ -1447,7 +1449,7 @@ const App: React.FC = () => {
                                       setCurrentPage(page);
                                       document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
                                     }}
-                                    className={`w-10 h-10 rounded-xl font-black text-xs transition-all ${currentPage === page ? 'bg-primary-600 text-white shadow-lg scale-110' : 'bg-neutral-100 dark:bg-white/5 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-white/10'}`}
+                                    className={`w-10 h-10 rounded-xl font-black text-xs flex-shrink-0 transition-all ${currentPage === page ? 'bg-primary-600 text-white shadow-lg' : 'hover:bg-white dark:hover:bg-white/10 text-neutral-500 dark:text-neutral-400'}`}
                                   >
                                     {page}
                                   </button>
@@ -1459,7 +1461,7 @@ const App: React.FC = () => {
                                   document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
                                 }}
                                 disabled={currentPage === Math.ceil(accessories.length / ITEMS_PER_PAGE)}
-                                className="p-3 rounded-xl bg-neutral-100 dark:bg-white/5 disabled:opacity-30 hover:bg-neutral-200 dark:hover:bg-white/10 transition-colors"
+                                className="p-3 rounded-xl hover:bg-white dark:hover:bg-white/10 disabled:opacity-30 transition-colors flex-shrink-0"
                               >
                                 <ChevronRight className="w-5 h-5 text-neutral-600 dark:text-zinc-300" />
                               </button>

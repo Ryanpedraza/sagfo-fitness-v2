@@ -40,7 +40,8 @@ const ProductModal: React.FC<ProductModalProps> = ({
   const [isSaving, setIsSaving] = useState(false);
 
   // High-End Zoom Logic
-  const [zoomStyle, setZoomStyle] = useState<React.CSSProperties>({ display: 'none' });
+  const [zoomLevel, setZoomLevel] = useState(1); // 1 = no zoom, 2 = mid, 3 = max
+  const [zoomStyle, setZoomStyle] = useState<React.CSSProperties>({});
   const [isZooming, setIsZooming] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
 
@@ -244,6 +245,8 @@ const ProductModal: React.FC<ProductModalProps> = ({
   useEffect(() => {
     if (product) {
       setCurrentImageIndex(0);
+      setIsZooming(false);
+      setZoomLevel(1);
       setFormData({ ...product });
       setNewImagesMap({});
       if (product.availableColors?.length) {
@@ -294,7 +297,27 @@ const ProductModal: React.FC<ProductModalProps> = ({
       backgroundPosition: `${x}% ${y}%`,
       backgroundImage: `url(${product.imageUrls[currentImageIndex]})`,
       backgroundRepeat: 'no-repeat',
-      backgroundSize: '250%' // Zoom level
+      backgroundSize: '250%' // Zoom level for desktop hover
+    });
+  };
+
+  const handleManualZoom = (direction: 'in' | 'out') => {
+    setZoomLevel(prev => {
+      const next = direction === 'in' ? Math.min(prev + 1, 3) : Math.max(prev - 1, 1);
+      setIsZooming(next > 1);
+
+      if (next > 1) {
+        setZoomStyle({
+          display: 'block',
+          backgroundPosition: '50% 50%',
+          backgroundImage: `url(${product.imageUrls[currentImageIndex]})`,
+          backgroundRepeat: 'no-repeat',
+          backgroundSize: next === 2 ? '175%' : '250%'
+        });
+      } else {
+        setZoomStyle({}); // Reset style when zoomLevel is 1
+      }
+      return next;
     });
   };
 
@@ -422,7 +445,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                   className="relative aspect-square lg:aspect-[6/7] flex items-center justify-center bg-[#fafafa] dark:bg-white/[0.02] rounded-[4rem] border border-neutral-100 dark:border-white/5 cursor-crosshair overflow-hidden group"
                   onMouseMove={handleMouseMove}
                   onMouseEnter={() => { if (window.innerWidth >= 768) setIsZooming(true); }}
-                  onMouseLeave={() => { if (window.innerWidth >= 768) setIsZooming(false); }}
+                  onMouseLeave={() => { if (window.innerWidth >= 768) setIsZooming(false); setZoomStyle({}); }}
                 >
                   <img
                     ref={imgRef}
@@ -431,26 +454,25 @@ const ProductModal: React.FC<ProductModalProps> = ({
                     alt={product.name}
                   />
 
-                  {/* Mobile Zoom Toggle Button */}
-                  <div className="absolute top-6 right-6 z-40 md:hidden">
+                  {/* Mobile Zoom Controls: Plus / Minus */}
+                  <div className="absolute top-6 right-6 z-40 md:hidden flex flex-col gap-2">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        setIsZooming(!isZooming);
-                        if (!isZooming) {
-                          // Center zoom on first tap
-                          setZoomStyle({
-                            display: 'block',
-                            backgroundPosition: '50% 50%',
-                            backgroundImage: `url(${product.imageUrls[currentImageIndex]})`,
-                            backgroundRepeat: 'no-repeat',
-                            backgroundSize: '250%'
-                          });
-                        }
+                        handleManualZoom('in');
                       }}
-                      className={`w-12 h-12 rounded-2xl backdrop-blur-xl border flex items-center justify-center transition-all shadow-xl ${isZooming ? 'bg-primary-600 border-primary-500 text-white shadow-primary-600/40' : 'bg-white/80 dark:bg-black/80 border-neutral-200 dark:border-white/10 text-neutral-900 dark:text-white'}`}
+                      className={`w-12 h-12 rounded-2xl backdrop-blur-xl border flex items-center justify-center transition-all shadow-xl bg-white/80 dark:bg-black/80 border-neutral-200 dark:border-white/10 text-neutral-900 dark:text-white active:scale-90 active:bg-primary-500 active:text-white ${zoomLevel === 3 ? 'opacity-50' : ''}`}
                     >
-                      <Maximize2 className={`w-6 h-6 ${isZooming ? 'scale-110' : ''}`} />
+                      <Plus className="w-6 h-6" />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleManualZoom('out');
+                      }}
+                      className={`w-12 h-12 rounded-2xl backdrop-blur-xl border flex items-center justify-center transition-all shadow-xl bg-white/80 dark:bg-black/80 border-neutral-200 dark:border-white/10 text-neutral-900 dark:text-white active:scale-90 active:bg-primary-500 active:text-white ${zoomLevel === 1 ? 'opacity-50' : ''}`}
+                    >
+                      <span className="text-2xl font-bold leading-none select-none">−</span>
                     </button>
                   </div>
 

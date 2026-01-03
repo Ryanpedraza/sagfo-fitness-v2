@@ -284,7 +284,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
 
   // Zoom Handler
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!imgRef.current) return;
+    if (!imgRef.current || window.innerWidth < 768) return;
     const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
     const x = ((e.pageX - left) / width) * 100;
     const y = ((e.pageY - top - window.scrollY) / height) * 100;
@@ -421,8 +421,8 @@ const ProductModal: React.FC<ProductModalProps> = ({
                 <div
                   className="relative aspect-square lg:aspect-[6/7] flex items-center justify-center bg-[#fafafa] dark:bg-white/[0.02] rounded-[4rem] border border-neutral-100 dark:border-white/5 cursor-crosshair overflow-hidden group"
                   onMouseMove={handleMouseMove}
-                  onMouseEnter={() => setIsZooming(true)}
-                  onMouseLeave={() => setIsZooming(false)}
+                  onMouseEnter={() => { if (window.innerWidth >= 768) setIsZooming(true); }}
+                  onMouseLeave={() => { if (window.innerWidth >= 768) setIsZooming(false); }}
                 >
                   <img
                     ref={imgRef}
@@ -430,6 +430,29 @@ const ProductModal: React.FC<ProductModalProps> = ({
                     className={`w-full h-full object-contain p-6 transition-all duration-[1.5s] ease-out ${isZooming ? 'opacity-0 scale-110' : 'opacity-100 scale-100'}`}
                     alt={product.name}
                   />
+
+                  {/* Mobile Zoom Toggle Button */}
+                  <div className="absolute top-6 right-6 z-40 md:hidden">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsZooming(!isZooming);
+                        if (!isZooming) {
+                          // Center zoom on first tap
+                          setZoomStyle({
+                            display: 'block',
+                            backgroundPosition: '50% 50%',
+                            backgroundImage: `url(${product.imageUrls[currentImageIndex]})`,
+                            backgroundRepeat: 'no-repeat',
+                            backgroundSize: '250%'
+                          });
+                        }
+                      }}
+                      className={`w-12 h-12 rounded-2xl backdrop-blur-xl border flex items-center justify-center transition-all shadow-xl ${isZooming ? 'bg-primary-600 border-primary-500 text-white shadow-primary-600/40' : 'bg-white/80 dark:bg-black/80 border-neutral-200 dark:border-white/10 text-neutral-900 dark:text-white'}`}
+                    >
+                      <Maximize2 className={`w-6 h-6 ${isZooming ? 'scale-110' : ''}`} />
+                    </button>
+                  </div>
 
                   {/* Mobile & Desktop Image Navigation Arrows */}
                   {product.imageUrls.length > 1 && (

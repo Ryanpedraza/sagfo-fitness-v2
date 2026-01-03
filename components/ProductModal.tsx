@@ -852,78 +852,34 @@ const ProductModal: React.FC<ProductModalProps> = ({
           </div>
         </div>
 
-        {/* INGENIERÍA Y ESPECIFICACIONES (PANTALLA COMPLETA) */}
-        <div className="mt-20 pt-20 border-t border-neutral-100 dark:border-white/10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
-            <div className="lg:col-span-4 space-y-8">
-              <div className="space-y-4">
-                <div className="w-16 h-2 bg-primary-600 rounded-full" />
-                <h2 className="text-5xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter leading-none">Ficha de<br />Ingeniería</h2>
-              </div>
-              <p className="text-xl text-neutral-400 font-medium italic leading-relaxed">Detalles técnicos que avalan la superioridad mecánica de SAGFO.</p>
-
-              {isEditing && (
-                <div className="bg-neutral-50 dark:bg-white/5 p-10 rounded-[3rem] space-y-8 mt-12">
-                  <span className="text-[11px] font-black uppercase tracking-[0.3em] text-primary-600 italic">Nueva Especificación</span>
-                  <div className="space-y-4">
-                    <input placeholder="Parámetro (Material, Peso...)" value={newSpecKey} onChange={e => setNewSpecKey(e.target.value)} className="w-full bg-white dark:bg-zinc-900 p-5 rounded-2xl text-sm border border-neutral-100 dark:border-white/5 text-neutral-900 dark:text-white outline-none" />
-                    <input placeholder="Valor Técnico" value={newSpecValue} onChange={e => setNewSpecValue(e.target.value)} className="w-full bg-white dark:bg-zinc-900 p-5 rounded-2xl text-sm border border-neutral-100 dark:border-white/5 text-neutral-900 dark:text-white outline-none" />
-                    <button onClick={addSpec} className="w-full py-5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-2xl font-black uppercase text-[11px] tracking-widest shadow-xl">Integrar Dato</button>
-                  </div>
-                </div>
-              )}
+        {/* RELACIONADOS (MÁS COMPACTO Y ELEGANTE) */}
+        {!isEditing && relatedProducts.length > 0 && (
+          <div className="mt-20 pt-20 border-t border-neutral-100 dark:border-white/10 pb-20">
+            <div className="flex flex-col items-center text-center mb-16 space-y-6">
+              <span className="text-[10px] font-black text-primary-600 uppercase tracking-[0.5em] italic">Catálogo Elite</span>
+              <h2 className="text-4xl md:text-6xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter leading-none">Explora Más</h2>
+              <div className="w-[1px] h-20 bg-gradient-to-b from-primary-600 to-transparent" />
             </div>
 
-            <div className="lg:col-span-8 grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-1">
-              {Object.entries((isEditing ? formData?.specifications : product.specifications) || {}).length > 0 ? (
-                Object.entries((isEditing ? formData?.specifications : product.specifications) || {}).map(([key, value]) => (
-                  <div key={key} className="group relative py-8 border-b border-neutral-100 dark:border-white/5 hover:px-6 transition-all duration-700 rounded-2xl hover:bg-neutral-50 dark:hover:bg-white/[0.02]">
-                    <div className="space-y-1">
-                      <span className="text-[10px] font-black text-primary-600 uppercase tracking-[0.3em] italic mb-1 block">{key}</span>
-                      <p className="text-3xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter group-hover:text-primary-600 transition-colors leading-none">{value}</p>
-                    </div>
-                    {isEditing && (
-                      <button onClick={(e) => { e.preventDefault(); removeSpec(key); }} className="absolute right-8 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-red-500 text-white flex items-center justify-center shadow-2xl opacity-0 group-hover:opacity-100 translate-x-10 group-hover:translate-x-0 transition-all font-black text-[10px]">ELIMINAR</button>
-                    )}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+              {relatedProducts.map(rp => (
+                <div key={rp.id} onClick={() => onProductClick?.(rp)} className="group cursor-pointer space-y-6">
+                  <div className="aspect-[3/4] rounded-[3rem] overflow-hidden bg-[#fafafa] dark:bg-white/[0.02] border border-neutral-100 dark:border-white/5 p-10 relative flex items-center justify-center transition-all duration-1000 group-hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.15)] group-hover:-translate-y-4 group-hover:bg-white dark:group-hover:bg-black">
+                    <img src={rp.imageUrls[0]} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-1000" alt={rp.name} />
                   </div>
-                ))
-              ) : (
-                <div className="lg:col-span-2 py-10 text-neutral-400 font-bold uppercase italic text-xs opacity-50 border-2 border-dashed border-neutral-100 dark:border-white/5 rounded-[3rem] flex items-center justify-center">
-                  Sin especificaciones registradas
+                  <div className="px-4 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-black text-primary-600 uppercase tracking-[0.2em] italic">{rp.category}</span>
+                      <div className="h-[1px] flex-grow bg-neutral-200 dark:bg-white/10" />
+                    </div>
+                    <h4 className="text-2xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter leading-[1] group-hover:text-primary-600 transition-colors duration-500">{rp.name}</h4>
+                    <p className="text-xl font-black text-neutral-900 dark:text-white italic opacity-80">{formatCurrency(rp.price)}</p>
+                  </div>
                 </div>
-              )}
+              ))}
             </div>
           </div>
-
-          {/* RELACIONADOS (MÁS COMPACTO Y ELEGANTE) */}
-          {!isEditing && relatedProducts.length > 0 && (
-            <div className="mt-20 pt-20 border-t border-neutral-100 dark:border-white/10 pb-20">
-              <div className="flex flex-col items-center text-center mb-16 space-y-6">
-                <span className="text-[10px] font-black text-primary-600 uppercase tracking-[0.5em] italic">Catálogo Elite</span>
-                <h2 className="text-4xl md:text-6xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter leading-none">Explora Más</h2>
-                <div className="w-[1px] h-20 bg-gradient-to-b from-primary-600 to-transparent" />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                {relatedProducts.map(rp => (
-                  <div key={rp.id} onClick={() => onProductClick?.(rp)} className="group cursor-pointer space-y-6">
-                    <div className="aspect-[3/4] rounded-[3rem] overflow-hidden bg-[#fafafa] dark:bg-white/[0.02] border border-neutral-100 dark:border-white/5 p-10 relative flex items-center justify-center transition-all duration-1000 group-hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.15)] group-hover:-translate-y-4 group-hover:bg-white dark:group-hover:bg-black">
-                      <img src={rp.imageUrls[0]} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-1000" alt={rp.name} />
-                    </div>
-                    <div className="px-4 space-y-3">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-black text-primary-600 uppercase tracking-[0.2em] italic">{rp.category}</span>
-                        <div className="h-[1px] flex-grow bg-neutral-200 dark:bg-white/10" />
-                      </div>
-                      <h4 className="text-2xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter leading-[1] group-hover:text-primary-600 transition-colors duration-500">{rp.name}</h4>
-                      <p className="text-xl font-black text-neutral-900 dark:text-white italic opacity-80">{formatCurrency(rp.price)}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
+        )}
       </div>
 
       <footer className="bg-neutral-950 py-16 text-center flex flex-col items-center gap-6">
@@ -935,7 +891,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
           <div className="w-1 h-1 rounded-full bg-white" />
         </div>
       </footer>
-    </div>
+    </div >
   );
 };
 

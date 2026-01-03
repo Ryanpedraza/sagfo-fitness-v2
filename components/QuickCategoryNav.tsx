@@ -173,7 +173,7 @@ const QuickCategoryNav: React.FC<QuickCategoryNavProps> = ({ onSelectCategory, g
                             <h3 className="text-3xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter">Funcional</h3>
                         </div>
                         <div className="flex-grow flex items-center justify-center p-4">
-                            <img src="/categories/funcional.png" className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700" alt="" />
+                            <img src="/categories/funcional.png" className="w-full h-full object-contain group-hover:scale-110 group-hover:-rotate-[25deg] transition-transform duration-700" alt="" />
                         </div>
                     </motion.div>
 
@@ -189,7 +189,7 @@ const QuickCategoryNav: React.FC<QuickCategoryNavProps> = ({ onSelectCategory, g
                             <h3 className="text-3xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter">Bancos</h3>
                         </div>
                         <div className="flex-grow flex items-center justify-center p-4">
-                            <img src="/categories/bancos.png" className="w-full h-full object-contain group-hover:translate-y-[-10px] transition-transform duration-700" alt="" />
+                            <img src="/categories/bancos.png" className="w-full h-full object-contain group-hover:translate-x-4 group-hover:-rotate-[15deg] group-hover:scale-110 transition-transform duration-700" alt="" />
                         </div>
                     </motion.div>
 

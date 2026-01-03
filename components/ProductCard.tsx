@@ -32,7 +32,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onClick, onToggleCom
       className="group cursor-pointer bg-white dark:bg-neutral-900 rounded-[2.5rem] overflow-hidden transition-all duration-700 hover:shadow-premium border border-neutral-100 dark:border-white/5 flex flex-col h-full relative"
     >
       {/* Visual Hub */}
-      <div className="relative w-full aspect-square bg-neutral-50 dark:bg-black/40 overflow-hidden flex items-center justify-center p-12 transition-all duration-700">
+      <div className="relative w-full aspect-square bg-neutral-100 dark:bg-black/20 overflow-hidden flex items-center justify-center p-2 transition-all duration-700">
 
         <img
           src={(product.imageUrls && product.imageUrls.length > 0) ? product.imageUrls[0] : 'https://placehold.co/400x300?text=SAGFO'}

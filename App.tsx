@@ -23,7 +23,7 @@ import GallerySection from './components/GallerySection';
 
 import EventModal from './components/EventModal';
 import QuickCategoryNav from './components/QuickCategoryNav';
-import TestimonialsSection from './components/TestimonialsSection';
+
 import NotificationToast, { NotificationState } from './components/NotificationToast';
 import EditUserModal from './components/EditUserModal';
 import EventDetailModal from './components/EventDetailModal';
@@ -1489,7 +1489,7 @@ const App: React.FC = () => {
                   </div>
                 </div>
 
-                <TestimonialsSection />
+
                 <EventsSection
                   events={events}
                   onEventClick={handleViewEvent}
